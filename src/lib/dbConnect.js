@@ -1,7 +1,7 @@
 // src/lib/dbConnect.js
 import mongoose from 'mongoose';
 
-const MONGODB_URI = "mongodb+srv://bilelmadi:K2KCoFSFKEmQJf4p@cluster0.k7z0gfa.mongodb.net/smart_agriculture?retryWrites=true&w=majority";
+const MONGODB_URI = "mongodb+srv://bilelmadi:K2KCoFSFKEmQJf4p@cluster0.k7z0gfa.mongodb.net/BASF?retryWrites=true&w=majority";
 
 if (!MONGODB_URI) {
     throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
