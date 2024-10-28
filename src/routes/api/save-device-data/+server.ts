@@ -1,6 +1,6 @@
 import dbConnect from '$lib/dbConnect';
 import DeviceData from '$lib/db-models/DeviceData.js'; // Adjust the path based on your file structure
-
+import { RequestHandler } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async ({ request }) => {
     try {
