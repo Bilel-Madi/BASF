@@ -25,7 +25,8 @@ export const GET = async () => {
             { $replaceRoot: { newRoot: "$latest" } }
         ]).exec();
 
-        
+        // Log the fetched data
+        console.log('Latest data entries:', latestEntries);
 
         // Return the latest data entries as JSON
         return json(latestEntries);

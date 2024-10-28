@@ -17,20 +17,8 @@
 	"/api/save-device-data": [
 		"src/routes/api/save-device-data/+server.ts"
 	],
-	"/api/weather": [
-		"src/routes/api/weather/+server.ts"
-	],
 	"/devices": [
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
-	],
-	"/devices/sensor/[id]": [
-		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts"
-	],
-	"/valve-control": [
-		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts",
-		"src/routes/valve-control/+server.ts"
 	]
 }
