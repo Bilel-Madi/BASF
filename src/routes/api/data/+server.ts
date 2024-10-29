@@ -2,7 +2,7 @@
 import { RequestHandler } from '@sveltejs/kit';
 import dbConnect from '$lib/dbConnect';
 import DeviceData from '$lib/db-models/DeviceData.js'; // Adjust the path based on your file structure
-import ControllerData from '$lib/db-models/ControllerData.js';
+
 
 function readUInt32LE(bytes: Uint8Array): number {
     const value = (bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
@@ -100,27 +100,6 @@ export const POST: RequestHandler = async ({ request }) => {
                 await newDeviceData.save();
 
                 return new Response(JSON.stringify({ message: 'Device data saved successfully' }), {
-                    headers: { 'Content-Type': 'application/json' },
-                    status: 200,
-                });
-            }
-        } else if (body.cmd && body.EUI) {
-            // Check if it's ControllerData
-            if (body.cmd === 'rx' && body.EUI.startsWith('24E124460C')) {
-                const bytes = Buffer.from(body.data, 'hex');
-                const decoded = Decoder(bytes, body.port);
-
-                const controllerData = {
-                    device_id: body.EUI,
-                    valve_1: decoded.valve_1 || "",
-                    received_at: body.ts ? new Date(body.ts) : new Date(),
-                    battery: decoded.battery || null // Extract and include the battery status
-                };
-
-                const newControllerData = new ControllerData(controllerData);
-                await newControllerData.save();
-
-                return new Response(JSON.stringify({ message: 'Controller data saved successfully' }), {
                     headers: { 'Content-Type': 'application/json' },
                     status: 200,
                 });
