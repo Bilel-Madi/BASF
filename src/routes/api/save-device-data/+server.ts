@@ -1,83 +1,79 @@
 // +server.ts
 import dbConnect from '$lib/dbConnect';
-import DeviceData from '$lib/db-models/DeviceData.js'; // Adjust the path based on your file structure
-import Co2Data from '$lib/db-models/Co2Data.js';       // Import the Co2Data model
+import DeviceData from '$lib/db-models/DeviceData.js'; // For soil data
+import Co2Data from '$lib/db-models/Co2Data.js';       // For CO₂ data
+import Device from '$lib/db-models/Device.js';
 import { RequestHandler } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async ({ request }) => {
-    try {
-        await dbConnect(); // Ensure the database connection is open
+  try {
+    await dbConnect();
+    const body = await request.json();
 
-        const body = await request.json();
+    const deviceEUI = body.end_device_ids.dev_eui;
+    const decodedPayload = body.uplink_message.decoded_payload || {};
+    const receivedAt = new Date(body.received_at);
+    const rssi = body.uplink_message.rx_metadata[0]?.rssi;
+    const snr = body.uplink_message.rx_metadata[0]?.snr;
 
-        console.log('Incoming JSON:', body);
+    // Update Device metadata
+    const deviceUpdate = {
+      last_seen: receivedAt,
+      latest_rssi: rssi,
+      latest_snr: snr,
+    };
 
-        // Extract the device EUI and application ID
-        const deviceEUI = body.end_device_ids.dev_eui;
-        const applicationID = body.end_device_ids.application_ids.application_id;
-
-        // Define device type prefixes
-        const SOIL_SENSOR_PREFIX = '24E124126C48'; // Prefix for soil moisture sensors
-        const CO2_SENSOR_PREFIX = '24E124126E03';  // Prefix for CO₂ sensors
-
-        // Handle soil moisture sensor data
-        if (deviceEUI.startsWith(SOIL_SENSOR_PREFIX)) {
-            // Extract the necessary data for soil moisture sensors
-            const decodedPayload = body.uplink_message.decoded_payload || {};
-
-            const deviceData = {
-                received_at: new Date(body.received_at), // Ensure it's a Date object
-                device_id: deviceEUI,                    // Using dev_eui as the device_id
-                ec: decodedPayload.ec,
-                temperature: decodedPayload.temperature,
-                moisture: decodedPayload.moisture,
-                battery: decodedPayload.battery,
-            };
-
-            // Create a new instance of the DeviceData model
-            const newDeviceData = new DeviceData(deviceData);
-            await newDeviceData.save(); // Save the data to the 'Soil' collection
-
-            return new Response(JSON.stringify({ message: 'Soil data saved successfully' }), {
-                headers: { 'Content-Type': 'application/json' },
-                status: 200,
-            });
-        }
-        // Handle CO₂ sensor data
-        else if (deviceEUI.startsWith(CO2_SENSOR_PREFIX)) {
-            // Extract the necessary data for CO₂ sensors
-            const decodedPayload = body.uplink_message.decoded_payload || {};
-
-            const co2Data = {
-                received_at: new Date(body.received_at), // Ensure it's a Date object
-                device_id: deviceEUI,
-                co2: decodedPayload.co2,
-                humidity: decodedPayload.humidity,
-                pressure: decodedPayload.pressure,
-                temperature: decodedPayload.temperature,
-                battery: decodedPayload.battery,
-            };
-
-            // Create a new instance of the Co2Data model
-            const newCo2Data = new Co2Data(co2Data);
-            await newCo2Data.save(); // Save the data to the 'Air' collection
-
-            return new Response(JSON.stringify({ message: 'CO₂ data saved successfully' }), {
-                headers: { 'Content-Type': 'application/json' },
-                status: 200,
-            });
-        } else {
-            // Unknown device type
-            return new Response(JSON.stringify({ message: 'Unknown device type received' }), {
-                headers: { 'Content-Type': 'application/json' },
-                status: 400, // Bad Request
-            });
-        }
-    } catch (error) {
-        console.error('Error processing request:', error);
-        return new Response(JSON.stringify({ message: 'Failed to process data', error: error.message }), {
-            headers: { 'Content-Type': 'application/json' },
-            status: 500, // Internal Server Error
-        });
+    if (decodedPayload.battery !== undefined) {
+      deviceUpdate.battery_status = decodedPayload.battery;
     }
+
+    await Device.findOneAndUpdate(
+      { device_id: deviceEUI },
+      { $set: deviceUpdate },
+      { upsert: true }
+    );
+
+    // Determine device type and save sensor data
+    const SOIL_SENSOR_PREFIX = '24E124126C48';
+    const CO2_SENSOR_PREFIX = '24E124126E03';
+
+    if (deviceEUI.startsWith(SOIL_SENSOR_PREFIX)) {
+      const deviceData = new DeviceData({
+        received_at: receivedAt,
+        device_id: deviceEUI,
+        ec: decodedPayload.ec,
+        temperature: decodedPayload.temperature,
+        moisture: decodedPayload.moisture,
+        battery: decodedPayload.battery,
+      });
+      await deviceData.save();
+    } else if (deviceEUI.startsWith(CO2_SENSOR_PREFIX)) {
+      const co2Data = new Co2Data({
+        received_at: receivedAt,
+        device_id: deviceEUI,
+        co2: decodedPayload.co2,
+        humidity: decodedPayload.humidity,
+        pressure: decodedPayload.pressure,
+        temperature: decodedPayload.temperature,
+        battery: decodedPayload.battery,
+      });
+      await co2Data.save();
+    } else {
+      return new Response(JSON.stringify({ message: 'Unknown device type received' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
+    return new Response(JSON.stringify({ message: 'Data saved successfully' }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    });
+  } catch (error) {
+    console.error('Error processing request:', error);
+    return new Response(JSON.stringify({ message: 'Failed to process data', error: error.message }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 500,
+    });
+  }
 };
