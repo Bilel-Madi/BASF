@@ -14,10 +14,30 @@
 	"/api/data": [
 		"src/routes/api/data/+server.ts"
 	],
+	"/api/devices": [
+		"src/routes/api/devices/+server.ts"
+	],
+	"/api/devices/[device_id]": [
+		"src/routes/api/devices/[device_id]/+server.ts"
+	],
+	"/api/devices/[device_id]/latest-reading": [
+		"src/routes/api/devices/[device_id]/latest-reading/+server.ts"
+	],
+	"/api/devices/[device_id]/upload": [
+		"src/routes/api/devices/[device_id]/upload/+server.ts"
+	],
 	"/api/save-device-data": [
 		"src/routes/api/save-device-data/+server.ts"
 	],
 	"/devices": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/devices/[device_id]": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/devices/[device_id]/edit": [
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	]
