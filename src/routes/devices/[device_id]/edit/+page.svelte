@@ -19,6 +19,8 @@
 		field?: string;
 		location?: DeviceLocation;
 		picture_url?: string;
+		reporting_interval?: number;
+		device_type?: string;
 	}
 
 	let device_id = '';
@@ -34,6 +36,7 @@
 			coordinates: ['', '']
 		}
 	};
+	let fields: Array<{ _id: string; name: string }> = [];
 
 	// Reactive statement to get device_id from URL parameters
 	$: device_id = $page.params.device_id;
@@ -76,6 +79,19 @@
 					console.error('Fetch error:', err);
 					alert('An unexpected error occurred while fetching device details.');
 				}
+			}
+			// Fetch fields
+			try {
+				const resFields = await fetch('/api/fields');
+				if (resFields.ok) {
+					fields = await resFields.json();
+				} else {
+					const error = await resFields.json();
+					alert('Error fetching fields: ' + error.message);
+				}
+			} catch (err) {
+				console.error('Fetch fields error:', err);
+				alert('An unexpected error occurred while fetching fields.');
 			}
 		});
 	}
@@ -200,6 +216,37 @@
 				required
 				placeholder="Enter Assigned Number"
 			/>
+		</div>
+		<div class="form-group">
+			<label for="reporting_interval">Reporting Interval (minutes):</label>
+			<input
+				type="number"
+				id="reporting_interval"
+				bind:value={device.reporting_interval}
+				required
+				placeholder="Enter Reporting Interval"
+			/>
+		</div>
+
+		<div class="form-group">
+			<label for="device_type">Device Type:</label>
+			<input
+				type="text"
+				id="device_type"
+				bind:value={device.device_type}
+				required
+				placeholder="Enter Device Type"
+			/>
+		</div>
+
+		<div class="form-group">
+			<label for="field_id">Field/Zone/Greenhouse:</label>
+			<select id="field_id" bind:value={device.field_id}>
+				<option value="">Select Field</option>
+				{#each fields as field}
+					<option value={field._id}>{field.name}</option>
+				{/each}
+			</select>
 		</div>
 
 		<div class="form-group">

@@ -22,6 +22,8 @@
 		last_seen?: string;
 		latest_rssi?: number;
 		latest_snr?: number;
+		reporting_interval?: number;
+		device_type?: string;
 	}
 
 	interface SensorReading {
@@ -65,6 +67,21 @@
 				alert('An unexpected error occurred while fetching device details.');
 			}
 		}
+		// Fetch the field name if field_id is present
+		if (device.field_id) {
+			try {
+				const resField = await fetch(`/api/fields/${device.field_id}`);
+				if (resField.ok) {
+					const fieldData = await resField.json();
+					device.field = fieldData.name;
+				} else {
+					device.field = 'N/A';
+				}
+			} catch (err) {
+				console.error('Fetch field error:', err);
+				device.field = 'N/A';
+			}
+		}
 	});
 
 	// Define breadcrumbs for this page
@@ -96,6 +113,8 @@
 			<div class="device-metadata">
 				<p><strong>Model Name:</strong> {device.model_name}</p>
 				<p><strong>Assigned Number:</strong> {device.assigned_number}</p>
+				<p><strong>Reporting Interval:</strong> {device.reporting_interval || 'N/A'} minutes</p>
+				<p><strong>Device Type:</strong> {device.device_type || 'N/A'}</p>
 				<p>
 					<strong>Installed Date:</strong>
 					{device.installed_date ? new Date(device.installed_date).toLocaleDateString() : 'N/A'}

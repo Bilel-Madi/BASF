@@ -20,11 +20,26 @@
 	"/api/devices/[device_id]": [
 		"src/routes/api/devices/[device_id]/+server.ts"
 	],
+	"/api/devices/[device_id]/historical": [
+		"src/routes/api/devices/[device_id]/historical/+server.ts"
+	],
 	"/api/devices/[device_id]/latest-reading": [
 		"src/routes/api/devices/[device_id]/latest-reading/+server.ts"
 	],
 	"/api/devices/[device_id]/upload": [
 		"src/routes/api/devices/[device_id]/upload/+server.ts"
+	],
+	"/api/fields": [
+		"src/routes/api/fields/+server.ts"
+	],
+	"/api/fields/geojson": [
+		"src/routes/api/fields/geojson/+server.ts"
+	],
+	"/api/fields/[field_id]": [
+		"src/routes/api/fields/[field_id]/+server.ts"
+	],
+	"/api/fields/[field_id]/upload": [
+		"src/routes/api/fields/[field_id]/upload/+server.ts"
 	],
 	"/api/save-device-data": [
 		"src/routes/api/save-device-data/+server.ts"
@@ -38,6 +53,22 @@
 		"src/routes/+layout.server.ts"
 	],
 	"/devices/[device_id]/edit": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/fields": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/fields/new/edit": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/fields/[field_id]": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/fields/[field_id]/edit": [
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	]

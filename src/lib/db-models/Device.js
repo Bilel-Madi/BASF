@@ -18,6 +18,8 @@ const deviceSchema = new mongoose.Schema({
   last_seen: Date,          // Timestamp of the last data received
   latest_rssi: Number,      // Latest RSSI value
   latest_snr: Number,       // Latest SNR value
+  reporting_interval: Number,  // Reporting interval in minutes
+  device_type: String,         // Type of device
 });
 
 export default mongoose.models.Device || mongoose.model('Device', deviceSchema, 'Devices');
