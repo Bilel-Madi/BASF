@@ -2,6 +2,11 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import Breadcrumbs from '$lib/ui/breadcrumbs.svelte';
+	import mapboxgl from 'mapbox-gl';
+	import MapboxDraw from '@mapbox/mapbox-gl-draw';
+	import 'mapbox-gl/dist/mapbox-gl.css';
+	import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+	import * as turf from '@turf/turf';
 
 	// Define TypeScript interfaces for better type safety
 	interface Field {
@@ -25,7 +30,67 @@
 	let selectedDevices: Array<{ _id: string; name: string }> = [];
 	let allDevices: Array<{ _id: string; name: string }> = [];
 
+	let mapContainer: HTMLElement;
+	let map: mapboxgl.Map;
+	let draw: MapboxDraw;
+	let fieldGeometry: any = null;
+
+	// Mapbox access token
+	const MAPBOX_ACCESS_TOKEN =
+		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg';
+
+	// Initialize Mapbox map
+	function initializeMap() {
+		mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+
+		map = new mapboxgl.Map({
+			container: mapContainer,
+			style: 'mapbox://styles/mapbox/satellite-v9',
+			center: [35.5795, 32.2838], // Set your initial map center
+			zoom: 12
+		});
+
+		// Wait for map to load before adding controls
+		map.on('load', () => {
+			map.addControl(new mapboxgl.NavigationControl());
+
+			// Initialize Mapbox Draw
+			draw = new MapboxDraw({
+				displayControlsDefault: false,
+				controls: {
+					polygon: true,
+					trash: true
+				}
+			});
+
+			map.addControl(draw);
+
+			// Handle the creation and update of features
+			map.on('draw.create', updateGeometry);
+			map.on('draw.update', updateGeometry);
+			map.on('draw.delete', () => {
+				fieldGeometry = null;
+			});
+		});
+	}
+
+	function updateGeometry() {
+		const data = draw.getAll();
+		if (data.features.length > 0) {
+			fieldGeometry = data.features[0];
+
+			// Calculate area in square meters
+			const area = turf.area(fieldGeometry);
+			// Convert to hectares (1 hectare = 10000 square meters)
+			field.size_hectares = Number((area / 10000).toFixed(2));
+		} else {
+			fieldGeometry = null;
+			field.size_hectares = 0;
+		}
+	}
+
 	onMount(async () => {
+		initializeMap();
 		try {
 			// Fetch all devices to assign to the field
 			const resDevices = await fetch('/api/devices');
@@ -56,6 +121,14 @@
 			alert('Field name is required.');
 			return;
 		}
+
+		if (!fieldGeometry) {
+			alert('Please draw the field geometry on the map.');
+			return;
+		}
+
+		// Include the geometry in the field data
+		field.location = fieldGeometry.geometry;
 
 		try {
 			// Create new field
@@ -131,6 +204,9 @@
 		<h1>Add New Field</h1>
 	</header>
 
+	<!-- Map container -->
+	<div class="map-container" bind:this={mapContainer} />
+
 	<form class="field-form" on:submit={handleSubmit}>
 		<div class="form-group">
 			<label for="name">Field Name:</label>
@@ -169,9 +245,8 @@
 				type="number"
 				id="size_hectares"
 				bind:value={field.size_hectares}
-				placeholder="Enter Size in Hectares"
-				min="0"
-				step="0.01"
+				placeholder="Draw field to calculate size"
+				readonly
 			/>
 		</div>
 
@@ -213,6 +288,14 @@
 		padding: 0 20px;
 		font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		color: #333;
+	}
+
+	.map-container {
+		position: relative;
+		width: 100%;
+		height: 400px; /* Adjust as needed */
+		margin-bottom: 20px;
+		border-radius: 10px;
 	}
 
 	/* Header styling */

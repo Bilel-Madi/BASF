@@ -34,7 +34,7 @@
 		isLoading = true;
 		errorMessage = '';
 		try {
-			const response = await fetch(`/api/devices/${deviceId}/historical?time_range=3d`); // Adjust query parameters as needed
+			const response = await fetch(`/api/devices/${deviceId}/historical?time_range=1w`); // Adjust query parameters as needed
 			if (response.ok) {
 				const data = await response.json();
 				console.log('Fetched sensor data:', data);
@@ -112,7 +112,8 @@
 					borderColor: 'rgba(33, 150, 243, 1)', // Blue
 					backgroundColor: 'rgba(33, 150, 243, 0.5)',
 					fill: false,
-					tension: 0.4
+					tension: 0.4,
+					pointRadius: 0
 				},
 				{
 					label: 'Soil Temperature (°C)',
@@ -120,7 +121,8 @@
 					borderColor: 'rgba(76, 175, 80, 1)', // Green
 					backgroundColor: 'rgba(76, 175, 80, 0.5)',
 					fill: false,
-					tension: 0.4
+					tension: 0.4,
+					pointRadius: 0
 				},
 				{
 					label: 'EC (µS/cm)',
@@ -128,7 +130,8 @@
 					borderColor: 'rgba(255, 87, 34, 1)', // Orange
 					backgroundColor: 'rgba(255, 87, 34, 0.5)',
 					fill: false,
-					tension: 0.4
+					tension: 0.4,
+					pointRadius: 0
 				}
 			];
 		} else if (deviceType === 'co2_sensor') {
@@ -139,7 +142,8 @@
 					borderColor: 'rgba(33, 150, 243, 1)', // Blue
 					backgroundColor: 'rgba(33, 150, 243, 0.5)',
 					fill: false,
-					tension: 0.4
+					tension: 0.4,
+					pointRadius: 0
 				},
 				{
 					label: 'CO₂ (ppm)',
@@ -147,7 +151,8 @@
 					borderColor: 'rgba(255, 99, 132, 1)', // Red
 					backgroundColor: 'rgba(255, 99, 132, 0.5)',
 					fill: false,
-					tension: 0.4
+					tension: 0.4,
+					pointRadius: 0
 				},
 				{
 					label: 'Humidity (%)',
@@ -155,7 +160,8 @@
 					borderColor: 'rgba(54, 162, 235, 1)', // Light Blue
 					backgroundColor: 'rgba(54, 162, 235, 0.5)',
 					fill: false,
-					tension: 0.4
+					tension: 0.4,
+					pointRadius: 0
 				},
 				{
 					label: 'Pressure (hPa)',
@@ -163,7 +169,8 @@
 					borderColor: 'rgba(255, 206, 86, 1)', // Yellow
 					backgroundColor: 'rgba(255, 206, 86, 0.5)',
 					fill: false,
-					tension: 0.4
+					tension: 0.4,
+					pointRadius: 0
 				}
 			];
 		}
