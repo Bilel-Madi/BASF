@@ -15,7 +15,7 @@
 		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg';
 
 	const initialCoordinates = [35.5795, 32.2838];
-	const initialZoom = 15;
+	const initialZoom = 10;
 
 	async function fetchDevices() {
 		try {
@@ -186,7 +186,7 @@
 	.map-container {
 		position: relative;
 		width: 100%;
-		height: 600px;
+		height: 400px;
 	}
 
 	/* Optional: Custom styles for device markers */
