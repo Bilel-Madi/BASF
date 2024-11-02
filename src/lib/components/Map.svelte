@@ -45,20 +45,50 @@
 		}
 	}
 
+	// Add this new function to calculate bounds from GeoJSON
+	function calculateBoundsFromGeoJSON(geojson: any): mapboxgl.LngLatBounds | null {
+		if (!geojson || !geojson.features || geojson.features.length === 0) {
+			return null;
+		}
+
+		const bounds = new mapboxgl.LngLatBounds();
+
+		geojson.features.forEach((feature: any) => {
+			if (feature.geometry.type === 'Polygon') {
+				feature.geometry.coordinates[0].forEach((coord: [number, number]) => {
+					bounds.extend(coord);
+				});
+			}
+		});
+
+		return bounds;
+	}
+
 	// Initialize the Mapbox map
 	function initializeMap() {
 		mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
+		const bounds = calculateBoundsFromGeoJSON(fieldsGeoJSON);
+
 		map = new mapboxgl.Map({
 			container: mapContainer,
 			style: 'mapbox://styles/mapbox/satellite-v9',
-			center: initialCoordinates,
+			// Only use initial coordinates if we don't have bounds
+			center: bounds ? bounds.getCenter() : initialCoordinates,
 			zoom: initialZoom
 		});
 
 		map.addControl(new mapboxgl.NavigationControl());
 
 		map.on('load', () => {
+			// If we have bounds, fit the map to them
+			if (bounds) {
+				map.fitBounds(bounds, {
+					padding: 50, // Add some padding around the features
+					maxZoom: 18 // Prevent zooming in too close
+				});
+			}
+
 			addFieldsLayer();
 			addDeviceMarkers();
 			addGlobalClickHandler();
