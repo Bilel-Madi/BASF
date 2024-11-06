@@ -1,3 +1,4 @@
+<!-- src/routes/devices/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
@@ -36,7 +37,6 @@
 	<Breadcrumbs {crumbs} />
 	<header>
 		<h1>Devices</h1>
-		<a class="add-button" href="/devices/new/edit">Add New Device</a>
 	</header>
 
 	{#if devices.length > 0}
@@ -56,7 +56,7 @@
 			{/each}
 		</ul>
 	{:else}
-		<p class="no-devices">No devices found. <a href="/devices/new/edit">Add a new device</a>.</p>
+		<p class="no-devices">No devices found.</p>
 	{/if}
 </main>
 
@@ -89,21 +89,6 @@
 		font-size: 2.5rem;
 		font-weight: 600;
 		color: #2c3e50;
-	}
-
-	/* Add button styling */
-	.add-button {
-		background-color: #3498db;
-		color: #fff;
-		padding: 10px 20px;
-		text-decoration: none;
-		border-radius: 5px;
-		font-size: 1rem;
-		transition: background-color 0.3s ease;
-	}
-
-	.add-button:hover {
-		background-color: #2980b9;
 	}
 
 	/* Device list styling */
@@ -175,27 +160,11 @@
 		margin-top: 20px;
 	}
 
-	.no-devices a {
-		color: #3498db;
-		text-decoration: none;
-		font-weight: bold;
-	}
-
-	.no-devices a:hover {
-		text-decoration: underline;
-	}
-
 	/* Responsive design */
 	@media (max-width: 600px) {
 		header {
 			flex-direction: column;
 			align-items: flex-start;
-		}
-
-		.add-button {
-			margin-top: 15px;
-			width: 100%;
-			text-align: center;
 		}
 
 		.device-item {

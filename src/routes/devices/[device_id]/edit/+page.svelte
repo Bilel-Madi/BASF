@@ -1,3 +1,4 @@
+<!-- src/routes/devices/[device_id]/edit/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
@@ -16,7 +17,6 @@
 		name?: string;
 		installed_date?: string;
 		installed_depth?: number;
-		field?: string;
 		location?: DeviceLocation;
 		picture_url?: string;
 		reporting_interval?: number;
@@ -31,85 +31,45 @@
 		name: '',
 		installed_date: '',
 		installed_depth: 0,
-		field: '',
 		location: {
 			coordinates: ['', '']
 		}
 	};
-	let fields: Array<{ _id: string; name: string }> = [];
 
 	// Reactive statement to get device_id from URL parameters
 	$: device_id = $page.params.device_id;
 
-	// Initialize device object if device_id is 'new'
-	if (device_id === 'new') {
-		device = {
-			device_id: '',
-			model_name: '',
-			assigned_number: 0,
-			name: '',
-			installed_date: '',
-			installed_depth: 0,
-			field: '',
-			location: {
-				coordinates: ['', '']
-			}
-		};
-	} else {
-		// Fetch existing device data on mount
-		onMount(async () => {
-			if (device_id) {
-				try {
-					const res = await fetch(`/api/devices/${device_id}`);
-					if (res.ok) {
-						const fetchedDevice = await res.json();
-						device = fetchedDevice;
-						if (!device.location) {
-							device.location = { coordinates: ['', ''] };
-						}
-						// Format the date for the input field
-						if (device.installed_date) {
-							device.installed_date = device.installed_date.slice(0, 10);
-						}
-					} else {
-						const error = await res.json();
-						alert('Error fetching device: ' + error.message);
-					}
-				} catch (err) {
-					console.error('Fetch error:', err);
-					alert('An unexpected error occurred while fetching device details.');
-				}
-			}
-			// Fetch fields
+	// Fetch existing device data on mount
+	onMount(async () => {
+		if (device_id) {
 			try {
-				const resFields = await fetch('/api/fields');
-				if (resFields.ok) {
-					fields = await resFields.json();
+				const res = await fetch(`/api/devices/${device_id}`);
+				if (res.ok) {
+					const fetchedDevice = await res.json();
+					device = fetchedDevice;
+					if (!device.location) {
+						device.location = { coordinates: ['', ''] };
+					}
+					// Format the date for the input field
+					if (device.installed_date) {
+						device.installed_date = device.installed_date.slice(0, 10);
+					}
 				} else {
-					const error = await resFields.json();
-					alert('Error fetching fields: ' + error.message);
+					const error = await res.json();
+					alert('Error fetching device: ' + error.message);
 				}
 			} catch (err) {
-				console.error('Fetch fields error:', err);
-				alert('An unexpected error occurred while fetching fields.');
+				console.error('Fetch error:', err);
+				alert('An unexpected error occurred while fetching device details.');
 			}
-		});
-	}
+		}
+	});
 
 	// Handle form submission
 	async function handleSubmit(event: Event) {
 		event.preventDefault();
 
-		if (device_id === 'new') {
-			if (!device.device_id) {
-				alert('Device ID is required');
-				return;
-			}
-			device_id = device.device_id;
-		}
-
 		try {
-			// Send the updated device data to the server
 			const res = await fetch(`/api/devices/${device_id}`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -158,22 +118,15 @@
 	}
 
 	// Define breadcrumbs for this page
-	const crumbs =
-		device_id === 'new'
-			? [
-					{ name: 'Home', href: '/' },
-					{ name: 'Devices', href: '/devices' },
-					{ name: 'Add New Device', href: '/devices/new/edit' }
-			  ]
-			: [
-					{ name: 'Home', href: '/' },
-					{ name: 'Devices', href: '/devices' },
-					{
-						name: device ? device.name || device.device_id : 'Device',
-						href: `/devices/${device_id}`
-					},
-					{ name: 'Edit', href: '' }
-			  ];
+	const crumbs = [
+		{ name: 'Home', href: '/' },
+		{ name: 'Devices', href: '/devices' },
+		{
+			name: device ? device.name || device.device_id : 'Device',
+			href: `/devices/${device_id}`
+		},
+		{ name: 'Edit', href: '' }
+	];
 </script>
 
 <main>
@@ -183,19 +136,6 @@
 	</header>
 
 	<form class="device-form" on:submit={handleSubmit}>
-		{#if device_id === 'new'}
-			<div class="form-group">
-				<label for="device_id">Device ID (dev_eui):</label>
-				<input
-					type="text"
-					id="device_id"
-					bind:value={device.device_id}
-					required
-					placeholder="Enter Device ID"
-				/>
-			</div>
-		{/if}
-
 		<div class="form-group">
 			<label for="model_name">Model Name:</label>
 			<input
@@ -240,16 +180,6 @@
 		</div>
 
 		<div class="form-group">
-			<label for="field_id">Field/Zone/Greenhouse:</label>
-			<select id="field_id" bind:value={device.field_id}>
-				<option value="">Select Field</option>
-				{#each fields as field}
-					<option value={field._id}>{field.name}</option>
-				{/each}
-			</select>
-		</div>
-
-		<div class="form-group">
 			<label for="name">Name:</label>
 			<input type="text" id="name" bind:value={device.name} placeholder="Enter Device Name" />
 		</div>
@@ -266,16 +196,6 @@
 				id="installed_depth"
 				bind:value={device.installed_depth}
 				placeholder="Enter Installed Depth"
-			/>
-		</div>
-
-		<div class="form-group">
-			<label for="field">Field/Zone/Greenhouse:</label>
-			<input
-				type="text"
-				id="field"
-				bind:value={device.field}
-				placeholder="Enter Field/Zone/Greenhouse"
 			/>
 		</div>
 

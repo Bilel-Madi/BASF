@@ -1,0 +1,55 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Co2Data {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  received_at DateTime
+  device_id   String
+  co2         Float?
+  humidity    Float?
+  pressure    Float?
+  temperature Float?
+  battery     Float?
+
+  @@map("Air")
+}
+
+model DeviceData {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  received_at DateTime
+  device_id   String
+  ec          Float?
+  temperature Float?
+  moisture    Float?
+  battery     Float?
+
+  @@map("Soil")
+}
+
+model Device {
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  device_id          String    @unique
+  project_id         String?   @db.ObjectId
+  model_name         String?
+  assigned_number    Int?
+  name               String?
+  picture_url        String?
+  location           Json?
+  installed_date     DateTime?
+  installed_depth    Float?
+  battery_status     Float?
+  last_seen          DateTime?
+  latest_rssi        Float?
+  latest_snr         Float?
+  reporting_interval Int?
+  device_type        String?
+
+  @@map("Devices")
+}

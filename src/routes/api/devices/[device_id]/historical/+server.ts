@@ -1,37 +1,34 @@
-import dbConnect from '$lib/dbConnect';
-import Device from '$lib/db-models/Device.js';
-import DeviceData from '$lib/db-models/DeviceData.js'; // For soil data
-import Co2Data from '$lib/db-models/Co2Data.js';       // For CO₂ data
+// src/routes/api/devices/[device_id]/historical/+server.ts
+import prisma from '$lib/prisma';
 import type { RequestHandler } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async ({ params, url }) => {
   try {
-    await dbConnect();
-    const device = await Device.findOne({ device_id: params.device_id });
+    const device = await prisma.device.findUnique({
+      where: { device_id: params.device_id },
+    });
 
     if (!device) {
       return new Response(JSON.stringify({ message: 'Device not found' }), { status: 404 });
     }
 
-    // Map device_type to DataModel
     const dataModelMapping = {
-      'soil_moisture': DeviceData,
-      'co2_sensor': Co2Data,
-      // Add more mappings as needed
+      soil_moisture: 'deviceData',
+      co2_sensor: 'co2Data',
     };
 
-    const DataModel = dataModelMapping[device.device_type];
+    const dataModelName = dataModelMapping[device.device_type];
 
-    if (!DataModel) {
+    if (!dataModelName) {
       return new Response(JSON.stringify({ message: 'Unknown device type' }), { status: 400 });
     }
 
-    const time_range = url.searchParams.get('time_range'); // e.g., '24h', '3d', etc.
+    const time_range = url.searchParams.get('time_range');
     const start_date_param = url.searchParams.get('start_date');
     const end_date_param = url.searchParams.get('end_date');
 
-    let startDate = null;
-    let endDate = new Date(); // default to now
+    let startDate: Date | null = null;
+    let endDate = new Date();
 
     if (start_date_param && end_date_param) {
       startDate = new Date(start_date_param);
@@ -65,24 +62,26 @@ export const GET: RequestHandler = async ({ params, url }) => {
           startDate.setFullYear(endDate.getFullYear() - 1);
           break;
         case 'all':
-          startDate = null; // No start date
+          startDate = null;
           break;
         default:
           return new Response(JSON.stringify({ message: 'Invalid time range' }), { status: 400 });
       }
     } else {
-      // Default to last 24 hours
       endDate = new Date();
       startDate = new Date();
       startDate.setHours(endDate.getHours() - 24);
     }
 
-    let query = { device_id: params.device_id };
+    const whereClause: any = { device_id: params.device_id };
     if (startDate) {
-      query['received_at'] = { $gte: startDate, $lte: endDate };
+      whereClause.received_at = { gte: startDate, lte: endDate };
     }
 
-    const data = await DataModel.find(query).sort({ received_at: 1 });
+    const data = await prisma[dataModelName].findMany({
+      where: whereClause,
+      orderBy: { received_at: 'asc' },
+    });
 
     return new Response(JSON.stringify(data), {
       headers: { 'Content-Type': 'application/json' },

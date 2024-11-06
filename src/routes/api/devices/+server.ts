@@ -1,12 +1,10 @@
-// +server.ts
-import dbConnect from '$lib/dbConnect';
-import Device from '$lib/db-models/Device.js';
+// src/routes/api/devices/+server.ts
+import prisma from '$lib/prisma';
 import type { RequestHandler } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async () => {
   try {
-    await dbConnect();
-    const devices = await Device.find({});
+    const devices = await prisma.device.findMany();
     return new Response(JSON.stringify(devices), {
       headers: { 'Content-Type': 'application/json' },
       status: 200,

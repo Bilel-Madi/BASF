@@ -1,3 +1,4 @@
+<!-- src/routes/devices/[device_id]/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
@@ -15,7 +16,6 @@
 		name?: string;
 		installed_date?: string;
 		installed_depth?: number;
-		field?: string;
 		location?: DeviceLocation;
 		picture_url?: string;
 		battery_status?: number;
@@ -67,21 +67,6 @@
 				alert('An unexpected error occurred while fetching device details.');
 			}
 		}
-		// Fetch the field name if field_id is present
-		if (device.field_id) {
-			try {
-				const resField = await fetch(`/api/fields/${device.field_id}`);
-				if (resField.ok) {
-					const fieldData = await resField.json();
-					device.field = fieldData.name;
-				} else {
-					device.field = 'N/A';
-				}
-			} catch (err) {
-				console.error('Fetch field error:', err);
-				device.field = 'N/A';
-			}
-		}
 	});
 
 	// Define breadcrumbs for this page
@@ -120,7 +105,6 @@
 					{device.installed_date ? new Date(device.installed_date).toLocaleDateString() : 'N/A'}
 				</p>
 				<p><strong>Installed Depth:</strong> {device.installed_depth || 'N/A'} cm</p>
-				<p><strong>Field/Zone:</strong> {device.field || 'N/A'}</p>
 				<p>
 					<strong>Location:</strong>
 					{device.location && device.location.coordinates.length === 2
