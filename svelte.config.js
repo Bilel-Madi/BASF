@@ -6,9 +6,7 @@ const config = {
     preprocess: [vitePreprocess({ typescript: true })],
 
     kit: {
-        adapter: vercel({
-            runtime: 'nodejs18.x', // Specify the Node.js runtime version here
-        })
+        adapter: vercel()
         // Additional configuration options can be added here
     }
 };
