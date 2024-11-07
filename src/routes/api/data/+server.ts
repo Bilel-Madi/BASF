@@ -1,3 +1,4 @@
+// src/routes/api/data/+server.ts
 import type { RequestHandler } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 
@@ -7,18 +8,17 @@ export const POST: RequestHandler = async ({ request }) => {
     console.log('Received body:', JSON.stringify(body, null, 2));
 
     // Ensure the required data is present
-    if (!body?.data?.uplink_message?.decoded_payload || !body?.data?.end_device_ids) {
+    if (!body?.uplink_message?.decoded_payload || !body?.end_device_ids) {
       console.log('Validation failed:', {
-        hasDecodedPayload: !!body?.data?.uplink_message?.decoded_payload,
-        hasDeviceIds: !!body?.data?.end_device_ids
+        hasDecodedPayload: !!body?.uplink_message?.decoded_payload,
+        hasDeviceIds: !!body?.end_device_ids
       });
       return new Response('Invalid data', { status: 400 });
     }
 
-    const deviceId = body.data.end_device_ids.dev_eui;
-    const devEui = body.data.end_device_ids.dev_eui;
-    const receivedAt = new Date(body.data.received_at || body.time);
-    const decodedPayload = body.data.uplink_message.decoded_payload;
+    const devEui = body.end_device_ids.dev_eui;
+    const receivedAt = new Date(body.received_at || body.time);
+    const decodedPayload = body.uplink_message.decoded_payload;
 
     // Extract battery status if present
     const battery = decodedPayload.battery !== undefined ? decodedPayload.battery : null;
@@ -35,6 +35,7 @@ export const POST: RequestHandler = async ({ request }) => {
         pressure === undefined ||
         temperature === undefined
       ) {
+        console.log('Missing CO2 sensor data:', { co2, humidity, pressure, temperature });
         return new Response('Missing CO2 sensor data', { status: 400 });
       }
 
@@ -55,6 +56,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
       // Validate required fields
       if (ec === undefined || moisture === undefined || temperature === undefined) {
+        console.log('Missing soil moisture sensor data:', { ec, moisture, temperature });
         return new Response('Missing soil moisture sensor data', { status: 400 });
       }
 
@@ -69,6 +71,7 @@ export const POST: RequestHandler = async ({ request }) => {
         },
       });
     } else {
+      console.log('Unknown device EUI prefix:', devEui);
       return new Response('Unknown device EUI prefix', { status: 400 });
     }
 
