@@ -4,13 +4,18 @@ import prisma from '$lib/prisma';
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const body = await request.json();
+    console.log('Received body:', JSON.stringify(body, null, 2));
 
     // Ensure the required data is present
     if (!body?.data?.uplink_message?.decoded_payload || !body?.data?.end_device_ids) {
+      console.log('Validation failed:', {
+        hasDecodedPayload: !!body?.data?.uplink_message?.decoded_payload,
+        hasDeviceIds: !!body?.data?.end_device_ids
+      });
       return new Response('Invalid data', { status: 400 });
     }
 
-    const deviceId = body.data.end_device_ids.dev_eui; // Using dev_eui as deviceId
+    const deviceId = body.data.end_device_ids.dev_eui;
     const devEui = body.data.end_device_ids.dev_eui;
     const receivedAt = new Date(body.data.received_at || body.time);
     const decodedPayload = body.data.uplink_message.decoded_payload;
@@ -70,6 +75,11 @@ export const POST: RequestHandler = async ({ request }) => {
     return new Response('Data saved', { status: 200 });
   } catch (error) {
     console.error('Error saving data:', error);
+    // Log more details about the error
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     return new Response('Server error', { status: 500 });
   }
 };
