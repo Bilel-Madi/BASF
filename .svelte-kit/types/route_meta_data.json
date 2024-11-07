@@ -5,32 +5,14 @@
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],
-	"/api/data-fetch-latest": [
-		"src/routes/api/data-fetch-latest/+server.ts"
-	],
-	"/api/data-fetch": [
-		"src/routes/api/data-fetch/+server.ts"
-	],
 	"/api/data": [
 		"src/routes/api/data/+server.ts"
 	],
-	"/api/devices": [
-		"src/routes/api/devices/+server.ts"
-	],
-	"/api/devices/[device_id]": [
-		"src/routes/api/devices/[device_id]/+server.ts"
-	],
-	"/api/devices/[device_id]/historical": [
-		"src/routes/api/devices/[device_id]/historical/+server.ts"
-	],
-	"/api/devices/[device_id]/latest-reading": [
-		"src/routes/api/devices/[device_id]/latest-reading/+server.ts"
-	],
-	"/api/devices/[device_id]/upload": [
-		"src/routes/api/devices/[device_id]/upload/+server.ts"
-	],
-	"/api/save-device-data": [
-		"src/routes/api/save-device-data/+server.ts"
+	"/dashboard": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
 	],
 	"/devices": [
 		"src/routes/+layout.ts",

@@ -1,4 +1,4 @@
-<!-- src/routes/+layout.svelte -->
+<!-- src/routes/dashboard/+layout.svelte -->
 <script>
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
