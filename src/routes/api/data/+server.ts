@@ -1,4 +1,4 @@
-.import type { RequestHandler } from '@sveltejs/kit';
+import type { RequestHandler } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 
 export const POST: RequestHandler = async ({ request }) => {
