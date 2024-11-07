@@ -1,16 +1,22 @@
-import { SupabaseClient, Session } from '@supabase/supabase-js'
-import { Database } from './DatabaseDefinitions'
+// src/app.d.ts
+
+import type { User, Session } from '@prisma/client';
 
 declare global {
   namespace App {
     interface Locals {
-      supabase: SupabaseClient<Database>
-      getSession(): Promise<Session | null>
+      user: User | null;
+      session: Session | null;
     }
+
     interface PageData {
-      session: Session | null
+      user: User | null;
+      session: Session | null;
+      // Add other data types as needed
     }
-    // interface Error {}
-    // interface Platform {}
+
+    // Other interfaces...
   }
 }
+
+export {};

@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -5,6 +7,63 @@ generator client {
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  email          String       @unique
+  password       String?
+  googleId       String?      @unique
+  name           String?
+  role           Role         @default(USER)
+  sessions       Session[]
+  organizationId String       @db.ObjectId
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Session {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tokenHash String   @unique
+  userId    String   @db.ObjectId
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Organization {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String
+  users User[]
+  zones Zone[]
+}
+
+model Zone {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  area           Float
+  geometry       Json // Store GeoJSON or similar
+  cropType       String
+  plantingDate   DateTime
+  harvestDate    DateTime
+  notes          String?
+  soilType       String
+  organizationId String       @db.ObjectId
+  devices        Device[]
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model Device {
+  id                String     @id @default(auto()) @map("_id") @db.ObjectId
+  eui               String     @unique
+  name              String
+  type              DeviceType
+  modelName         String
+  installationDate  DateTime
+  installedDepth    Float?
+  location          Json // Coordinates
+  reportingInterval Int
+  zoneId            String     @db.ObjectId
+  zone              Zone       @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 }
 
 model Air {
@@ -30,4 +89,17 @@ model Soil {
   battery     Float? // Optional battery field
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+enum DeviceType {
+  SOIL_MOISTURE
+  CO2_SENSOR
+  // Add other device types as needed
+}
+
+enum Role {
+  ADMIN
+  USER
+  VIEWER
+  SUPER_ADMIN
 }

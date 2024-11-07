@@ -1,12 +1,26 @@
 {
 	"/": [
+		"src/routes/+page.server.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],
+	"/admin": [
+		"src/routes/admin/+page.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
 	"/api/data": [
 		"src/routes/api/data/+server.ts"
+	],
+	"/auth/logout": [
+		"src/routes/auth/logout/+server.ts"
+	],
+	"/auth/signup": [
+		"src/routes/auth/signup/+page.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
 	],
 	"/dashboard": [
 		"src/routes/+layout.ts",
@@ -15,15 +29,27 @@
 		"src/routes/+layout.server.ts"
 	],
 	"/devices": [
+		"src/routes/devices/+page.server.ts",
 		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts"
+		"src/routes/+layout.server.ts",
+		"src/routes/devices/+server.ts"
 	],
 	"/devices/[device_id]": [
+		"src/routes/devices/[device_id]/+page.server.ts",
 		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts"
+		"src/routes/+layout.server.ts",
+		"src/routes/devices/[device_id]/+server.ts"
 	],
-	"/devices/[device_id]/edit": [
+	"/zones": [
+		"src/routes/zones/+page.server.ts",
 		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts"
+		"src/routes/+layout.server.ts",
+		"src/routes/zones/+server.ts"
+	],
+	"/zones/[zone_id]": [
+		"src/routes/zones/[zone_id]/+page.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts",
+		"src/routes/zones/[zone_id]/+server.ts"
 	]
 }

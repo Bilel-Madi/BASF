@@ -1,180 +1,148 @@
 <!-- src/routes/devices/+page.svelte -->
+
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import MapboxMap from '$lib/components/MapboxMap.svelte';
 	import { page } from '$app/stores';
-	import Breadcrumbs from '$lib/ui/breadcrumbs.svelte';
+	import type { PageData } from './$types';
 
-	// Define the structure of a device for better TypeScript support
-	interface Device {
-		device_id: string;
-		name?: string;
-	}
+	let eui = '';
+	let name = '';
+	let type = '';
+	let modelName = '';
+	let installationDate = '';
+	let installedDepth: number | null = null;
+	let reportingInterval = '';
+	let zoneId = '';
+	let location: GeoJSON.Geometry | null = null;
+	let error: string = '';
 
-	let devices: Device[] = [];
+	// Removed mapComponent and onMount since showMap() does not exist
 
-	onMount(async () => {
-		try {
-			const res = await fetch('/api/devices');
-			if (res.ok) {
-				devices = await res.json();
-			} else {
-				const error = await res.json();
-				alert('Error fetching devices: ' + error.message);
-			}
-		} catch (err) {
-			console.error('Fetch error:', err);
-			alert('An unexpected error occurred while fetching devices.');
+	const handleLocationUpdate = (event) => {
+		location = event.detail.geometry;
+	};
+
+	const handleSubmit = async (event) => {
+		event.preventDefault();
+
+		if (!location) {
+			error = 'Please select a location on the map.';
+			return;
 		}
-	});
 
-	const crumbs = [
-		{ name: 'Home', href: '/' },
-		{ name: 'Devices', href: '/devices' }
-	];
+		const response = await fetch('/devices', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				eui,
+				name,
+				type,
+				modelName,
+				installationDate,
+				installedDepth,
+				reportingInterval: parseInt(reportingInterval, 10),
+				location,
+				zoneId
+			})
+		});
+
+		if (response.ok) {
+			window.location.href = '/devices';
+		} else {
+			const errText = await response.text();
+			error = errText;
+		}
+	};
 </script>
 
-<main>
-	<Breadcrumbs {crumbs} />
-	<header>
-		<h1>Devices</h1>
-	</header>
+<div class="container">
+	<h1 class="title">Add Device</h1>
 
-	{#if devices.length > 0}
-		<ul class="device-list">
-			{#each devices as device}
-				<li class="device-item">
-					<div class="device-info">
-						<a class="device-link" href="/devices/{device.device_id}">
-							<span class="device-id">{device.device_id}</span>
-							<span class="device-name">{device.name || 'Unnamed Device'}</span>
-						</a>
-					</div>
-					<div class="device-actions">
-						<a class="edit-link" href="/devices/{device.device_id}/edit">Edit</a>
-					</div>
-				</li>
-			{/each}
+	<form on:submit={handleSubmit} class="form">
+		<div class="form-group">
+			<label for="eui">Device EUI:</label>
+			<input type="text" id="eui" bind:value={eui} required />
+		</div>
+
+		<div class="form-group">
+			<label for="name">Device Name:</label>
+			<input type="text" id="name" bind:value={name} required />
+		</div>
+
+		<div class="form-group">
+			<label for="type">Device Type:</label>
+			<select id="type" bind:value={type} required>
+				<option value="">Select Device Type</option>
+				<option value="SOIL_MOISTURE">Soil Moisture Sensor</option>
+				<option value="CO2_SENSOR">CO2 Sensor</option>
+				<!-- Add other device types as needed -->
+			</select>
+		</div>
+
+		<div class="form-group">
+			<label for="modelName">Model Name:</label>
+			<input type="text" id="modelName" bind:value={modelName} required />
+		</div>
+
+		<div class="form-group">
+			<label for="installationDate">Installation Date:</label>
+			<input type="date" id="installationDate" bind:value={installationDate} required />
+		</div>
+
+		{#if type === 'SOIL_MOISTURE'}
+			<div class="form-group">
+				<label for="installedDepth">Installed Depth (cm):</label>
+				<input type="number" id="installedDepth" bind:value={installedDepth} min="0" step="0.1" />
+			</div>
+		{/if}
+
+		<div class="form-group">
+			<label for="reportingInterval">Reporting Interval (minutes):</label>
+			<input type="number" id="reportingInterval" bind:value={reportingInterval} min="1" required />
+		</div>
+
+		<div class="map-container">
+			<label>Select Location on Map:</label>
+			<MapboxMap on:geometryChange={handleLocationUpdate} />
+		</div>
+
+		<div class="form-group">
+			<label for="zoneId">Assign to Zone:</label>
+			<select id="zoneId" bind:value={zoneId} required>
+				<option value="">Select Zone</option>
+				{#if $page.data.zones}
+					{#each $page.data.zones as zone}
+						<option value={zone.id}>{zone.name}</option>
+					{/each}
+				{/if}
+			</select>
+		</div>
+
+		<button type="submit" class="submit-button">Add Device</button>
+
+		{#if error}
+			<p class="error-message">{error}</p>
+		{/if}
+	</form>
+
+	<div class="devices-list">
+		<h2 class="subtitle">Your Devices</h2>
+		<ul>
+			{#if $page.data.devices}
+				{#each $page.data.devices as device}
+					<li>
+						<a href={`/devices/${device.id}`}>{device.name}</a>
+					</li>
+				{/each}
+			{/if}
 		</ul>
-	{:else}
-		<p class="no-devices">No devices found.</p>
-	{/if}
-</main>
+	</div>
+</div>
 
 <style>
-	/* Reset some default styles for consistency across browsers */
-	* {
-		box-sizing: border-box;
-		margin: 0;
-		padding: 0;
-	}
-
-	/* Base styles for the main container */
-	main {
-		max-width: 900px;
-		margin: 50px auto;
-		padding: 0 20px;
-		font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		color: #333;
-	}
-
-	/* Header styling */
-	header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 40px;
-	}
-
-	h1 {
-		font-size: 2.5rem;
-		font-weight: 600;
-		color: #2c3e50;
-	}
-
-	/* Device list styling */
-	.device-list {
-		list-style: none;
-	}
-
-	.device-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 15px 20px;
-		background-color: #f9f9f9;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-		margin-bottom: 15px;
-		transition: background-color 0.3s ease, box-shadow 0.3s ease;
-	}
-
-	.device-item:hover {
-		background-color: #f1f1f1;
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-	}
-
-	.device-info {
-		flex: 1;
-	}
-
-	.device-link {
-		text-decoration: none;
-		color: #34495e;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.device-id {
-		font-weight: bold;
-		font-size: 1.1rem;
-		margin-bottom: 5px;
-	}
-
-	.device-name {
-		font-size: 0.95rem;
-		color: #7f8c8d;
-	}
-
-	.device-actions {
-		margin-left: 20px;
-	}
-
-	.edit-link {
-		background-color: #2ecc71;
-		color: #fff;
-		padding: 8px 16px;
-		text-decoration: none;
-		border-radius: 5px;
-		font-size: 0.9rem;
-		transition: background-color 0.3s ease;
-	}
-
-	.edit-link:hover {
-		background-color: #27ae60;
-	}
-
-	.no-devices {
-		font-size: 1rem;
-		color: #7f8c8d;
-		text-align: center;
-		margin-top: 20px;
-	}
-
-	/* Responsive design */
-	@media (max-width: 600px) {
-		header {
-			flex-direction: column;
-			align-items: flex-start;
-		}
-
-		.device-item {
-			flex-direction: column;
-			align-items: flex-start;
-		}
-
-		.device-actions {
-			margin-left: 0;
-			margin-top: 10px;
-		}
-	}
+	/* Your existing styles */
 </style>
