@@ -9,8 +9,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 export function generateSessionToken(): string {
   const bytes = new Uint8Array(20);
   crypto.getRandomValues(bytes);
-  // Assuming encodeBase32LowerCaseNoPadding is defined elsewhere or adjust as needed
-  const token = Buffer.from(bytes).toString('base64url'); // Alternative encoding
+  const token = Buffer.from(bytes).toString('base64url'); 
   return token;
 }
 

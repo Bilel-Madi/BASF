@@ -1,122 +1,145 @@
 <!-- src/routes/auth/signup/+page.svelte -->
 
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
-	import { invalidate } from '$app/navigation';
-
-	// Destructure the `data` prop to access server-side errors
+	import TextInput from '$lib/components/ui/TextInput.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	export let data: { error?: string };
-
-	// Local state for form inputs (optional, for enhanced control)
-	let email: string = '';
-	let password: string = '';
-
-	// Optional: Handle form submission via SvelteKit's enhanced forms
-	const handleSubmit = async (event: Event) => {
-		// Prevent default form submission
-		event.preventDefault();
-
-		// Create FormData object
-		const form = event.target as HTMLFormElement;
-		const formData = new FormData(form);
-
-		// Submit the form data using fetch for better control
-		const response = await fetch(form.action, {
-			method: form.method,
-			body: formData
-		});
-
-		if (response.redirected) {
-			// If the response is a redirect, navigate to the new location
-			window.location.href = response.url;
-		} else {
-			// Otherwise, invalidate the current page data to fetch new data
-			invalidate();
-		}
-	};
 </script>
 
-<h1>Sign Up</h1>
-
-<form method="POST" action="/auth/signup" on:submit|preventDefault={handleSubmit}>
-	<div>
-		<label for="email">Email:</label>
-		<input
-			type="email"
-			id="email"
-			name="email"
-			bind:value={email}
-			required
-			placeholder="you@example.com"
-		/>
+<div class="container">
+	<div class="logo">
+		<img src="/Logo_black.png" alt="Logo" />
 	</div>
 
-	<div>
-		<label for="password">Password:</label>
-		<input
-			type="password"
-			id="password"
-			name="password"
-			bind:value={password}
-			required
-			minlength="6"
-			placeholder="Enter a secure password"
-		/>
+	<div class="content">
+		<div class="form-section">
+			<h1>Create Your Account</h1>
+
+			<form method="POST" action="/auth/signup">
+				<Button
+					text="Sign up with Google"
+					variant="google"
+					icon="/google-icon.svg"
+					on:click={() => (window.location.href = '/auth/google')}
+				/>
+
+				<div class="divider">
+					<hr />
+					<span>or</span>
+					<hr />
+				</div>
+
+				<TextInput type="email" id="email" name="email" label="Email:" required />
+				<TextInput type="password" id="password" name="password" label="Password:" required />
+				<Button text="Sign Up" variant="primary" type="submit" />
+
+				{#if data?.error}
+					<p class="error">{data.error}</p>
+				{/if}
+
+				<p class="signup-text">Already have an account? <a href="/">Sign in</a></p>
+			</form>
+		</div>
+
+		<div class="image-section">
+			<img src="/Background2.webp" alt="Login illustration" />
+		</div>
 	</div>
-
-	<button type="submit">Sign Up</button>
-
-	{#if data?.error}
-		<p class="error">{data.error}</p>
-	{/if}
-</form>
-
-<p style="text-align: center; margin-top: 1rem;">
-	Already have an account? <a href="/">Login here</a>.
-</p>
+</div>
 
 <style>
-	/* Basic styling for the signup form */
-	form {
-		max-width: 400px;
-		margin: 0 auto;
+	.container {
+		height: 100vh;
+		width: 100vw;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.logo {
+		position: absolute;
+		top: 0rem;
+		left: 2rem;
+	}
+
+	.logo img {
+		height: 100px;
+		width: auto;
+	}
+
+	.content {
+		height: 100%;
+		display: flex;
+	}
+
+	.form-section {
+		width: 66.66%;
 		display: flex;
 		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: 2rem;
 	}
 
-	div {
-		margin-bottom: 1rem;
+	h1 {
+		font-size: 2rem;
+		margin-bottom: 3rem;
 	}
 
-	label {
-		display: block;
-		margin-bottom: 0.5rem;
-		font-weight: bold;
+	.image-section {
+		width: 33.33%;
+		background-color: #f5f5f5;
 	}
 
-	input {
+	.image-section img {
 		width: 100%;
-		padding: 0.5rem;
-		box-sizing: border-box;
-	}
-
-	button {
-		padding: 0.75rem;
-		background-color: #4caf50;
-		color: white;
-		border: none;
-		cursor: pointer;
-		font-size: 1rem;
-	}
-
-	button:hover {
-		background-color: #45a049;
+		height: 100%;
+		object-fit: cover;
 	}
 
 	.error {
 		color: red;
-		margin-top: 1rem;
+		margin-top: 0.5rem;
 		text-align: center;
+	}
+
+	.signup-text {
+		margin-top: 1.5rem;
+		text-align: center;
+	}
+
+	form {
+		width: 100%;
+		max-width: 400px;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.divider {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin: 0.5rem 0;
+	}
+
+	.divider hr {
+		flex: 1;
+		border: none;
+		border-top: 1px solid #e0e0e0;
+	}
+
+	.divider span {
+		color: #666;
+		font-size: 1rem;
+	}
+
+	@media (max-width: 768px) {
+		.image-section {
+			display: none;
+		}
+
+		.form-section {
+			width: 100%;
+		}
 	}
 </style>

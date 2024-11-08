@@ -36,7 +36,12 @@ export const actions = {
 
       // Redirect to /zones
       throw redirect(303, '/zones');
-    } catch (error) {
+    } catch (error: any) {
+      // Check if the error is a redirect by looking for 'status' and 'location'
+      if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
+        throw error; // Re-throw redirect errors to let SvelteKit handle them
+      }
+
       console.error('Login Error:', error);
       return fail(500, { error: 'Internal server error' });
     }

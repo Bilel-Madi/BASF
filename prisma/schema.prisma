@@ -74,7 +74,7 @@ model Air {
   humidity    Float
   pressure    Float
   temperature Float
-  battery     Float? // Optional battery field
+  battery     Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -86,7 +86,7 @@ model Soil {
   ec          Float
   moisture    Float
   temperature Float
-  battery     Float? // Optional battery field
+  battery     Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -94,7 +94,6 @@ model Soil {
 enum DeviceType {
   SOIL_MOISTURE
   CO2_SENSOR
-  // Add other device types as needed
 }
 
 enum Role {
