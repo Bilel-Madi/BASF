@@ -42,7 +42,7 @@
 		</div>
 
 		<div class="image-section">
-			<img src="/Background2.webp" alt="Login illustration" />
+			<img src="/background7.jpg" alt="Login illustration" />
 		</div>
 	</div>
 </div>
