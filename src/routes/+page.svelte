@@ -8,7 +8,7 @@
 
 <div class="container">
 	<div class="logo">
-		<img src="/Logo_black.png" alt="Logo" />
+		<img src="/f	avicon.png" alt="Logo" />
 	</div>
 
 	<div class="content">
@@ -31,6 +31,7 @@
 
 				<TextInput type="email" id="email" name="email" label="Email:" required />
 				<TextInput type="password" id="password" name="password" label="Password:" required />
+				<a href="/auth/forgot-password" class="forgot-password">Forgot Password?</a>
 				<Button text="Sign In" variant="primary" type="submit" />
 
 				{#if data?.error}
@@ -57,12 +58,12 @@
 
 	.logo {
 		position: absolute;
-		top: 0rem;
+		top: 2rem;
 		left: 2rem;
 	}
 
 	.logo img {
-		height: 100px;
+		height: 50px;
 		width: auto;
 	}
 
@@ -144,5 +145,25 @@
 		.form-section {
 			width: 100%;
 		}
+	}
+
+	.auth-links {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.forgot-password {
+		color: #666;
+		text-decoration: none;
+		align-self: flex-start;
+		font-size: 0.9rem;
+		margin-top: -1rem;
+	}
+
+	.forgot-password:hover {
+		text-decoration: underline;
 	}
 </style>
