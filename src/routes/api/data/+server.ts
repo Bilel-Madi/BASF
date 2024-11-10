@@ -20,28 +20,6 @@ export const POST: RequestHandler = async ({ request }) => {
     const receivedAt = new Date(body.received_at || body.time);
     const decodedPayload = body.uplink_message.decoded_payload;
 
-    // Ensure the device exists
-    let device = await prisma.device.findUnique({ where: { eui: devEui } });
-
-    if (!device) {
-      // Determine sensor type based on dev_eui prefix
-      const deviceType = devEui.startsWith('24E124126E') ? 'CO2_SENSOR' :
-                        devEui.startsWith('24E124126C') ? 'SOIL_MOISTURE' : 'UNKNOWN';
-
-      // Create the device with minimal data
-      device = await prisma.device.create({
-        data: {
-          eui: devEui,
-          type: deviceType,
-          name: 'Unknown Device',
-          modelName: 'Unknown Model',
-          installationDate: new Date(),
-          reportingInterval: 0,
-         
-        },
-      });
-    }
-
     // Extract battery status if present
     const battery = decodedPayload.battery !== undefined ? decodedPayload.battery : null;
 

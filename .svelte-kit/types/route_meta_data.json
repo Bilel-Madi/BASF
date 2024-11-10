@@ -14,6 +14,9 @@
 	"/api/data": [
 		"src/routes/api/data/+server.ts"
 	],
+	"/api/zones": [
+		"src/routes/api/zones/+server.ts"
+	],
 	"/auth/logout": [
 		"src/routes/auth/logout/+server.ts"
 	],
@@ -33,6 +36,14 @@
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts",
 		"src/routes/devices/+server.ts"
+	],
+	"/devices/add": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts",
+		"src/routes/devices/add/+server.ts"
+	],
+	"/devices/check": [
+		"src/routes/devices/check/+server.ts"
 	],
 	"/devices/[device_id]": [
 		"src/routes/devices/[device_id]/+page.server.ts",
