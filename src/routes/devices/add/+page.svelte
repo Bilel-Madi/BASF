@@ -5,16 +5,18 @@
 	import TextInput from '$lib/components/ui/TextInput.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import { tick } from 'svelte';
+	import jsQR from 'jsqr';
 
 	let eui = '';
 	let error = '';
 	let device = null;
 	let zones = [];
 	let showScanner = false;
-	let videoElement;
-	let canvasElement;
-	let canvasContext;
-	let videoStream;
+	let videoElement: HTMLVideoElement;
+	let canvasElement: HTMLCanvasElement;
+	let canvasContext: CanvasRenderingContext2D;
+	let videoStream: MediaStream;
 
 	let name = '';
 	let modelName = '';
@@ -78,10 +80,16 @@
 	});
 
 	// QR Code scanning functions
-	import jsQR from 'jsqr';
-
 	const startScanner = async () => {
 		showScanner = true;
+		await tick(); // Wait for the DOM to update and render the Modal
+
+		// Ensure canvasElement is defined
+		if (!canvasElement) {
+			console.error('Canvas element is not defined');
+			return;
+		}
+
 		canvasContext = canvasElement.getContext('2d', { willReadFrequently: true });
 
 		try {
@@ -92,16 +100,14 @@
 			videoElement.setAttribute('playsinline', 'true');
 			await videoElement.play();
 
-			canvasElement.height = videoElement.videoHeight;
-			canvasElement.width = videoElement.videoWidth;
-
-			requestAnimationFrame(tick);
+			requestAnimationFrame(tickScanner);
 		} catch (error) {
 			console.error('Error accessing camera:', error);
+			stopScanner();
 		}
 	};
 
-	const tick = () => {
+	const tickScanner = () => {
 		if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
 			canvasElement.height = videoElement.videoHeight;
 			canvasElement.width = videoElement.videoWidth;
@@ -117,20 +123,22 @@
 					stopScanner();
 					handleCheckDevice();
 				} else {
-					requestAnimationFrame(tick);
+					requestAnimationFrame(tickScanner);
 				}
 			} catch (err) {
 				console.error('Error processing QR code:', err);
-				requestAnimationFrame(tick);
+				requestAnimationFrame(tickScanner);
 			}
 		} else {
-			requestAnimationFrame(tick);
+			requestAnimationFrame(tickScanner);
 		}
 	};
 
 	const stopScanner = () => {
 		showScanner = false;
-		videoStream.getTracks().forEach((track) => track.stop());
+		if (videoStream) {
+			videoStream.getTracks().forEach((track) => track.stop());
+		}
 	};
 </script>
 
@@ -147,7 +155,7 @@
 			required={true}
 		/>
 		<div class="button-group">
-			<Button text="Scan QR Code" variant="google" on:click={startScanner} />
+			<Button text="Scan QR Code" variant="google" type="button" on:click={startScanner} />
 			<Button text="Check Device" type="submit" />
 		</div>
 	</form>
@@ -231,7 +239,7 @@
 						<div class="scanner-square" />
 					</div>
 				</div>
-				<Button text="Cancel" variant="google" on:click={stopScanner} />
+				<Button text="Cancel" variant="google" type="button" on:click={stopScanner} />
 			</div>
 		</div>
 	</Modal>
