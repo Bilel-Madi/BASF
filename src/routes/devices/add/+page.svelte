@@ -79,6 +79,8 @@
 
 	const startScanner = async () => {
 		showScanner = true;
+		canvasContext = canvasElement.getContext('2d', { willReadFrequently: true });
+
 		videoStream = await navigator.mediaDevices.getUserMedia({
 			video: { facingMode: 'environment' }
 		});
@@ -94,12 +96,20 @@
 			canvasElement.width = videoElement.videoWidth;
 			canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
 			const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
-			const code = jsQR(imageData.data, imageData.width, imageData.height);
 
-			if (code) {
-				eui = code.data;
-				stopScanner();
-			} else {
+			try {
+				const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+				if (code) {
+					console.log('QR Code found:', code.data);
+					eui = code.data;
+					stopScanner();
+					handleCheckDevice();
+				} else {
+					requestAnimationFrame(tick);
+				}
+			} catch (err) {
+				console.error('Error processing QR code:', err);
 				requestAnimationFrame(tick);
 			}
 		} else {
@@ -201,7 +211,7 @@
 {#if showScanner}
 	<div class="scanner-container">
 		<video bind:this={videoElement} />
-		<canvas bind:this={canvasElement} style="display: none;" />
+		<canvas bind:this={canvasElement} />
 		<Button text="Stop Scanner" variant="google" on:click={stopScanner} />
 	</div>
 {/if}
