@@ -62,6 +62,7 @@ model Device {
   installedDepth    Float?
   location          Json // Coordinates
   reportingInterval Int
+  number            Int?
   zoneId            String     @db.ObjectId
   zone              Zone       @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 }
@@ -94,6 +95,7 @@ model Soil {
 enum DeviceType {
   SOIL_MOISTURE
   CO2_SENSOR
+  UNKNOWN
 }
 
 enum Role {
