@@ -1,5 +1,3 @@
-// src/routes/api/data/+server.ts
-
 import type { RequestHandler } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 
@@ -45,7 +43,7 @@ export const POST: RequestHandler = async ({ request }) => {
       deviceType = 'SOIL_MOISTURE';
     } else {
       console.log('Unknown device EUI prefix:', devEui);
-      // We can proceed with UNKNOWN type
+      // Continue with UNKNOWN type
     }
 
     // Ensure the device exists in the database
@@ -61,7 +59,8 @@ export const POST: RequestHandler = async ({ request }) => {
           modelName: 'Unknown Model',
           installationDate: new Date(),
           reportingInterval: 0,
-          // zoneId remains null
+          location: {}, // Provide a minimal JSON object
+          zoneId: undefined, // No zone assigned yet
         },
       });
       console.log(`Device with EUI ${devEui} created with minimal data.`);

@@ -63,8 +63,8 @@ model Device {
   location          Json // Coordinates
   reportingInterval Int
   number            Int?
-  zoneId            String     @db.ObjectId
-  zone              Zone       @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  zoneId            String?    @db.ObjectId
+  zone              Zone?      @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 }
 
 model Air {
