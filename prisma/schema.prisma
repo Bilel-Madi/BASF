@@ -65,6 +65,10 @@ model Device {
   number            Int?
   zoneId            String?    @db.ObjectId
   zone              Zone?      @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  rssi              Float?
+  snr               Float?
+  battery_status    Float?
+  last_seen         DateTime?
 }
 
 model Air {

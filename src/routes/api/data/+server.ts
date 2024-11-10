@@ -9,16 +9,16 @@ export const POST: RequestHandler = async ({ request }) => {
     console.log('Received body:', JSON.stringify(body, null, 2));
 
     // Ensure the required data is present
-    if (!body?.uplink_message?.decoded_payload || !body?.end_device_ids) {
+    if (!body?.data?.uplink_message?.decoded_payload || !body?.data?.end_device_ids) {
       console.log('Validation failed:', {
-        hasDecodedPayload: !!body?.uplink_message?.decoded_payload,
-        hasDeviceIds: !!body?.end_device_ids,
+        hasDecodedPayload: !!body?.data?.uplink_message?.decoded_payload,
+        hasDeviceIds: !!body?.data?.end_device_ids,
       });
       return new Response('Invalid data', { status: 400 });
     }
 
     // Extract the device EUI (try both 'dev_eui' and 'device_id')
-    let devEui = body.end_device_ids.dev_eui || body.end_device_ids.device_id;
+    let devEui = body.data.end_device_ids.dev_eui || body.data.end_device_ids.device_id;
     if (!devEui) {
       console.log('Device EUI not found in end_device_ids');
       return new Response('Device EUI not found', { status: 400 });
@@ -28,10 +28,10 @@ export const POST: RequestHandler = async ({ request }) => {
     devEui = devEui.trim().toUpperCase();
 
     // Extract the received timestamp
-    const receivedAtString = body.received_at || body.uplink_message.received_at || body.time;
+    const receivedAtString = body.data.received_at || body.data.uplink_message.received_at || body.time;
     const receivedAt = receivedAtString ? new Date(receivedAtString) : new Date();
 
-    const decodedPayload = body.uplink_message.decoded_payload;
+    const decodedPayload = body.data.uplink_message.decoded_payload;
 
     // Extract battery status if present
     const battery = decodedPayload.battery !== undefined ? decodedPayload.battery : null;
@@ -45,6 +45,17 @@ export const POST: RequestHandler = async ({ request }) => {
     } else {
       console.log('Unknown device EUI prefix:', devEui);
       // Continue with UNKNOWN type
+    }
+
+    // Extract RSSI and SNR from rx_metadata
+    let rssi: number | null = null;
+    let snr: number | null = null;
+
+    if (body.data.uplink_message.rx_metadata && body.data.uplink_message.rx_metadata.length > 0) {
+      // For simplicity, take the first gateway's rssi and snr
+      const firstGateway = body.data.uplink_message.rx_metadata[0];
+      rssi = firstGateway.rssi !== undefined ? firstGateway.rssi : null;
+      snr = firstGateway.snr !== undefined ? firstGateway.snr : null;
     }
 
     // Ensure the device exists in the database
@@ -62,9 +73,26 @@ export const POST: RequestHandler = async ({ request }) => {
           reportingInterval: 0,
           location: {}, // Provide a minimal JSON object
           zoneId: undefined, // No zone assigned yet
+          // Initialize new fields
+          last_seen: receivedAt,
+          rssi: rssi,
+          snr: snr,
+          battery_status: battery,
         },
       });
       console.log(`Device with EUI ${devEui} created with minimal data.`);
+    } else {
+      // Update the device with new data
+      await prisma.device.update({
+        where: { eui: devEui },
+        data: {
+          last_seen: receivedAt,
+          rssi: rssi,
+          snr: snr,
+          battery_status: battery,
+        },
+      });
+      console.log(`Device with EUI ${devEui} updated with latest data.`);
     }
 
     // Process the sensor data based on the device type
