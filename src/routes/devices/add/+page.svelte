@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import TextInput from '$lib/components/ui/TextInput.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Modal from '$lib/components/ui/Modal.svelte';
 
 	let eui = '';
 	let error = '';
@@ -22,6 +23,8 @@
 	let location = '';
 	let reportingInterval = '';
 	let zoneId = '';
+
+	let scannerOverlaySize = 250;
 
 	const handleCheckDevice = async () => {
 		const response = await fetch('/api/devices/check', {
@@ -81,13 +84,21 @@
 		showScanner = true;
 		canvasContext = canvasElement.getContext('2d', { willReadFrequently: true });
 
-		videoStream = await navigator.mediaDevices.getUserMedia({
-			video: { facingMode: 'environment' }
-		});
-		videoElement.srcObject = videoStream;
-		videoElement.setAttribute('playsinline', 'true');
-		await videoElement.play();
-		requestAnimationFrame(tick);
+		try {
+			videoStream = await navigator.mediaDevices.getUserMedia({
+				video: { facingMode: 'environment' }
+			});
+			videoElement.srcObject = videoStream;
+			videoElement.setAttribute('playsinline', 'true');
+			await videoElement.play();
+
+			canvasElement.height = videoElement.videoHeight;
+			canvasElement.width = videoElement.videoWidth;
+
+			requestAnimationFrame(tick);
+		} catch (error) {
+			console.error('Error accessing camera:', error);
+		}
 	};
 
 	const tick = () => {
@@ -209,11 +220,21 @@
 {/if}
 
 {#if showScanner}
-	<div class="scanner-container">
-		<video bind:this={videoElement} />
-		<canvas bind:this={canvasElement} />
-		<Button text="Stop Scanner" variant="google" on:click={stopScanner} />
-	</div>
+	<Modal on:close={stopScanner}>
+		<div class="scanner-container">
+			<div class="scanner-content">
+				<p class="scanner-text">Scan the Device QR Code</p>
+				<div class="video-container">
+					<video bind:this={videoElement} />
+					<canvas bind:this={canvasElement} class="hidden-canvas" />
+					<div class="scanner-overlay">
+						<div class="scanner-square" />
+					</div>
+				</div>
+				<Button text="Cancel" variant="google" on:click={stopScanner} />
+			</div>
+		</div>
+	</Modal>
 {/if}
 
 <style>
@@ -280,12 +301,82 @@
 	}
 
 	.scanner-container {
-		margin-top: 1rem;
+		width: 100%;
+		max-width: 500px;
+		margin: 0 auto;
 	}
 
-	.scanner-container video {
-		width: 100%;
-		border-radius: 10px;
+	.scanner-content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.scanner-text {
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: #333;
 		margin-bottom: 1rem;
+	}
+
+	.video-container {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 4/3;
+		overflow: hidden;
+		border-radius: 10px;
+	}
+
+	.video-container video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.hidden-canvas {
+		display: none;
+	}
+
+	.scanner-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.scanner-square {
+		width: 250px;
+		height: 250px;
+		border: 2px solid #15fdb7;
+		box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+		position: relative;
+	}
+
+	.scanner-square::before,
+	.scanner-square::after {
+		content: '';
+		position: absolute;
+		width: 20px;
+		height: 20px;
+		border-color: #15fdb7;
+		border-style: solid;
+	}
+
+	.scanner-square::before {
+		top: -2px;
+		left: -2px;
+		border-width: 2px 0 0 2px;
+	}
+
+	.scanner-square::after {
+		bottom: -2px;
+		right: -2px;
+		border-width: 0 2px 2px 0;
 	}
 </style>
