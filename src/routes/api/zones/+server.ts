@@ -1,7 +1,6 @@
-// src/routes/api/zones/+server.ts
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
-import type { RequestHandler } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals }) => {
   const user = locals.user;

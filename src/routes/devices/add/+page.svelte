@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import TextInput from '$lib/components/ui/TextInput.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 
 	let eui = '';
 	let error = '';
@@ -111,87 +113,169 @@
 	};
 </script>
 
-<h1>Add New Device</h1>
+<div class="page-container">
+	<h1 class="title">Add New Device</h1>
 
-<form on:submit|preventDefault={handleCheckDevice}>
-	<label for="eui">Device EUI:</label>
-	<input type="text" id="eui" bind:value={eui} required />
-	<button type="button" on:click={startScanner}>Scan QR Code</button>
-	<button type="submit">Check Device</button>
-</form>
+	<form class="form-container" on:submit|preventDefault={handleCheckDevice}>
+		<TextInput
+			type="text"
+			id="eui"
+			name="eui"
+			label="Device EUI"
+			bind:value={eui}
+			required={true}
+		/>
+		<div class="button-group">
+			<Button text="Scan QR Code" variant="google" on:click={startScanner} />
+			<Button text="Check Device" type="submit" />
+		</div>
+	</form>
+</div>
 
 {#if error}
-	<p style="color: red;">{error}</p>
+	<p class="error">{error}</p>
 {/if}
 
 {#if device}
 	<h2>Device Found: {device.eui}</h2>
-	<form on:submit|preventDefault={handleSubmit}>
-		<div>
-			<label>Name:</label>
-			<input type="text" bind:value={name} required />
-		</div>
-		<div>
-			<label>Model Name:</label>
-			<input type="text" bind:value={modelName} required />
-		</div>
-		<div>
-			<label>Installation Date:</label>
-			<input type="date" bind:value={installationDate} required />
-		</div>
+	<form on:submit|preventDefault={handleSubmit} class="device-form">
+		<TextInput type="text" id="name" name="name" label="Name" bind:value={name} required={true} />
+		<TextInput
+			type="text"
+			id="modelName"
+			name="modelName"
+			label="Model Name"
+			bind:value={modelName}
+			required={true}
+		/>
+		<TextInput
+			type="date"
+			id="installationDate"
+			name="installationDate"
+			label="Installation Date"
+			bind:value={installationDate}
+			required={true}
+		/>
 		{#if device.type === 'SOIL_MOISTURE'}
-			<div>
-				<label>Installed Depth (cm):</label>
-				<input type="number" step="0.01" bind:value={installedDepth} required />
-			</div>
+			<TextInput
+				type="number"
+				id="installedDepth"
+				name="installedDepth"
+				label="Installed Depth (cm)"
+				bind:value={installedDepth}
+				required={true}
+			/>
 		{/if}
-		<div>
-			<label>Location (latitude,longitude):</label>
-			<input type="text" bind:value={location} placeholder="e.g., 12.34,56.78" required />
-		</div>
-		<div>
-			<label>Reporting Interval (minutes):</label>
-			<input type="number" bind:value={reportingInterval} required />
-		</div>
-		<div>
-			<label>Assign to Zone:</label>
-			<select bind:value={zoneId} required>
+		<TextInput
+			type="text"
+			id="location"
+			name="location"
+			label="Location (latitude,longitude)"
+			bind:value={location}
+			required={true}
+			placeholder="e.g., 12.34,56.78"
+		/>
+		<TextInput
+			type="number"
+			id="reportingInterval"
+			name="reportingInterval"
+			label="Reporting Interval (minutes)"
+			bind:value={reportingInterval}
+			required={true}
+		/>
+
+		<div class="select-group">
+			<label for="zoneId">Assign to Zone</label>
+			<select id="zoneId" bind:value={zoneId} required>
 				<option value="" disabled>Select a zone</option>
 				{#each zones as zone}
 					<option value={zone.id}>{zone.name}</option>
 				{/each}
 			</select>
 		</div>
-		<button type="submit">Register Device</button>
+
+		<Button text="Register Device" type="submit" />
 	</form>
 {/if}
 
 {#if showScanner}
-	<div>
-		<video bind:this={videoElement} style="width: 100%;" />
+	<div class="scanner-container">
+		<video bind:this={videoElement} />
 		<canvas bind:this={canvasElement} style="display: none;" />
-		<button on:click={stopScanner}>Stop Scanner</button>
+		<Button text="Stop Scanner" variant="google" on:click={stopScanner} />
 	</div>
 {/if}
 
 <style>
-	form {
-		margin-bottom: 1rem;
+	.page-container {
+		max-width: 600px;
+		margin: 0 auto;
 	}
 
-	label {
+	.title {
+		font-size: 1.8rem;
+		margin-bottom: 4rem;
+		color: #333;
+	}
+
+	.form-container {
+		max-width: 600px;
+		margin: 0 auto;
+	}
+
+	.button-group {
+		display: flex;
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.device-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		max-width: 600px;
+		margin: 2rem auto;
+	}
+
+	.select-group {
+		margin: 1rem 0;
+	}
+
+	.select-group label {
 		display: block;
 		margin-bottom: 0.5rem;
+		font-weight: 600;
+		font-size: 0.87rem;
 	}
 
-	input,
 	select {
 		width: 100%;
-		padding: 0.5rem;
-		margin-bottom: 1rem;
+		padding: 0.75rem;
+		border: 2px solid #ebebeb;
+		border-radius: 10px;
+		font-size: 1rem;
+		transition: all 0.2s ease;
 	}
 
-	button {
-		margin-right: 1rem;
+	select:focus {
+		outline: none;
+		border-color: #15fdb7;
+		box-shadow: 0 0 0 1px rgba(21, 253, 183, 0.5);
+	}
+
+	.error {
+		color: #dc2626;
+		font-size: 0.9rem;
+		margin: 1rem 0;
+	}
+
+	.scanner-container {
+		margin-top: 1rem;
+	}
+
+	.scanner-container video {
+		width: 100%;
+		border-radius: 10px;
+		margin-bottom: 1rem;
 	}
 </style>

@@ -14,6 +14,9 @@
 	"/api/data": [
 		"src/routes/api/data/+server.ts"
 	],
+	"/api/devices/check": [
+		"src/routes/api/devices/check/+server.ts"
+	],
 	"/api/zones": [
 		"src/routes/api/zones/+server.ts"
 	],
@@ -34,8 +37,7 @@
 	"/devices": [
 		"src/routes/devices/+page.server.ts",
 		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts",
-		"src/routes/devices/+server.ts"
+		"src/routes/+layout.server.ts"
 	],
 	"/devices/add": [
 		"src/routes/+layout.ts",

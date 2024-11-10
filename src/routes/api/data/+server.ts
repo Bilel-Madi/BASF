@@ -1,9 +1,11 @@
 // src/routes/api/data/+server.ts
+
 import type { RequestHandler } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
+    // Parse the incoming request body
     const body = await request.json();
     console.log('Received body:', JSON.stringify(body, null, 2));
 
@@ -11,21 +13,63 @@ export const POST: RequestHandler = async ({ request }) => {
     if (!body?.uplink_message?.decoded_payload || !body?.end_device_ids) {
       console.log('Validation failed:', {
         hasDecodedPayload: !!body?.uplink_message?.decoded_payload,
-        hasDeviceIds: !!body?.end_device_ids
+        hasDeviceIds: !!body?.end_device_ids,
       });
       return new Response('Invalid data', { status: 400 });
     }
 
-    const devEui = body.end_device_ids.dev_eui;
-    const receivedAt = new Date(body.received_at || body.time);
+    // Extract the device EUI (try both 'dev_eui' and 'device_id')
+    let devEui = body.end_device_ids.dev_eui || body.end_device_ids.device_id;
+    if (!devEui) {
+      console.log('Device EUI not found in end_device_ids');
+      return new Response('Device EUI not found', { status: 400 });
+    }
+
+    // Ensure the device EUI is in uppercase without whitespace
+    devEui = devEui.trim().toUpperCase();
+
+    // Extract the received timestamp
+    const receivedAtString = body.received_at || body.uplink_message.received_at || body.time;
+    const receivedAt = receivedAtString ? new Date(receivedAtString) : new Date();
+
     const decodedPayload = body.uplink_message.decoded_payload;
 
     // Extract battery status if present
     const battery = decodedPayload.battery !== undefined ? decodedPayload.battery : null;
 
-    // Determine sensor type based on dev_eui prefix
+    // Determine sensor type based on the device EUI prefix
+    let deviceType: 'CO2_SENSOR' | 'SOIL_MOISTURE' | 'UNKNOWN' = 'UNKNOWN';
     if (devEui.startsWith('24E124126E')) {
-      // CO2 Sensor Data
+      deviceType = 'CO2_SENSOR';
+    } else if (devEui.startsWith('24E124126C')) {
+      deviceType = 'SOIL_MOISTURE';
+    } else {
+      console.log('Unknown device EUI prefix:', devEui);
+      // We can proceed with UNKNOWN type
+    }
+
+    // Ensure the device exists in the database
+    let device = await prisma.device.findUnique({ where: { eui: devEui } });
+
+    if (!device) {
+      // Create the device with minimal data if it doesn't exist
+      device = await prisma.device.create({
+        data: {
+          eui: devEui,
+          type: deviceType,
+          name: 'Unknown Device',
+          modelName: 'Unknown Model',
+          installationDate: new Date(),
+          reportingInterval: 0,
+          // zoneId remains null
+        },
+      });
+      console.log(`Device with EUI ${devEui} created with minimal data.`);
+    }
+
+    // Process the sensor data based on the device type
+    if (deviceType === 'CO2_SENSOR') {
+      // Extract CO2 sensor data
       const { co2, humidity, pressure, temperature } = decodedPayload;
 
       // Validate required fields
@@ -39,6 +83,7 @@ export const POST: RequestHandler = async ({ request }) => {
         return new Response('Missing CO2 sensor data', { status: 400 });
       }
 
+      // Save the data to the 'Air' collection
       await prisma.air.create({
         data: {
           receivedAt,
@@ -47,11 +92,12 @@ export const POST: RequestHandler = async ({ request }) => {
           humidity,
           pressure,
           temperature,
-          battery, // Include battery if present
+          battery,
         },
       });
-    } else if (devEui.startsWith('24E124126C')) {
-      // Soil Moisture Sensor Data
+      console.log(`CO2 sensor data saved for device ${devEui}.`);
+    } else if (deviceType === 'SOIL_MOISTURE') {
+      // Extract soil moisture sensor data
       const { ec, moisture, temperature } = decodedPayload;
 
       // Validate required fields
@@ -60,6 +106,7 @@ export const POST: RequestHandler = async ({ request }) => {
         return new Response('Missing soil moisture sensor data', { status: 400 });
       }
 
+      // Save the data to the 'Soil' collection
       await prisma.soil.create({
         data: {
           receivedAt,
@@ -67,12 +114,13 @@ export const POST: RequestHandler = async ({ request }) => {
           ec,
           moisture,
           temperature,
-          battery, // Include battery if present
+          battery,
         },
       });
+      console.log(`Soil moisture sensor data saved for device ${devEui}.`);
     } else {
-      console.log('Unknown device EUI prefix:', devEui);
-      return new Response('Unknown device EUI prefix', { status: 400 });
+      console.log(`Device type UNKNOWN for EUI ${devEui}. Data not saved.`);
+      return new Response('Unknown device type. Data not saved.', { status: 400 });
     }
 
     return new Response('Data saved', { status: 200 });
