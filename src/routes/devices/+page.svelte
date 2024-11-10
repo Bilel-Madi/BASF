@@ -3,13 +3,14 @@
 	import { writable } from 'svelte/store';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
+	import BatteryIcon from '$lib/components/icons/BatteryIcon.svelte';
+	import SignalIcon from '$lib/components/icons/SignalIcon.svelte';
 	import type { Device, Zone } from '@prisma/client';
 
 	export let data: { devices: DeviceWithZone[] };
 
 	interface DeviceWithZone extends Device {
 		zone: Zone;
-		// Assuming latest readings fields are present
 		latest_co2?: number;
 		latest_humidity?: number;
 		latest_pressure?: number;
@@ -23,6 +24,23 @@
 
 	// Store for view mode: 'list' or 'grid'
 	const viewMode = writable<'list' | 'grid'>('list');
+
+	// Persist view mode using localStorage
+	onMount(() => {
+		if (typeof window !== 'undefined') {
+			const storedView = localStorage.getItem('viewMode');
+			if (storedView === 'list' || storedView === 'grid') {
+				viewMode.set(storedView);
+			}
+		}
+	});
+
+	// Only subscribe to changes when in browser
+	if (typeof window !== 'undefined') {
+		viewMode.subscribe((value) => {
+			localStorage.setItem('viewMode', value);
+		});
+	}
 
 	// Helper function to calculate time since last message in minutes
 	function timeSinceLastMessage(receivedAt: string): number {
@@ -47,6 +65,13 @@
 			const remainingMinutes = minutes % 60;
 			return `${hours}h ${remainingMinutes}m ago`;
 		}
+	}
+
+	// Dynamic Battery Level (0-100)
+	function getBatteryLevel(batteryStatus: number | null): number {
+		if (batteryStatus === null || batteryStatus === undefined) return 0;
+		// Assuming battery_status is a percentage
+		return Math.min(Math.max(batteryStatus, 0), 100);
 	}
 </script>
 
@@ -83,6 +108,9 @@
 						<th>EUI</th>
 						<th>Type</th>
 						<th>Zone</th>
+						<th>Battery</th>
+						<th>SNR</th>
+						<th>RSSI</th>
 						<th>Actions</th>
 					</tr>
 				</thead>
@@ -93,6 +121,15 @@
 							<td>{device.eui}</td>
 							<td>{device.type}</td>
 							<td>{device.zone.name}</td>
+							<td>
+								<BatteryIcon level={getBatteryLevel(device.battery_status)} />
+							</td>
+							<td>
+								<SignalIcon strength={device.snr} label="SNR" />
+							</td>
+							<td>
+								<SignalIcon strength={device.rssi} label="RSSI" />
+							</td>
 							<td>
 								<Button text="Edit" variant="google" href={`/devices/${device.id}`} />
 							</td>
@@ -108,7 +145,12 @@
 					<div class="card">
 						<div class="card-header">
 							<h2 class="device-name">{device.name}</h2>
-							<span class="status-light {getStatus(device.last_seen.toISOString())}" />
+							<span
+								class="status-light {getStatus(device.last_seen.toISOString())}"
+								aria-label={getStatus(device.last_seen.toISOString()) === 'green'
+									? 'Online'
+									: 'Offline'}
+							/>
 						</div>
 						<p><strong>EUI:</strong> {device.eui}</p>
 						<div class="latest-readings">
@@ -123,9 +165,18 @@
 								<p><strong>Temp:</strong> {device.latest_soil_temperature}°C</p>
 							{/if}
 						</div>
-						<p class="last-seen">
-							Last seen: {formatTimeSince(timeSinceLastMessage(device.last_seen.toISOString()))}
-						</p>
+						<div class="card-footer">
+							<div class="battery-signal">
+								<BatteryIcon level={getBatteryLevel(device.battery_status)} />
+								<div class="signal-info">
+									<SignalIcon strength={device.snr} label="SNR" />
+									<SignalIcon strength={device.rssi} label="RSSI" />
+								</div>
+							</div>
+							<p class="last-seen">
+								Last seen: {formatTimeSince(timeSinceLastMessage(device.last_seen.toISOString()))}
+							</p>
+						</div>
 					</div>
 				</a>
 			{/each}
@@ -138,20 +189,23 @@
 		max-width: 1200px;
 		margin: 0 auto;
 		padding: 2rem;
+
+		color: #333;
 	}
 
 	.header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 4rem;
+		margin-bottom: 2rem;
 		flex-wrap: wrap;
 		gap: 1rem;
 	}
 
 	.title {
-		font-size: 1.8rem;
-		color: #333;
+		font-size: 2rem;
+		font-weight: 700;
+		color: #222;
 		margin: 0;
 	}
 
@@ -167,31 +221,32 @@
 	}
 
 	.table-container {
-		background: white;
-		border-radius: 10px;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		background: #ffffff;
+		border-radius: 8px;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		overflow-x: auto;
+		padding: 1rem;
 	}
 
 	table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.9rem;
+		font-size: 0.95rem;
 	}
 
 	th {
 		text-align: left;
-		padding: 1rem;
-		background: #f8f8f8;
-		color: #666;
+		padding: 0.75rem 1rem;
+
+		color: #555;
 		font-weight: 600;
-		border-bottom: 2px solid #ebebeb;
+		border-bottom: 2px solid #e0e0e0;
 	}
 
 	td {
-		padding: 1rem;
-		border-bottom: 1px solid #ebebeb;
-		color: #333;
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid #e0e0e0;
+		color: #444;
 	}
 
 	tr:last-child td {
@@ -199,12 +254,11 @@
 	}
 
 	tr:hover {
-		background-color: rgb(243, 255, 250);
+		background-color: #fafafa;
 	}
 
 	/* Make the EUI column text slightly smaller and monospace */
 	td:nth-child(2) {
-		font-family: monospace;
 		font-size: 0.85rem;
 	}
 
@@ -215,12 +269,12 @@
 
 	/* Ensure the action column button doesn't stretch */
 	td:last-child {
-		width: 100px;
+		width: 120px;
 	}
 
 	/* Adjustments for list view */
 	.name-cell {
-		width: 30%; /* More space for the name */
+		width: 25%; /* More space for the name */
 	}
 
 	/* Grid View Styles */
@@ -228,6 +282,7 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 		gap: 1.5rem;
+		padding: 1rem 0;
 	}
 
 	.card-link {
@@ -236,48 +291,53 @@
 	}
 
 	.card {
-		background: white;
-		border-radius: 10px;
-		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		background: #ffffff;
+		border-radius: 12px;
+		box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
 		padding: 1.5rem;
 		position: relative;
-		transition: transform 0.2s, box-shadow 0.2s;
+		transition: transform 0.3s, box-shadow 0.3s;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
+		border: 1px solid #e0e0e0;
 	}
 
 	.card:hover {
 		transform: translateY(-5px);
-		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 	}
 
 	.card-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		margin-bottom: 1rem;
 	}
 
 	.device-name {
-		font-size: 1.2rem;
+		font-size: 1.4rem;
+		font-weight: 600;
 		margin: 0;
+		color: #222;
 	}
 
 	.status-light {
-		width: 15px;
-		height: 15px;
+		width: 12px;
+		height: 12px;
 		border-radius: 50%;
 		display: inline-block;
+		margin-top: 4px;
 	}
 
 	.status-light.green {
-		background-color: green;
-		animation: blink 1s infinite;
+		background-color: #4caf50;
+		animation: blink 1.5s infinite;
 	}
 
 	.status-light.red {
-		background-color: red;
+		background-color: #f44336;
 	}
 
 	@keyframes blink {
@@ -303,6 +363,25 @@
 		margin-top: 0.5rem;
 	}
 
+	.card-footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 1rem;
+	}
+
+	.battery-signal {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.signal-info {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
 	/* Responsive Adjustments */
 	@media (max-width: 768px) {
 		.header {
@@ -313,7 +392,7 @@
 
 		th,
 		td {
-			padding: 0.75rem;
+			padding: 0.5rem 0.75rem;
 		}
 
 		.grid-container {
@@ -322,6 +401,18 @@
 
 		.card {
 			padding: 1rem;
+		}
+
+		.device-name {
+			font-size: 1.2rem;
+		}
+
+		.latest-readings p {
+			font-size: 0.9rem;
+		}
+
+		.last-seen {
+			font-size: 0.8rem;
 		}
 	}
 </style>
