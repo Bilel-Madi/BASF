@@ -1,4 +1,5 @@
 // src/routes/api/data/+server.ts
+
 import type { RequestHandler } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 
@@ -58,42 +59,13 @@ export const POST: RequestHandler = async ({ request }) => {
       snr = firstGateway.snr !== undefined ? firstGateway.snr : null;
     }
 
-    // Ensure the device exists in the database
-    let device = await prisma.device.findUnique({ where: { eui: devEui } });
-
-    if (!device) {
-      // Create the device with minimal data if it doesn't exist
-      device = await prisma.device.create({
-        data: {
-          eui: devEui,
-          type: deviceType,
-          name: 'Unknown Device',
-          modelName: 'Unknown Model',
-          installationDate: new Date(),
-          reportingInterval: 0,
-          location: {}, // Provide a minimal JSON object
-          zoneId: undefined, // No zone assigned yet
-          // Initialize new fields
-          last_seen: receivedAt,
-          rssi: rssi,
-          snr: snr,
-          battery_status: battery,
-        },
-      });
-      console.log(`Device with EUI ${devEui} created with minimal data.`);
-    } else {
-      // Update the device with new data
-      await prisma.device.update({
-        where: { eui: devEui },
-        data: {
-          last_seen: receivedAt,
-          rssi: rssi,
-          snr: snr,
-          battery_status: battery,
-        },
-      });
-      console.log(`Device with EUI ${devEui} updated with latest data.`);
-    }
+    // Initialize an object to hold the updates for the Device model
+    const deviceUpdateData: any = {
+      last_seen: receivedAt,
+      rssi: rssi,
+      snr: snr,
+      battery_status: battery,
+    };
 
     // Process the sensor data based on the device type
     if (deviceType === 'CO2_SENSOR') {
@@ -124,6 +96,12 @@ export const POST: RequestHandler = async ({ request }) => {
         },
       });
       console.log(`CO2 sensor data saved for device ${devEui}.`);
+
+      // Update the device with the latest readings
+      deviceUpdateData.latest_co2 = co2;
+      deviceUpdateData.latest_humidity = humidity;
+      deviceUpdateData.latest_pressure = pressure;
+      deviceUpdateData.latest_temperature = temperature;
     } else if (deviceType === 'SOIL_MOISTURE') {
       // Extract soil moisture sensor data
       const { ec, moisture, temperature } = decodedPayload;
@@ -146,9 +124,50 @@ export const POST: RequestHandler = async ({ request }) => {
         },
       });
       console.log(`Soil moisture sensor data saved for device ${devEui}.`);
+
+      // Update the device with the latest readings
+      deviceUpdateData.latest_ec = ec;
+      deviceUpdateData.latest_moisture = moisture;
+      deviceUpdateData.latest_soil_temperature = temperature;
     } else {
       console.log(`Device type UNKNOWN for EUI ${devEui}. Data not saved.`);
       return new Response('Unknown device type. Data not saved.', { status: 400 });
+    }
+
+    // Check if the device exists
+    let device = await prisma.device.findUnique({ where: { eui: devEui } });
+
+    if (!device) {
+      // Create the device with initial data
+      const deviceData: any = {
+        eui: devEui,
+        type: deviceType,
+        name: 'Unknown Device',
+        modelName: 'Unknown Model',
+        installationDate: receivedAt,
+        reportingInterval: 0,
+        location: {}, // Provide a minimal JSON object or default location
+        zoneId: undefined, // No zone assigned yet
+        // Initialize fields
+        last_seen: receivedAt,
+        rssi: rssi,
+        snr: snr,
+        battery_status: battery,
+        // Include latest readings
+        ...deviceUpdateData,
+      };
+
+      device = await prisma.device.create({
+        data: deviceData,
+      });
+      console.log(`Device with EUI ${devEui} created with initial data.`);
+    } else {
+      // Update the device with the latest data
+      await prisma.device.update({
+        where: { eui: devEui },
+        data: deviceUpdateData,
+      });
+      console.log(`Device with EUI ${devEui} updated with latest data.`);
     }
 
     return new Response('Data saved', { status: 200 });

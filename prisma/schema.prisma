@@ -69,6 +69,19 @@ model Device {
   snr               Float?
   battery_status    Float?
   last_seen         DateTime?
+
+  latest_co2         Float?
+  latest_humidity    Float?
+  latest_pressure    Float?
+  latest_temperature Float?
+
+  latest_ec               Float?
+  latest_moisture         Float?
+  latest_soil_temperature Float?
+
+  // Relations
+  airData  Air[]
+  soilData Soil[]
 }
 
 model Air {
@@ -82,6 +95,7 @@ model Air {
   battery     Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  Device      Device   @relation(fields: [deviceId], references: [id])
 }
 
 model Soil {
@@ -94,6 +108,7 @@ model Soil {
   battery     Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  Device      Device   @relation(fields: [deviceId], references: [id])
 }
 
 enum DeviceType {
