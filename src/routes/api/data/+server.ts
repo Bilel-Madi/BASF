@@ -9,16 +9,16 @@ export const POST: RequestHandler = async ({ request }) => {
     console.log('Received body:', JSON.stringify(body, null, 2));
 
     // Ensure the required data is present
-    if (!body?.data?.uplink_message?.decoded_payload || !body?.data?.end_device_ids) {
+    if (!body?.uplink_message?.decoded_payload || !body?.end_device_ids) {
       console.log('Validation failed:', {
-        hasDecodedPayload: !!body?.data?.uplink_message?.decoded_payload,
-        hasDeviceIds: !!body?.data?.end_device_ids,
+        hasDecodedPayload: !!body?.uplink_message?.decoded_payload,
+        hasDeviceIds: !!body?.end_device_ids,
       });
       return new Response('Invalid data', { status: 400 });
     }
 
     // Extract the device EUI (try both 'dev_eui' and 'device_id')
-    let devEui = body.data.end_device_ids.dev_eui || body.data.end_device_ids.device_id;
+    let devEui = body.end_device_ids.dev_eui || body.end_device_ids.device_id;
     if (!devEui) {
       console.log('Device EUI not found in end_device_ids');
       return new Response('Device EUI not found', { status: 400 });
@@ -28,10 +28,10 @@ export const POST: RequestHandler = async ({ request }) => {
     devEui = devEui.trim().toUpperCase();
 
     // Extract the received timestamp
-    const receivedAtString = body.data.received_at || body.data.uplink_message.received_at || body.time;
+    const receivedAtString = body.received_at || body.uplink_message.received_at || body.time;
     const receivedAt = receivedAtString ? new Date(receivedAtString) : new Date();
 
-    const decodedPayload = body.data.uplink_message.decoded_payload;
+    const decodedPayload = body.uplink_message.decoded_payload;
 
     // Extract battery status if present
     const battery = decodedPayload.battery !== undefined ? decodedPayload.battery : null;
@@ -51,9 +51,9 @@ export const POST: RequestHandler = async ({ request }) => {
     let rssi: number | null = null;
     let snr: number | null = null;
 
-    if (body.data.uplink_message.rx_metadata && body.data.uplink_message.rx_metadata.length > 0) {
+    if (body.uplink_message.rx_metadata && body.uplink_message.rx_metadata.length > 0) {
       // For simplicity, take the first gateway's rssi and snr
-      const firstGateway = body.data.uplink_message.rx_metadata[0];
+      const firstGateway = body.uplink_message.rx_metadata[0];
       rssi = firstGateway.rssi !== undefined ? firstGateway.rssi : null;
       snr = firstGateway.snr !== undefined ? firstGateway.snr : null;
     }
