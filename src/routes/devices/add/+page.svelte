@@ -145,20 +145,20 @@
 <div class="page-container">
 	<h1 class="title">Add New Device</h1>
 
-	<form class="form-container" on:submit|preventDefault={handleCheckDevice}>
+	<div class="form-container">
 		<TextInput
 			type="text"
 			id="eui"
 			name="eui"
 			label="Device EUI"
 			bind:value={eui}
-			required={true}
+			required={false}
 		/>
 		<div class="button-group">
 			<Button text="Scan QR Code" variant="google" type="button" on:click={startScanner} />
-			<Button text="Check Device" type="submit" />
+			<Button text="Check Device" type="button" on:click={handleCheckDevice} />
 		</div>
-	</form>
+	</div>
 </div>
 
 {#if error}
@@ -249,11 +249,12 @@
 	.page-container {
 		max-width: 600px;
 		margin: 0 auto;
+		padding: 0 1rem;
 	}
 
 	.title {
-		font-size: 1.8rem;
-		margin-bottom: 4rem;
+		font-size: clamp(1.4rem, 4vw, 1.8rem);
+		margin-bottom: 2rem;
 		color: #333;
 	}
 
@@ -266,6 +267,9 @@
 		display: flex;
 		gap: 1rem;
 		margin-top: 1rem;
+		@media (max-width: 400px) {
+			flex-direction: column;
+		}
 	}
 
 	.device-form {
@@ -274,6 +278,7 @@
 		gap: 1rem;
 		max-width: 600px;
 		margin: 2rem auto;
+		padding: 0 1rem;
 	}
 
 	.select-group {
@@ -331,7 +336,7 @@
 	.video-container {
 		position: relative;
 		width: 100%;
-		aspect-ratio: 4/3;
+		aspect-ratio: 1/1;
 		overflow: hidden;
 		border-radius: 10px;
 	}
@@ -359,8 +364,8 @@
 	}
 
 	.scanner-square {
-		width: 250px;
-		height: 250px;
+		width: min(250px, 80vw);
+		height: min(250px, 80vw);
 		border: 2px solid #15fdb7;
 		box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
 		position: relative;
@@ -386,5 +391,23 @@
 		bottom: -2px;
 		right: -2px;
 		border-width: 0 2px 2px 0;
+	}
+
+	@media (max-width: 480px) {
+		.scanner-container {
+			width: 100%;
+			max-width: 100%;
+			padding: 0.5rem;
+		}
+
+		.scanner-text {
+			font-size: 1rem;
+			margin-bottom: 0.5rem;
+		}
+
+		select {
+			padding: 0.5rem;
+			font-size: 0.9rem;
+		}
 	}
 </style>
