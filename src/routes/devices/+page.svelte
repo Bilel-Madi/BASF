@@ -23,7 +23,7 @@
 		<table>
 			<thead>
 				<tr>
-					<th>Name</th>
+					<th>Namee</th>
 					<th>EUI</th>
 					<th>Type</th>
 					<th>Zone</th>
