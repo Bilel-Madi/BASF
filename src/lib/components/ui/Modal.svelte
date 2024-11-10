@@ -21,14 +21,23 @@
 		justify-content: center;
 		align-items: center;
 		z-index: 1000;
+		padding: 1rem;
 	}
 
 	.modal-content {
 		background: white;
-		padding: 2rem;
+		padding: clamp(1rem, 4vw, 2rem);
 		border-radius: 10px;
-		max-width: 90%;
+		width: 100%;
+		max-width: 600px;
 		max-height: 90vh;
 		overflow-y: auto;
+	}
+
+	@media (max-width: 480px) {
+		.modal-content {
+			max-height: 95vh;
+			border-radius: 8px;
+		}
 	}
 </style>
