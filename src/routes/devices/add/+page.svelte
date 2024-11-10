@@ -5,6 +5,7 @@
 	import TextInput from '$lib/components/ui/TextInput.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import { tick } from 'svelte';
 	import jsQR from 'jsqr';
 
@@ -27,6 +28,12 @@
 	let zoneId = '';
 
 	let scannerOverlaySize = 250;
+
+	const breadcrumbItems = [
+		{ label: 'Home', href: '/' },
+		{ label: 'Devices', href: '/devices' },
+		{ label: 'Add Device' }
+	];
 
 	const handleCheckDevice = async () => {
 		const response = await fetch('/api/devices/check', {
@@ -143,7 +150,10 @@
 </script>
 
 <div class="page-container">
-	<h1 class="title">Add New Device</h1>
+	<Breadcrumbs items={breadcrumbItems} />
+	<div class="header">
+		<h1 class="title">Add New Device</h1>
+	</div>
 
 	<div class="form-container">
 		<TextInput
@@ -159,73 +169,82 @@
 			<Button text="Check Device" type="button" on:click={handleCheckDevice} />
 		</div>
 	</div>
-</div>
 
-{#if error}
-	<p class="error">{error}</p>
-{/if}
+	{#if error}
+		<p class="error">{error}</p>
+	{/if}
 
-{#if device}
-	<h2>Device Found: {device.eui}</h2>
-	<form on:submit|preventDefault={handleSubmit} class="device-form">
-		<TextInput type="text" id="name" name="name" label="Name" bind:value={name} required={true} />
-		<TextInput
-			type="text"
-			id="modelName"
-			name="modelName"
-			label="Model Name"
-			bind:value={modelName}
-			required={true}
-		/>
-		<TextInput
-			type="date"
-			id="installationDate"
-			name="installationDate"
-			label="Installation Date"
-			bind:value={installationDate}
-			required={true}
-		/>
-		{#if device.type === 'SOIL_MOISTURE'}
-			<TextInput
-				type="number"
-				id="installedDepth"
-				name="installedDepth"
-				label="Installed Depth (cm)"
-				bind:value={installedDepth}
-				required={true}
-			/>
-		{/if}
-		<TextInput
-			type="text"
-			id="location"
-			name="location"
-			label="Location (latitude,longitude)"
-			bind:value={location}
-			required={true}
-			placeholder="e.g., 12.34,56.78"
-		/>
-		<TextInput
-			type="number"
-			id="reportingInterval"
-			name="reportingInterval"
-			label="Reporting Interval (minutes)"
-			bind:value={reportingInterval}
-			required={true}
-		/>
+	{#if device}
+		<div class="card">
+			<h2>Device Found: {device.eui}</h2>
+			<form on:submit|preventDefault={handleSubmit} class="device-form">
+				<TextInput
+					type="text"
+					id="name"
+					name="name"
+					label="Name"
+					bind:value={name}
+					required={true}
+				/>
+				<TextInput
+					type="text"
+					id="modelName"
+					name="modelName"
+					label="Model Name"
+					bind:value={modelName}
+					required={true}
+				/>
+				<TextInput
+					type="date"
+					id="installationDate"
+					name="installationDate"
+					label="Installation Date"
+					bind:value={installationDate}
+					required={true}
+				/>
+				{#if device.type === 'SOIL_MOISTURE'}
+					<TextInput
+						type="number"
+						id="installedDepth"
+						name="installedDepth"
+						label="Installed Depth (cm)"
+						bind:value={installedDepth}
+						required={true}
+					/>
+				{/if}
+				<TextInput
+					type="text"
+					id="location"
+					name="location"
+					label="Location (latitude,longitude)"
+					bind:value={location}
+					required={true}
+					placeholder="e.g., 12.34,56.78"
+				/>
+				<TextInput
+					type="number"
+					id="reportingInterval"
+					name="reportingInterval"
+					label="Reporting Interval (minutes)"
+					bind:value={reportingInterval}
+					required={true}
+				/>
 
-		<div class="select-group">
-			<label for="zoneId">Assign to Zone</label>
-			<select id="zoneId" bind:value={zoneId} required>
-				<option value="" disabled>Select a zone</option>
-				{#each zones as zone}
-					<option value={zone.id}>{zone.name}</option>
-				{/each}
-			</select>
+				<div class="select-group">
+					<label for="zoneId">Assign to Zone</label>
+					<select id="zoneId" bind:value={zoneId} required>
+						<option value="" disabled>Select a zone</option>
+						{#each zones as zone}
+							<option value={zone.id}>{zone.name}</option>
+						{/each}
+					</select>
+				</div>
+
+				<Button text="Register Device" type="submit" />
+			</form>
 		</div>
-
-		<Button text="Register Device" type="submit" />
-	</form>
-{/if}
+	{/if}
+</div>
 
 {#if showScanner}
 	<Modal on:close={stopScanner}>
@@ -247,15 +266,22 @@
 
 <style>
 	.page-container {
-		max-width: 600px;
+		max-width: 1200px;
 		margin: 0 auto;
-		padding: 0 1rem;
+		padding: 2rem 1rem;
+	}
+
+	.header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2rem;
 	}
 
 	.title {
-		font-size: clamp(1.4rem, 4vw, 1.8rem);
-		margin-bottom: 2rem;
-		color: #333;
+		font-size: 1.875rem;
+		font-weight: 600;
+		color: #111827;
 	}
 
 	.form-container {

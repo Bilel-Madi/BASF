@@ -1,17 +1,21 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	export let data: { devices: DeviceWithZone[] };
 
 	interface DeviceWithZone extends Device {
 		zone: Zone;
 	}
+
+	const breadcrumbItems = [{ label: 'Home', href: '/' }, { label: 'Devices' }];
 </script>
 
 <div class="page-container">
+	<Breadcrumbs items={breadcrumbItems} />
 	<div class="header">
-		<h1 class="title">Your Devices</h1>
+		<h1 class="title">My Devices</h1>
 		<a href="/devices/add">
-			<Button text="Add New Device" />
+			<Button text="＋ Register Device" />
 		</a>
 	</div>
 
@@ -126,5 +130,9 @@
 		td {
 			padding: 0.75rem;
 		}
+	}
+
+	.header a {
+		text-decoration: none;
 	}
 </style>

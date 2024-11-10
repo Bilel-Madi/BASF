@@ -1,3 +1,4 @@
+// src/routes/api/data/+server.ts
 import type { RequestHandler } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 
