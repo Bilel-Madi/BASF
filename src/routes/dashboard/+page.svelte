@@ -7,14 +7,10 @@
 	import Mapmobile from '$lib/components/Map-mobile.svelte';
 	import { statusStore } from '$lib/stores/status-updater';
 	import SoilNotification from '$lib/components/SoilNotification.svelte';
-	import Chart from '$lib/components/chart/Chart.svelte';
-	import CurrentReadings from '$lib/components/currentReadings.svelte';
-	import Chartmobile from '$lib/components/chart-mobile/Chart-mobile.svelte';
 
 	import { onMount } from 'svelte';
 	import Info from '$lib/components/info.svelte';
 	import Infomobile from '$lib/components/info-mobile.svelte';
-	import ChartMobile from '$lib/components/chart-mobile/Chart-mobile.svelte';
 
 	let asideIsActive = false; // Add this new reactive variable
 	let showLoader = true;
