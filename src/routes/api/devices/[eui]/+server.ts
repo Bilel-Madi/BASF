@@ -1,4 +1,4 @@
-// src/routes/api/devices/[deviceId]/+server.ts
+// src/routes/api/devices/[eui]/+server.ts
 
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/prisma';

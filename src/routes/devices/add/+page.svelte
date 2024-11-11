@@ -2,6 +2,7 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import MapboxGL from 'mapbox-gl';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import TextInput from '$lib/components/ui/TextInput.svelte';
@@ -26,10 +27,65 @@
 	let installationDate = '';
 	let installedDepth = '';
 	let location = '';
+	let showMapModal = false;
+	let mapContainer;
+	let map;
+	let marker;
 	let reportingInterval = '';
 	let zoneId = '';
 
 	let scannerOverlaySize = 250;
+
+	const MAPBOX_ACCESS_TOKEN =
+		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg';
+
+	const openMapModal = async () => {
+		showMapModal = true;
+		await tick();
+		initializeMap();
+	};
+
+	const closeMapModal = () => {
+		showMapModal = false;
+		if (map) {
+			map.remove();
+			map = null;
+		}
+	};
+
+	const initializeMap = () => {
+		MapboxGL.accessToken = MAPBOX_ACCESS_TOKEN;
+
+		map = new MapboxGL.Map({
+			container: mapContainer,
+			style: 'mapbox://styles/mapbox/streets-v11',
+			center: [0, 0],
+			zoom: 2
+		});
+
+		// If location is already set, place a marker
+		if (location) {
+			const [lat, lng] = location.split(',').map(Number);
+			if (!isNaN(lat) && !isNaN(lng)) {
+				map.setCenter([lng, lat]);
+				map.setZoom(12);
+				marker = new MapboxGL.Marker().setLngLat([lng, lat]).addTo(map);
+			}
+		}
+
+		map.on('click', (e) => {
+			const { lng, lat } = e.lngLat;
+
+			// Remove existing marker
+			if (marker) marker.remove();
+
+			// Add marker to the clicked location
+			marker = new MapboxGL.Marker().setLngLat([lng, lat]).addTo(map);
+
+			// Update the location input field
+			location = `${lat},${lng}`;
+		});
+	};
 
 	const breadcrumbItems = [
 		{ label: 'Home', href: '/' },
@@ -214,15 +270,18 @@
 						required={true}
 					/>
 				{/if}
-				<TextInput
-					type="text"
-					id="location"
-					name="location"
-					label="Location (latitude,longitude)"
-					bind:value={location}
-					required={true}
-					placeholder="e.g., 12.34,56.78"
-				/>
+				<div class="location-input-group">
+					<TextInput
+						type="text"
+						id="location"
+						name="location"
+						label="Location (latitude,longitude)"
+						bind:value={location}
+						required={true}
+						placeholder="e.g., 12.34,56.78"
+					/>
+					<Button text="Pick on Map" type="button" on:click={openMapModal} />
+				</div>
 				<TextInput
 					type="number"
 					id="reportingInterval"
@@ -261,6 +320,24 @@
 					</div>
 				</div>
 				<Button text="Cancel" variant="google" type="button" on:click={stopScanner} />
+			</div>
+		</div>
+	</Modal>
+{/if}
+{#if showMapModal}
+	<Modal on:close={closeMapModal}>
+		<div class="map-modal-content">
+			<div class="map-container" bind:this={mapContainer} />
+			<div class="modal-actions">
+				<Button text="Close" variant="secondary" on:click={closeMapModal} />
+				<Button
+					text="Clear Location"
+					variant="danger"
+					on:click={() => {
+						marker?.remove();
+						location = '';
+					}}
+				/>
 			</div>
 		</div>
 	</Modal>
@@ -307,6 +384,29 @@
 		max-width: 600px;
 		margin: 2rem auto;
 		padding: 0 1rem;
+	}
+	.location-input-group {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.map-modal-content {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.map-container {
+		width: 100%;
+		height: 400px;
+	}
+
+	.modal-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 1rem;
+		margin-top: 1rem;
 	}
 
 	.select-group {
@@ -437,5 +537,17 @@
 			padding: 0.5rem;
 			font-size: 0.9rem;
 		}
+	}
+
+	.card {
+		margin: 2rem auto;
+	}
+
+	h2 {
+		font-size: 1.5rem;
+		font-weight: 600;
+		color: #111827;
+		margin-bottom: 1.5rem;
+		text-align: center;
 	}
 </style>

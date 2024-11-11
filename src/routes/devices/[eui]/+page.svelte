@@ -1,9 +1,10 @@
-<!-- src/routes/devices/[deviceId]/+page.svelte -->
+<!-- src/routes/devices/[eui]/+page.svelte -->
 
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { error } from '@sveltejs/kit';
+	import MapboxGL from 'mapbox-gl';
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import BatteryIcon from '$lib/components/icons/BatteryIcon.svelte';
 	import SignalIcon from '$lib/components/icons/SignalIcon.svelte';
@@ -16,6 +17,32 @@
 		{ label: 'Devices', href: '/devices' },
 		{ label: data.device.name }
 	];
+
+	let mapContainer;
+	let map;
+	const MAPBOX_ACCESS_TOKEN =
+		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg';
+
+	const deviceLocation = data.device.location; // { latitude, longitude }
+
+	onMount(() => {
+		if (deviceLocation?.latitude && deviceLocation?.longitude) {
+			initializeMap();
+		}
+	});
+
+	const initializeMap = () => {
+		MapboxGL.accessToken = MAPBOX_ACCESS_TOKEN;
+
+		map = new MapboxGL.Map({
+			container: mapContainer,
+			style: 'mapbox://styles/mapbox/streets-v11',
+			center: [deviceLocation.longitude, deviceLocation.latitude],
+			zoom: 12
+		});
+
+		new MapboxGL.Marker().setLngLat([deviceLocation.longitude, deviceLocation.latitude]).addTo(map);
+	};
 </script>
 
 <div class="page-container">
@@ -34,6 +61,13 @@
 			<SignalIcon strength={data.device.snr} label="SNR" />
 			<SignalIcon strength={data.device.rssi} label="RSSI" />
 		</div>
+
+		{#if deviceLocation?.latitude && deviceLocation?.longitude}
+			<h2>Device Location</h2>
+			<div class="map-container" bind:this={mapContainer} />
+		{:else}
+			<p>Location not available.</p>
+		{/if}
 
 		<!-- Latest Readings -->
 		<div class="latest-readings">
@@ -54,5 +88,9 @@
 </div>
 
 <style>
-	/* Add your styles here */
+	.map-container {
+		width: 100%;
+		height: 400px;
+		margin-top: 1rem;
+	}
 </style>
