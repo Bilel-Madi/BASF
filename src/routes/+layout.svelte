@@ -185,7 +185,7 @@
 		padding: 1rem;
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
 		gap: 1rem;
 		opacity: 0;
 		animation: menuItemFadeIn 0.4s forwards;
