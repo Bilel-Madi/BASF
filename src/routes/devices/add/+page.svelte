@@ -2,7 +2,7 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import MapboxGL from 'mapbox-gl';
+	import MapboxMap from '$lib/components/map/MapboxMap.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import TextInput from '$lib/components/ui/TextInput.svelte';
@@ -28,9 +28,6 @@
 	let installedDepth = '';
 	let location = '';
 	let showMapModal = false;
-	let mapContainer;
-	let map;
-	let marker;
 	let reportingInterval = '';
 	let zoneId = '';
 
@@ -41,51 +38,19 @@
 
 	const openMapModal = async () => {
 		showMapModal = true;
-		await tick();
-		initializeMap();
+		await tick(); // Wait for the DOM to update
 	};
 
 	const closeMapModal = () => {
 		showMapModal = false;
-		if (map) {
-			map.remove();
-			map = null;
-		}
 	};
 
-	const initializeMap = () => {
-		MapboxGL.accessToken = MAPBOX_ACCESS_TOKEN;
+	function handleLocationSelected(event) {
+		const { longitude, latitude } = event.detail;
+		location = `${latitude},${longitude}`;
+	}
 
-		map = new MapboxGL.Map({
-			container: mapContainer,
-			style: 'mapbox://styles/mapbox/streets-v11',
-			center: [0, 0],
-			zoom: 2
-		});
-
-		// If location is already set, place a marker
-		if (location) {
-			const [lat, lng] = location.split(',').map(Number);
-			if (!isNaN(lat) && !isNaN(lng)) {
-				map.setCenter([lng, lat]);
-				map.setZoom(12);
-				marker = new MapboxGL.Marker().setLngLat([lng, lat]).addTo(map);
-			}
-		}
-
-		map.on('click', (e) => {
-			const { lng, lat } = e.lngLat;
-
-			// Remove existing marker
-			if (marker) marker.remove();
-
-			// Add marker to the clicked location
-			marker = new MapboxGL.Marker().setLngLat([lng, lat]).addTo(map);
-
-			// Update the location input field
-			location = `${lat},${lng}`;
-		});
-	};
+	let mapRef;
 
 	const breadcrumbItems = [
 		{ label: 'Home', href: '/' },
@@ -327,17 +292,24 @@
 {#if showMapModal}
 	<Modal on:close={closeMapModal}>
 		<div class="map-modal-content">
-			<div class="map-container" bind:this={mapContainer} />
+			<MapboxMap
+				bind:this={mapRef}
+				accessToken={MAPBOX_ACCESS_TOKEN}
+				center={[0, 0]}
+				zoom={2}
+				allowMarkerPlacement={true}
+				on:locationSelected={handleLocationSelected}
+			/>
 			<div class="modal-actions">
-				<Button text="Close" variant="secondary" on:click={closeMapModal} />
 				<Button
 					text="Clear Location"
 					variant="danger"
 					on:click={() => {
-						marker?.remove();
+						mapRef.clearMarker();
 						location = '';
 					}}
 				/>
+				<Button text="Close" variant="secondary" on:click={closeMapModal} />
 			</div>
 		</div>
 	</Modal>
@@ -397,9 +369,10 @@
 		align-items: stretch;
 	}
 
-	.map-container {
-		width: 100%;
-		height: 400px;
+	.map-modal-content {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
 	}
 
 	.modal-actions {
