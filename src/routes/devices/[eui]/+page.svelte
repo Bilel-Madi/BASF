@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { error } from '@sveltejs/kit';
 	import MapboxMap from '$lib/components//map/MapboxMap.svelte';
+	import MultiLineChart from '$lib/components/chart/MultiLineChart.svelte';
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import BatteryIcon from '$lib/components/icons/BatteryIcon.svelte';
 	import SignalIcon from '$lib/components/icons/SignalIcon.svelte';
@@ -22,6 +23,111 @@
 		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg';
 
 	const deviceLocation = data.device.location; // { latitude, longitude }
+
+	// Chart-related variables
+	let datasets = [];
+	let labels = [];
+	let options = {};
+	let chartTitle = 'Sensor Readings';
+	let xAxisLabel = 'Time';
+	let yAxisLabel = 'Values';
+
+	// Date range
+	let currentRange = '1d';
+	let dateRange = { start: null, end: null };
+
+	// Fetch data for the chart
+	async function fetchData(range) {
+		let queryParams = '';
+
+		if (range !== 'custom') {
+			queryParams = `?range=${range}`;
+		} else if (dateRange.start && dateRange.end) {
+			queryParams = `?start=${dateRange.start.toISOString()}&end=${dateRange.end.toISOString()}`;
+		}
+
+		const res = await fetch(`/api/devices/${data.device.eui}/data${queryParams}`);
+		if (res.ok) {
+			const rawData = await res.json();
+			console.log('Fetched sensor data:', rawData);
+			processChartData(rawData);
+		} else {
+			console.error('Error fetching data');
+		}
+	}
+
+	function processChartData(rawData) {
+		// Process raw data to extract datasets and labels
+		datasets = [];
+
+		if (data.device.type === 'CO2_SENSOR') {
+			datasets = [
+				{
+					label: 'CO₂ (ppm)',
+					data: rawData.map((d) => ({ x: d.receivedAt, y: d.co2 })),
+					color: '#FF0000'
+				},
+				{
+					label: 'Humidity (%)',
+					data: rawData.map((d) => ({ x: d.receivedAt, y: d.humidity })),
+					color: '#0000FF'
+				},
+				{
+					label: 'Temperature (°C)',
+					data: rawData.map((d) => ({ x: d.receivedAt, y: d.temperature })),
+					color: '#00FF00'
+				},
+				{
+					label: 'Pressure (hPa)',
+					data: rawData.map((d) => ({ x: d.receivedAt, y: d.pressure })),
+					color: '#FFA500'
+				}
+			];
+		} else if (data.device.type === 'SOIL_MOISTURE') {
+			datasets = [
+				{
+					label: 'Moisture (%)',
+					data: rawData.map((d) => ({ x: d.receivedAt, y: d.moisture })),
+					color: '#1f52ed'
+				},
+				{
+					label: 'Temperature (°C)',
+					data: rawData.map((d) => ({ x: d.receivedAt, y: d.temperature })),
+					color: '#ed1f5c'
+				},
+				{
+					label: 'EC (µS/cm)',
+					data: rawData.map((d) => ({ x: d.receivedAt, y: d.ec })),
+					color: '#edb61f'
+				}
+			];
+		}
+
+		// Update the chart options if needed
+		options = {
+			scales: {
+				y: {
+					beginAtZero: true
+				}
+			}
+		};
+	}
+
+	// Handle range change
+	function handleRangeChange(event) {
+		currentRange = event.detail.range;
+		fetchData(currentRange);
+	}
+
+	// Handle custom date range change
+	function handleDateRangeChange(event) {
+		dateRange = event.detail.dateRange;
+		fetchData('custom');
+	}
+
+	onMount(() => {
+		fetchData(currentRange);
+	});
 </script>
 
 <div class="page-container">
@@ -117,6 +223,21 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- Add the chart component -->
+		<div class="card chart-card">
+			<h2>Sensor Readings</h2>
+			<MultiLineChart
+				{datasets}
+				{options}
+				title={chartTitle}
+				{xAxisLabel}
+				{yAxisLabel}
+				initialRange={currentRange}
+				on:rangeChange={handleRangeChange}
+				on:dateRangeChange={handleDateRangeChange}
+			/>
+		</div>
 	</div>
 </div>
 
@@ -210,6 +331,10 @@
 	:global(.mapboxgl-map) {
 		border-radius: 8px;
 		height: 400px;
+	}
+
+	.chart-card {
+		grid-column: 1 / -1;
 	}
 
 	@media (max-width: 768px) {
