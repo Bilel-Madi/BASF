@@ -59,13 +59,17 @@ export const POST: RequestHandler = async ({ request }) => {
       snr = firstGateway.snr !== undefined ? firstGateway.snr : null;
     }
 
-    // Initialize an object to hold the updates for the Device model
+    // Initialize an object to hold the updates for the Device model without battery_status
     const deviceUpdateData: any = {
       last_seen: receivedAt,
       rssi: rssi,
       snr: snr,
-      battery_status: battery,
     };
+
+    // Conditionally add battery_status only if battery is provided
+    if (battery !== null && battery !== undefined) {
+      deviceUpdateData.battery_status = battery;
+    }
 
     // Process the sensor data based on the device type
     if (deviceType === 'CO2_SENSOR') {

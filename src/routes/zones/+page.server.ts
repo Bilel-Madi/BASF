@@ -11,21 +11,22 @@ export const load: PageServerLoad = async ({ locals }) => {
     throw redirect(303, '/');
   }
 
-  // Ensure the user has an organizationId
   if (!user.organizationId) {
     console.error('User has no organizationId:', user.id);
-    throw redirect(303, '/'); // Or another appropriate route
+    throw redirect(303, '/');
   }
 
-  // Fetch zones for the user's organization
   try {
     const zones = await prisma.zone.findMany({
       where: { organizationId: user.organizationId },
+      include: {
+        devices: true, // Include assigned devices
+      },
     });
 
     return { zones };
   } catch (error) {
     console.error('Error fetching zones:', error);
-    return { zones: [] }; // Or handle the error as needed
+    return { zones: [] };
   }
 };

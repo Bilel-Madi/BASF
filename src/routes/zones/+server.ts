@@ -23,7 +23,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   } = await request.json();
 
   // Basic validation
-  if (!name || !cropType || !plantingDate || !harvestDate || !soilType || !geometry || !area) {
+  if (
+    !name ||
+    !cropType ||
+    !plantingDate ||
+    !harvestDate ||
+    !soilType ||
+    !geometry ||
+    !area
+  ) {
     return new Response('Missing required fields', { status: 400 });
   }
 

@@ -1,112 +1,166 @@
 <!-- src/routes/zones/[zone_id]/+page.svelte -->
-
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import MapboxMap from '$lib/components/MapboxMap.svelte';
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
+	import MapboxMap from '$lib/components/map/MapboxMap.svelte';
+	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DeviceCard from '$lib/components/cards/DeviceCard.svelte'; // Import the DeviceCard component
+	import type { Device } from '@prisma/client';
 
-	export let data: { zone: Zone };
-	let name = data.zone.name;
-	let cropType = data.zone.cropType;
-	let plantingDate = data.zone.plantingDate.toISOString().split('T')[0];
-	let harvestDate = data.zone.harvestDate.toISOString().split('T')[0];
-	let notes = data.zone.notes || '';
-	let soilType = data.zone.soilType;
-	let geometry = data.zone.geometry;
-	let area = data.zone.area;
-	let error: string = '';
+	export let data: { zone: Zone & { devices: Device[] } };
 
-	const handleGeometryChange = (event) => {
-		geometry = event.detail.geometry;
-		area = event.detail.area;
-	};
+	const zone = data.zone;
 
-	const handleSubmit = async (event) => {
-		event.preventDefault();
+	const MAPBOX_ACCESS_TOKEN =
+		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg'; // Replace with your actual token
 
-		if (!geometry) {
-			error = 'Please draw a zone on the map.';
-			return;
-		}
+	// Prepare polygon data
+	const polygonData = zone.geometry
+		? {
+				type: 'Feature',
+				geometry: zone.geometry,
+				properties: {}
+		  }
+		: null;
 
-		const response = await fetch(`/zones/${data.zone.id}`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				name,
-				cropType,
-				plantingDate,
-				harvestDate,
-				notes,
-				soilType,
-				geometry,
-				area
-			})
-		});
+	// Format dates
+	const plantingDate = new Date(zone.plantingDate).toLocaleDateString();
+	const harvestDate = new Date(zone.harvestDate).toLocaleDateString();
+	const dateCreated = new Date(zone.createdAt).toLocaleDateString();
 
-		if (response.ok) {
-			window.location.href = `/zones/${data.zone.id}`;
-		} else {
-			const errText = await response.text();
-			error = errText;
-		}
-	};
+	const breadcrumbItems = [
+		{ label: 'Home', href: '/' },
+		{ label: 'Zones', href: '/zones' },
+		{ label: zone.name }
+	];
 </script>
 
-<h1>Edit Zone</h1>
+<div class="page-container">
+	<Breadcrumbs items={breadcrumbItems} />
 
-<form on:submit={handleSubmit}>
-	<div>
-		<label for="name">Zone Name:</label>
-		<input type="text" id="name" bind:value={name} required />
+	<div class="header">
+		<h1 class="title">{zone.name}</h1>
+		<div class="actions">
+			<a href={`/zones/${zone.id}/edit`}>
+				<Button text="Edit Zone" />
+			</a>
+			<a href={`/zones/${zone.id}/delete`}>
+				<Button text="Delete Zone" variant="danger" />
+			</a>
+		</div>
 	</div>
 
-	<div>
-		<label>Draw Zone on Map:</label>
-		<MapboxMap
-			bind:geometry
-			bind:area
-			on:geometryChange={handleGeometryChange}
-			initialGeometry={geometry}
-		/>
+	<div class="content">
+		<div class="map-section">
+			<!-- Map component with adjustable zoom levels -->
+			<MapboxMap
+				accessToken={MAPBOX_ACCESS_TOKEN}
+				{polygonData}
+				height="400px"
+				maxZoom={16}
+				minZoom={10}
+			/>
+		</div>
+
+		<div class="zone-details">
+			<h2>Zone Details</h2>
+			<p><strong>Crop Type:</strong> {zone.cropType}</p>
+			<p><strong>Planting Date:</strong> {plantingDate}</p>
+			<p><strong>Harvest Date:</strong> {harvestDate}</p>
+			<p><strong>Soil Type:</strong> {zone.soilType}</p>
+			<p><strong>Date Created:</strong> {dateCreated}</p>
+			<p><strong>Notes:</strong> {zone.notes}</p>
+
+			<h2>Assigned Devices</h2>
+			{#if zone.devices.length > 0}
+				<div class="devices-grid">
+					{#each zone.devices as device}
+						<DeviceCard {device} />
+					{/each}
+				</div>
+			{:else}
+				<p>No devices assigned to this zone.</p>
+			{/if}
+		</div>
 	</div>
+</div>
 
-	<div>
-		<label>Crop Type:</label>
-		<input type="text" bind:value={cropType} required />
-	</div>
+<style>
+	.page-container {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 2rem;
+	}
 
-	<div>
-		<label>Planting Date:</label>
-		<input type="date" bind:value={plantingDate} required />
-	</div>
+	.header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2rem;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
 
-	<div>
-		<label>Harvest Date:</label>
-		<input type="date" bind:value={harvestDate} required />
-	</div>
+	.title {
+		font-size: 2rem;
+		font-weight: 700;
+		margin: 0;
+	}
 
-	<div>
-		<label>Notes:</label>
-		<textarea bind:value={notes} />
-	</div>
+	.actions {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
 
-	<div>
-		<label>Soil Type:</label>
-		<input type="text" bind:value={soilType} required />
-	</div>
+	.content {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 2rem;
+	}
 
-	<button type="submit">Update Zone</button>
+	.map-section {
+		width: 100%;
+	}
 
-	{#if error}
-		<p style="color: red;">{error}</p>
-	{/if}
-</form>
+	.zone-details {
+		margin-top: 2rem;
+	}
 
-<!-- Optionally, add a delete button -->
-<form method="POST" action={`/zones/${data.zone.id}/delete`}>
-	<button type="submit">Delete Zone</button>
-</form>
+	.zone-details h2 {
+		font-size: 1.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.zone-details p {
+		margin: 0.5rem 0;
+		font-size: 1rem;
+	}
+
+	.zone-details p strong {
+		color: #333;
+	}
+
+	.devices-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		gap: 1.5rem;
+		margin-top: 1rem;
+	}
+
+	a {
+		color: #3498db;
+		text-decoration: none;
+		transition: color 0.2s;
+	}
+
+	a:hover {
+		color: #2980b9;
+	}
+
+	/* Responsive Adjustments */
+	@media (max-width: 768px) {
+		.content {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

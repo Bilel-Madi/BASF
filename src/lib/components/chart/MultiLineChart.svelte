@@ -1,3 +1,4 @@
+<!-- src/lib/components/chart/MultiLineChart.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import Chart from 'chart.js/auto';

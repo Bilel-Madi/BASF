@@ -1,6 +1,5 @@
 <!-- src/routes/dashboard/+page.svelte -->
 <script lang="ts">
-	import 'carbon-components-svelte/css/white.css';
 	import { latestDataStore } from '$lib/stores/latestDataStore';
 	import Weather from '$lib/components/WeatherAPI.svelte';
 	import Map from '$lib/components/Map.svelte';
