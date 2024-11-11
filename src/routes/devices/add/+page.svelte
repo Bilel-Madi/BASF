@@ -1,3 +1,5 @@
+<!-- src/routes/devices/add/+page.svelte -->
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';

@@ -95,7 +95,7 @@ model Air {
   battery     Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  Device      Device   @relation(fields: [deviceId], references: [id])
+  Device      Device   @relation(fields: [deviceId], references: [eui])
 }
 
 model Soil {
@@ -108,7 +108,7 @@ model Soil {
   battery     Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  Device      Device   @relation(fields: [deviceId], references: [id])
+  Device      Device   @relation(fields: [deviceId], references: [eui])
 }
 
 enum DeviceType {

@@ -1,3 +1,5 @@
+// src/routes/api/devices/check/+server.ts
+
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 import type { RequestHandler } from './$types';

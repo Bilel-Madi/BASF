@@ -24,7 +24,7 @@ export const dictionary = {
 		"/dashboard": [6,[2]],
 		"/devices": [~7],
 		"/devices/add": [8],
-		"/devices/[device_id]": [~9],
+		"/devices/[eui]": [~9],
 		"/zones": [~10],
 		"/zones/[zone_id]": [~11]
 	};

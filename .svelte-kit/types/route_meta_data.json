@@ -17,6 +17,21 @@
 	"/api/devices/check": [
 		"src/routes/api/devices/check/+server.ts"
 	],
+	"/api/devices/connected-count": [
+		"src/routes/api/devices/connected-count/+server.ts"
+	],
+	"/api/devices/last-activity": [
+		"src/routes/api/devices/last-activity/+server.ts"
+	],
+	"/api/devices/latest-readings": [
+		"src/routes/api/devices/latest-readings/+server.ts"
+	],
+	"/api/devices/[eui]": [
+		"src/routes/api/devices/[eui]/+server.ts"
+	],
+	"/api/devices/[eui]/data": [
+		"src/routes/api/devices/[eui]/data/+server.ts"
+	],
 	"/api/zones": [
 		"src/routes/api/zones/+server.ts"
 	],
@@ -44,14 +59,10 @@
 		"src/routes/+layout.server.ts",
 		"src/routes/devices/add/+server.ts"
 	],
-	"/devices/check": [
-		"src/routes/devices/check/+server.ts"
-	],
-	"/devices/[device_id]": [
-		"src/routes/devices/[device_id]/+page.server.ts",
+	"/devices/[eui]": [
+		"src/routes/devices/[eui]/+page.server.ts",
 		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts",
-		"src/routes/devices/[device_id]/+server.ts"
+		"src/routes/+layout.server.ts"
 	],
 	"/zones": [
 		"src/routes/zones/+page.server.ts",
