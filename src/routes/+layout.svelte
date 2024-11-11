@@ -185,7 +185,7 @@
 		padding: 1rem;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		align-items: flex-start;
 		gap: 1rem;
 		opacity: 0;
 		animation: menuItemFadeIn 0.4s forwards;
@@ -200,6 +200,13 @@
 		to {
 			opacity: 1;
 			transform: translateY(0);
+		}
+	}
+
+	@media (max-width: 767px) {
+		.menu-grid a {
+			font-size: 1.5rem;
+			padding: 0.5rem;
 		}
 	}
 
