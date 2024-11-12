@@ -4,9 +4,25 @@
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DeviceCard from '$lib/components/cards/DeviceCard.svelte'; // Import the DeviceCard component
-	import type { Device } from '@prisma/client';
+	import type { Device, Zone } from '@prisma/client';
 
-	export let data: { zone: Zone & { devices: Device[] } };
+	export let data: {
+		zone: Zone & {
+			devices: Array<
+				Device & {
+					zone: Zone;
+					latest_co2?: number;
+					latest_humidity?: number;
+					latest_pressure?: number;
+					latest_temperature?: number;
+					latest_ec?: number;
+					latest_moisture?: number;
+					latest_soil_temperature?: number;
+					mainReadings: number[];
+				}
+			>;
+		};
+	};
 
 	const zone = data.zone;
 

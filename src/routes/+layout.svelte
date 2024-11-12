@@ -137,7 +137,7 @@
 					<div class="footer-actions">
 						<div class="status-widget">
 							<span class="status-dot" />
-							<span class="system-status">All Systems Operational</span>
+							<span class="system-status">All Systems Operational&nbsp;&nbsp;</span>
 						</div>
 						<a href="/auth/logout" class="logout" on:click={closeMenu}>Logout</a>
 					</div>
