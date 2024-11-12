@@ -170,6 +170,32 @@
 			videoStream.getTracks().forEach((track) => track.stop());
 		}
 	};
+
+	const getCurrentLocation = () => {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				// Success callback
+				(position) => {
+					// ... existing code ...
+				},
+				// Error callback
+				(error) => {
+					console.error('Error getting location:', error);
+					let errorMessage = 'Unable to retrieve your location.';
+					if (error.code === error.PERMISSION_DENIED) {
+						errorMessage = 'Location permission denied.';
+					} else if (error.code === error.POSITION_UNAVAILABLE) {
+						errorMessage = 'Location information is unavailable.';
+					} else if (error.code === error.TIMEOUT) {
+						errorMessage = 'The request to get your location timed out.';
+					}
+					alert(errorMessage);
+				}
+			);
+		} else {
+			alert('Geolocation is not supported by this browser.');
+		}
+	};
 </script>
 
 <div class="page-container">
@@ -301,6 +327,7 @@
 				on:locationSelected={handleLocationSelected}
 			/>
 			<div class="modal-actions">
+				<Button text="Use My Current Location" on:click={getCurrentLocation} />
 				<Button
 					text="Clear Location"
 					variant="danger"

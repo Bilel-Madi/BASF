@@ -130,6 +130,22 @@
 			marker = null;
 		}
 	}
+
+	// Method to set the marker position
+	export function setMarkerPosition(position: [number, number]) {
+		if (marker) {
+			marker.setLngLat(position);
+		} else {
+			marker = new mapboxgl.Marker().setLngLat(position).addTo(map);
+		}
+	}
+
+	// Method to set the map center
+	export function setCenter(center: [number, number]) {
+		if (map) {
+			map.setCenter(center);
+		}
+	}
 </script>
 
 <div bind:this={mapContainer} style="width: {width}; height: {height};" />
