@@ -134,7 +134,13 @@
 					<p class="website">
 						<a href="https://www.arddata.com" target="_blank">www.arddata.com</a>
 					</p>
-					<a href="/auth/logout" class="logout" on:click={closeMenu}>Logout</a>
+					<div class="footer-actions">
+						<div class="status-widget">
+							<span class="status-dot" />
+							<span class="system-status">All Systems Operational</span>
+						</div>
+						<a href="/auth/logout" class="logout" on:click={closeMenu}>Logout</a>
+					</div>
 				</div>
 			</nav>
 		</div>
@@ -389,7 +395,7 @@
 	}
 
 	@media (max-width: 600px) {
-		.status-widget span:not(.clock):not(.count) {
+		.status-widget span:not(.clock):not(.count):not(.system-status):not(.status-dot) {
 			display: none;
 		}
 
@@ -459,5 +465,47 @@
 
 	.status-widget:hover {
 		background-color: rgb(0, 81, 232);
+	}
+
+	.footer-actions {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 2rem;
+	}
+
+	/* Update the logout button margin */
+	.logout {
+		margin-top: 0; /* Remove the previous margin */
+		float: none; /* Remove the float */
+	}
+
+	@media (max-width: 600px) {
+		.footer-actions {
+			gap: 1rem;
+			align-items: stretch;
+		}
+
+		.footer-actions .status-widget {
+			order: 1;
+		}
+
+		.footer-actions .logout {
+			order: 2;
+		}
+	}
+
+	.status-dot {
+		width: 8px;
+		height: 8px;
+		background-color: #00ff00;
+		border-radius: 50%;
+		display: inline-block;
+		margin-right: 8px;
+	}
+
+	/* Optional: Add a subtle glow effect to the dot */
+	.status-dot {
+		box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
 	}
 </style>
