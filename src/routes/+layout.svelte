@@ -1,13 +1,40 @@
 <script>
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
+
 	let isMenuOpen = false;
+	let connectedDevices = 0;
+	let currentTime = new Date();
+
+	onMount(async () => {
+		try {
+			const response = await fetch('/api/devices/connected-count');
+			const data = await response.json();
+			// Sum up all device counts
+			connectedDevices = data.reduce((sum, item) => sum + item._count._all, 0);
+		} catch (error) {
+			console.error('Failed to fetch connected devices:', error);
+		}
+	});
 
 	function closeMenu() {
 		isMenuOpen = false;
 	}
 
 	$: shouldShowHeader = !['/auth/signup', '/'].includes($page.url.pathname);
+
+	// Update time every second
+	setInterval(() => {
+		currentTime = new Date();
+	}, 1000);
+
+	// Format time to HH:mm
+	$: formattedTime = currentTime.toLocaleTimeString('en-US', {
+		hour: '2-digit',
+		minute: '2-digit',
+		hour12: false
+	});
 </script>
 
 {#if shouldShowHeader}
@@ -15,11 +42,26 @@
 		<div class="logo">
 			<img src="/favicon.png" alt="Logo" />
 		</div>
-		<button class="hamburger" class:open={isMenuOpen} on:click={() => (isMenuOpen = !isMenuOpen)}>
-			<span class="top" />
-			<span class="middle" />
-			<span class="bottom" />
-		</button>
+
+		<div class="right-section">
+			<div class="status-widget">
+				<span>Connected Devices&nbsp;: </span>
+				<span>&nbsp;</span>
+				<img src="/devices.png" alt="Sensor" class="status-icon" />
+				<span class="count">{connectedDevices}</span>
+				<div class="divider" style="margin: 0 0.5rem;" />
+				<img src="/gateway.png" alt="Gateway" class="status-icon" />
+				<span class="count">1</span>
+				<div class="divider" />
+				<span class="clock">{formattedTime}</span>
+			</div>
+
+			<button class="hamburger" class:open={isMenuOpen} on:click={() => (isMenuOpen = !isMenuOpen)}>
+				<span class="top" />
+				<span class="middle" />
+				<span class="bottom" />
+			</button>
+		</div>
 	</header>
 
 	{#if isMenuOpen}
@@ -145,7 +187,7 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background-color: #1b0ab1;
+		background-color: #16098d;
 		z-index: 99;
 		display: flex;
 		justify-content: center;
@@ -261,5 +303,61 @@
 
 	.content.no-margin {
 		margin-top: 0;
+	}
+
+	.status-widget {
+		display: flex;
+		align-items: center;
+		gap: 0.15rem;
+		background-color: rgb(0, 71, 202);
+		padding: 0.5rem 1rem;
+		border-radius: 1rem;
+		font-size: 0.9rem;
+	}
+
+	.status-widget span {
+		color: white;
+	}
+
+	.status-widget .status-icon {
+		width: 24px;
+		height: 24px;
+		object-fit: contain;
+		margin: 0 0.25rem;
+	}
+
+	.status-widget .count {
+		color: white;
+		margin: 0;
+	}
+
+	.status-widget .divider {
+		width: 1px;
+		height: 20px;
+		background-color: rgba(255, 255, 255, 0.2);
+		margin: 0 0.5rem;
+	}
+
+	.status-widget .clock {
+		font-family: monospace;
+		font-size: 1rem;
+		min-width: 5ch;
+	}
+
+	@media (max-width: 600px) {
+		.status-widget span:not(.clock):not(.count) {
+			display: none;
+		}
+
+		.status-widget {
+			padding: 0.5rem;
+			gap: 0.5rem;
+		}
+	}
+
+	.right-section {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
 	}
 </style>

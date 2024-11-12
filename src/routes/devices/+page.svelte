@@ -5,7 +5,7 @@
 	import { writable } from 'svelte/store';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
-	import MiniLineChart from '$lib/components/MiniLineChart.svelte';
+	import MiniLineChart from '$lib/components/MiniChart/MiniLineChart.svelte';
 	import BatteryIcon from '$lib/components/icons/BatteryIcon.svelte';
 	import SignalIcon from '$lib/components/icons/SignalIcon.svelte';
 	import type { Device, Zone } from '@prisma/client';

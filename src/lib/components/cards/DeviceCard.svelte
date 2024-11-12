@@ -1,7 +1,7 @@
 <!-- src/lib/components/DeviceCard.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import MiniLineChart from '$lib/components/MiniLineChart.svelte';
+	import MiniLineChart from '$lib/components/MiniChart/MiniLineChart.svelte';
 	import BatteryIcon from '$lib/components/icons/BatteryIcon.svelte';
 	import SignalIcon from '$lib/components/icons/SignalIcon.svelte';
 	import type { Device } from '@prisma/client';
