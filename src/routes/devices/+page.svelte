@@ -96,7 +96,7 @@
 	<div class="header">
 		<h1 class="title">My Devices</h1>
 		<div class="actions">
-			<a href="/devices/add">
+			<a href="/devices/add" class="no-underline">
 				<Button text="＋ Register Device" />
 			</a>
 			<!-- Replace Toggle Buttons with Icons -->
@@ -593,5 +593,9 @@
 		font-family: monospace;
 		color: #666;
 		margin: 0rem 0;
+	}
+
+	.no-underline {
+		text-decoration: none;
 	}
 </style>
