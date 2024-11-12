@@ -123,7 +123,7 @@
 	}
 
 	.logo {
-		height: 3rem;
+		height: 2.5rem;
 	}
 
 	.logo img {
@@ -136,8 +136,8 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
-		width: 30px;
-		height: 20px;
+		width: 25px;
+		height: 15px;
 		background: none;
 		border: none;
 		cursor: pointer;
@@ -147,9 +147,9 @@
 
 	.hamburger span {
 		width: 100%;
-		height: 3px;
+		height: 2px;
 		background-color: white;
-		border-radius: 3px;
+		border-radius: 2px;
 		position: absolute;
 		transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 	}
@@ -170,7 +170,7 @@
 	}
 
 	.hamburger.open .top {
-		transform: translateY(8.5px) rotate(45deg);
+		transform: translateY(5px) rotate(45deg);
 	}
 
 	.hamburger.open .middle {
@@ -187,7 +187,7 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background-color: #16098d;
+		background-color: #1b0ab1;
 		z-index: 99;
 		display: flex;
 		justify-content: center;
@@ -198,10 +198,12 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
-		max-width: 1200px;
+		max-width: auto;
 		margin: 0 auto;
-		padding: 2rem;
-		gap: 4rem;
+		padding: 1.5rem;
+		padding-top: 6rem;
+		height: 100%;
+		justify-content: space-between;
 	}
 	nav a span {
 		color: white;
@@ -227,7 +229,7 @@
 		padding: 1rem;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		align-items: left;
 		gap: 1rem;
 		opacity: 0;
 		animation: menuItemFadeIn 0.4s forwards;
@@ -246,6 +248,9 @@
 	}
 
 	@media (max-width: 767px) {
+		.menu-grid {
+			gap: 1rem;
+		}
 		.menu-grid a {
 			font-size: 1.5rem;
 			padding: 0.5rem;
@@ -258,7 +263,7 @@
 		margin-top: auto;
 		padding-top: 2rem;
 		border-top: 1px solid rgba(255, 255, 255, 0.2);
-		max-width: 300px;
+		max-width: 100%;
 	}
 
 	.footer-logo {
@@ -290,6 +295,7 @@
 		background-color: #ff3e00;
 		border-radius: 4px;
 		color: white !important;
+		float: right;
 	}
 
 	.logout:hover {
@@ -350,8 +356,21 @@
 		}
 
 		.status-widget {
-			padding: 0.5rem;
-			gap: 0.5rem;
+			font-size: 0.8rem;
+			padding: 0.4rem 0.6rem;
+			gap: 0.1rem;
+		}
+
+		.status-widget .clock {
+			font-family: monospace;
+			font-size: 0.8rem;
+			min-width: 6ch;
+		}
+		.status-widget .status-icon {
+			width: 20px;
+			height: 20px;
+			object-fit: contain;
+			margin: 0 0.25rem;
 		}
 	}
 
