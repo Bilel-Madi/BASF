@@ -30,11 +30,6 @@
 
 	$: shouldShowHeader = !['/auth/signup', '/'].includes($page.url.pathname);
 
-	// Update time every second
-	setInterval(() => {
-		currentTime = new Date();
-	}, 1000);
-
 	// Format time to HH:mm
 	$: formattedTime = currentTime.toLocaleTimeString('en-US', {
 		hour: '2-digit',
@@ -47,12 +42,15 @@
 
 	async function fetchConnectedDevices() {
 		try {
+			isLoading = true;
 			const response = await fetch('/api/devices/connected-count');
 			const data = await response.json();
 			connectedDevices = data.reduce((sum, item) => sum + item._count._all, 0);
 		} catch (error) {
 			console.error('Failed to fetch connected devices:', error);
 			connectedDevices = 0; // Set default value on error
+		} finally {
+			isLoading = false;
 		}
 	}
 
