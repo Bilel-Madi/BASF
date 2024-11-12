@@ -180,7 +180,7 @@
 					const lng = position.coords.longitude;
 					location = `${lat},${lng}`;
 					if (mapRef) {
-						mapRef.setCenter([lng, lat], 14);
+						mapRef.setCenter([lng, lat], 18);
 						mapRef.setMarkerPosition([lng, lat]);
 					}
 				},
@@ -392,8 +392,20 @@
 	}
 	.location-input-group {
 		display: flex;
-		align-items: center;
-		gap: 1rem;
+		align-items: flex-end;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	.location-input-group :global(div) {
+		width: 80%;
+	}
+
+	.location-input-group :global(button) {
+		width: 20%;
+		font-size: 0.9rem;
+		padding: 0.5rem 0.75rem;
+		white-space: nowrap;
 	}
 
 	.map-modal-content {
