@@ -1,10 +1,13 @@
+<!-- src/lib/components/DeviceCard.svelte -->
 <script lang="ts">
-	import type { Device, Zone } from '@prisma/client';
 	import MiniLineChart from '$lib/components/MiniChart/MiniLineChart.svelte';
 	import BatteryIcon from '$lib/components/icons/BatteryIcon.svelte';
 	import SignalIcon from '$lib/components/icons/SignalIcon.svelte';
+	import type { Device, Zone } from '@prisma/client';
 
-	export let device: Device & {
+	export let device: DeviceWithZoneWithReadings;
+
+	interface DeviceWithZoneWithReadings extends Device {
 		zone: Zone;
 		latest_co2?: number;
 		latest_humidity?: number;
@@ -14,21 +17,23 @@
 		latest_moisture?: number;
 		latest_soil_temperature?: number;
 		mainReadings: number[];
-	};
+	}
 
 	// Helper function to calculate time since last message in minutes
 	function timeSinceLastMessage(receivedAt: string): number {
 		const receivedDate = new Date(receivedAt);
 		const now = new Date();
 		const diffMs = now.getTime() - receivedDate.getTime();
-		return Math.floor(diffMs / 60000);
+		return Math.floor(diffMs / 60000); // Convert milliseconds to minutes
 	}
 
+	// Function to determine status (green or red)
 	function getStatus(receivedAt: string): 'green' | 'red' {
 		const minutes = timeSinceLastMessage(receivedAt);
 		return minutes < 120 ? 'green' : 'red';
 	}
 
+	// Function to format time since last message
 	function formatTimeSince(minutes: number): string {
 		if (minutes < 60) {
 			return `${minutes} minutes ago`;
@@ -39,91 +44,101 @@
 		}
 	}
 
+	// Dynamic Battery Level (0-100)
 	function getBatteryLevel(batteryStatus: number | null): number {
 		if (batteryStatus === null || batteryStatus === undefined) return 0;
+		// Assuming battery_status is a percentage
 		return Math.min(Math.max(batteryStatus, 0), 100);
 	}
 
+	// Color mapping based on device type
 	function getColor(deviceType: string): string {
 		switch (deviceType) {
 			case 'CO2_SENSOR':
-				return '#ede61f';
+				return '#ede61f'; // Yellow-ish color for CO₂
 			case 'SOIL_MOISTURE':
-				return '#1f52ed';
+				return '#1f52ed'; // Blue-ish color for moisture
 			default:
-				return '#15fdb7';
+				return '#15fdb7'; // Default color
 		}
 	}
 </script>
 
-<div class="card">
-	<div class="card-header">
-		<h2 class="device-name">{device.name}</h2>
-		<span
-			class="status-light {getStatus(device.last_seen.toISOString())}"
-			aria-label={getStatus(device.last_seen.toISOString()) === 'green' ? 'Online' : 'Offline'}
-		/>
-	</div>
-	<p class="eui-text"><strong>EUI:</strong> {device.eui}</p>
-	<div class="chart-container">
-		{#if device.mainReadings.length > 0}
-			<div class="main-reading">
-				{#if device.type === 'CO2_SENSOR'}
-					<p><strong>CO₂:</strong> {device.latest_co2} ppm</p>
-				{:else if device.type === 'SOIL_MOISTURE'}
-					<p><strong>Moisture:</strong> {device.latest_moisture}%</p>
-				{/if}
-			</div>
-			<MiniLineChart
-				data={device.mainReadings}
-				color={getColor(device.type)}
-				width={350}
-				height={60}
+<a href={`/devices/${device.eui}`} class="card-link">
+	<div class="card">
+		<div class="card-header">
+			<h2 class="device-name">{device.name}</h2>
+			<span
+				class="status-light {getStatus(device.last_seen.toISOString())}"
+				aria-label={getStatus(device.last_seen.toISOString()) === 'green' ? 'Online' : 'Offline'}
 			/>
-		{:else}
-			<p>No Data</p>
-		{/if}
-	</div>
-	<div class="additional-readings">
-		{#if device.type === 'CO2_SENSOR'}
-			<div class="reading">
-				<p class="reading-title">Humidity</p>
-				<p class="reading-value">{device.latest_humidity}%</p>
-			</div>
-			<div class="reading">
-				<p class="reading-title">Pressure</p>
-				<p class="reading-value">{device.latest_pressure} hPa</p>
-			</div>
-			<div class="reading">
-				<p class="reading-title">Temperature</p>
-				<p class="reading-value">{device.latest_temperature}°C</p>
-			</div>
-		{:else if device.type === 'SOIL_MOISTURE'}
-			<div class="reading">
-				<p class="reading-title">EC</p>
-				<p class="reading-value">{device.latest_ec} µS/cm</p>
-			</div>
-			<div class="reading">
-				<p class="reading-title">Temp</p>
-				<p class="reading-value">{device.latest_soil_temperature}°C</p>
-			</div>
-		{/if}
-	</div>
-	<div class="card-footer">
-		<div class="battery-signal">
-			<BatteryIcon level={getBatteryLevel(device.battery_status)} />
-			<div class="signal-info">
-				<SignalIcon strength={device.snr} label="SNR" />
-				<SignalIcon strength={device.rssi} label="RSSI" />
-			</div>
 		</div>
-		<p class="last-seen">
-			Last seen: {formatTimeSince(timeSinceLastMessage(device.last_seen.toISOString()))}
-		</p>
+		<p class="eui-text"><strong>EUI:</strong> {device.eui}</p>
+		<div class="chart-container">
+			{#if device.mainReadings.length > 0}
+				<div class="main-reading">
+					{#if device.type === 'CO2_SENSOR'}
+						<p><strong>CO₂:</strong> {device.latest_co2} ppm</p>
+					{:else if device.type === 'SOIL_MOISTURE'}
+						<p><strong>Moisture:</strong> {device.latest_moisture}%</p>
+					{/if}
+				</div>
+				<MiniLineChart
+					data={device.mainReadings}
+					color={getColor(device.type)}
+					width={350}
+					height={60}
+				/>
+			{:else}
+				<p>No Data</p>
+			{/if}
+		</div>
+		<div class="additional-readings">
+			{#if device.type === 'CO2_SENSOR'}
+				<div class="reading">
+					<p class="reading-title">Humidity</p>
+					<p class="reading-value">{device.latest_humidity}%</p>
+				</div>
+				<div class="reading">
+					<p class="reading-title">Pressure</p>
+					<p class="reading-value">{device.latest_pressure} hPa</p>
+				</div>
+				<div class="reading">
+					<p class="reading-title">Temperature</p>
+					<p class="reading-value">{device.latest_temperature}°C</p>
+				</div>
+			{:else if device.type === 'SOIL_MOISTURE'}
+				<div class="reading">
+					<p class="reading-title">EC</p>
+					<p class="reading-value">{device.latest_ec} µS/cm</p>
+				</div>
+				<div class="reading">
+					<p class="reading-title">Temp</p>
+					<p class="reading-value">{device.latest_soil_temperature}°C</p>
+				</div>
+			{/if}
+		</div>
+		<div class="card-footer">
+			<div class="battery-signal">
+				<BatteryIcon level={getBatteryLevel(device.battery_status)} />
+				<div class="signal-info">
+					<SignalIcon strength={device.snr} label="SNR" />
+					<SignalIcon strength={device.rssi} label="RSSI" />
+				</div>
+			</div>
+			<p class="last-seen">
+				Last seen: {formatTimeSince(timeSinceLastMessage(device.last_seen.toISOString()))}
+			</p>
+		</div>
 	</div>
-</div>
+</a>
 
 <style>
+	.card-link {
+		text-decoration: none;
+		color: inherit;
+	}
+
 	.card {
 		background: #ffffff;
 		border-radius: 12px;
@@ -189,6 +204,32 @@
 		}
 	}
 
+	.last-seen {
+		font-size: 0.85rem;
+		color: #666;
+		margin-top: 0.5rem;
+	}
+
+	.card-footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 0.2rem;
+	}
+
+	.battery-signal {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.signal-info {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	/* New Styles for Grid View Card */
 	.chart-container {
 		position: relative;
 		width: 100%;
@@ -237,45 +278,6 @@
 		font-size: 0.75rem;
 		font-family: monospace;
 		color: #666;
-		margin: 0;
-	}
-
-	.card-footer {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-top: 0.2rem;
-	}
-
-	.battery-signal {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-	}
-
-	.signal-info {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.last-seen {
-		font-size: 0.85rem;
-		color: #666;
-		margin-top: 0.5rem;
-	}
-
-	@media (max-width: 768px) {
-		.card {
-			padding: 1rem;
-		}
-
-		.device-name {
-			font-size: 1rem;
-		}
-
-		.last-seen {
-			font-size: 0.8rem;
-		}
+		margin: 0rem 0;
 	}
 </style>

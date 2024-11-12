@@ -45,51 +45,43 @@ export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
   // Fetch data for all devices
   const devicesWithData = await Promise.all(
     devices.map(async (device) => {
-      let data = [];
-
       if (device.type === 'CO2_SENSOR') {
-        data = await prisma.air.findMany({
+        const data = await prisma.air.findMany({
           where: {
             deviceId: device.eui,
-            receivedAt: {
-              gte: startDate,
-            },
+            receivedAt: { gte: startDate },
           },
           orderBy: { receivedAt: 'asc' },
-          select: {
-            receivedAt: true,
-            co2: true,
-          },
         });
-
-        // Extract the main readings
-        const mainReadings = data.map((dp) => dp.co2);
 
         return {
           ...device,
-          mainReadings,
+          mainReadings: data.map(dp => dp.co2),
+          humidityReadings: data.map(dp => dp.humidity),
+          temperatureReadings: data.map(dp => dp.temperature),
+          pressureReadings: data.map(dp => dp.pressure),
+          latest_co2: data[data.length - 1]?.co2,
+          latest_humidity: data[data.length - 1]?.humidity,
+          latest_temperature: data[data.length - 1]?.temperature,
+          latest_pressure: data[data.length - 1]?.pressure,
         };
       } else if (device.type === 'SOIL_MOISTURE') {
-        data = await prisma.soil.findMany({
+        const data = await prisma.soil.findMany({
           where: {
             deviceId: device.eui,
-            receivedAt: {
-              gte: startDate,
-            },
+            receivedAt: { gte: startDate },
           },
           orderBy: { receivedAt: 'asc' },
-          select: {
-            receivedAt: true,
-            moisture: true,
-          },
         });
-
-        // Extract the main readings
-        const mainReadings = data.map((dp) => dp.moisture);
 
         return {
           ...device,
-          mainReadings,
+          mainReadings: data.map(dp => dp.moisture),
+          ecReadings: data.map(dp => dp.ec),
+          soilTempReadings: data.map(dp => dp.temperature),
+          latest_moisture: data[data.length - 1]?.moisture,
+          latest_ec: data[data.length - 1]?.ec,
+          latest_soil_temperature: data[data.length - 1]?.temperature,
         };
       } else {
         // If device type is unknown, return device without data

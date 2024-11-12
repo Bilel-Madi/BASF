@@ -37,9 +37,7 @@
 
 	<div class="grid-container">
 		{#each data.devices as device}
-			<a href={`/devices/${device.eui}`} class="card-link">
-				<DeviceCard {device} />
-			</a>
+			<DeviceCard {device} />
 		{/each}
 	</div>
 </div>
