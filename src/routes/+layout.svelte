@@ -6,16 +6,22 @@
 	let isMenuOpen = false;
 	let connectedDevices = 0;
 	let currentTime = new Date();
+	let isLoading = true;
+	let timeInterval;
 
-	onMount(async () => {
-		try {
-			const response = await fetch('/api/devices/connected-count');
-			const data = await response.json();
-			// Sum up all device counts
-			connectedDevices = data.reduce((sum, item) => sum + item._count._all, 0);
-		} catch (error) {
-			console.error('Failed to fetch connected devices:', error);
-		}
+	onMount(() => {
+		// Start the time interval
+		timeInterval = setInterval(() => {
+			currentTime = new Date();
+		}, 1000);
+
+		// Fetch devices
+		fetchConnectedDevices();
+
+		// Cleanup on component destroy
+		return () => {
+			if (timeInterval) clearInterval(timeInterval);
+		};
 	});
 
 	function closeMenu() {
@@ -35,11 +41,33 @@
 		minute: '2-digit',
 		hour12: false
 	});
+
+	// Add this reactive statement to handle logo visibility
+	$: logoClass = isMenuOpen ? 'logo hidden' : 'logo';
+
+	async function fetchConnectedDevices() {
+		try {
+			const response = await fetch('/api/devices/connected-count');
+			const data = await response.json();
+			connectedDevices = data.reduce((sum, item) => sum + item._count._all, 0);
+		} catch (error) {
+			console.error('Failed to fetch connected devices:', error);
+			connectedDevices = 0; // Set default value on error
+		}
+	}
+
+	function handleKeydown(event) {
+		if (event.key === 'Escape' && isMenuOpen) {
+			closeMenu();
+		}
+	}
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 {#if shouldShowHeader}
 	<header>
-		<div class="logo">
+		<div class={logoClass}>
 			<img src="/favicon.png" alt="Logo" />
 		</div>
 
@@ -48,7 +76,13 @@
 				<span>Connected Devices&nbsp;: </span>
 				<span>&nbsp;</span>
 				<img src="/devices.png" alt="Sensor" class="status-icon" />
-				<span class="count">{connectedDevices}</span>
+				<span class="count">
+					{#if isLoading}
+						<span class="loading">...</span>
+					{:else}
+						{connectedDevices}
+					{/if}
+				</span>
 				<div class="divider" style="margin: 0 0.5rem;" />
 				<img src="/gateway.png" alt="Gateway" class="status-icon" />
 				<span class="count">1</span>
@@ -56,7 +90,13 @@
 				<span class="clock">{formattedTime}</span>
 			</div>
 
-			<button class="hamburger" class:open={isMenuOpen} on:click={() => (isMenuOpen = !isMenuOpen)}>
+			<button
+				class="hamburger"
+				class:open={isMenuOpen}
+				on:click={() => (isMenuOpen = !isMenuOpen)}
+				aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+				aria-expanded={isMenuOpen}
+			>
 				<span class="top" />
 				<span class="middle" />
 				<span class="bottom" />
@@ -378,5 +418,48 @@
 		display: flex;
 		align-items: center;
 		gap: 1rem;
+	}
+
+	.logo.hidden {
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	.logo {
+		height: 2.5rem;
+		transition: opacity 0.3s ease, visibility 0.3s ease;
+	}
+
+	.loading {
+		animation: pulse 1.5s infinite;
+	}
+
+	@keyframes pulse {
+		0% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.4;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+
+	/* Improve menu item hover states */
+	.menu-grid a:hover {
+		background-color: rgba(255, 255, 255, 0.1);
+		transform: translateY(-2px);
+		border-radius: 8px;
+	}
+
+	/* Improve status widget responsiveness */
+	.status-widget {
+		/* ... existing styles ... */
+		transition: all 0.3s ease;
+	}
+
+	.status-widget:hover {
+		background-color: rgb(0, 81, 232);
 	}
 </style>
