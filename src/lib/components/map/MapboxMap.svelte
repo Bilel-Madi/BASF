@@ -140,10 +140,14 @@
 		}
 	}
 
-	// Method to set the map center
-	export function setCenter(center: [number, number]) {
+	// Method to set the map center with zoom
+	export function setCenter(center: [number, number], newZoom: number = 14) {
 		if (map) {
-			map.setCenter(center);
+			map.flyTo({
+				center: center,
+				zoom: newZoom,
+				essential: true
+			});
 		}
 	}
 </script>

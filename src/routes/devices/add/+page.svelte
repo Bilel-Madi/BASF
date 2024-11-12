@@ -176,7 +176,13 @@
 			navigator.geolocation.getCurrentPosition(
 				// Success callback
 				(position) => {
-					// ... existing code ...
+					const lat = position.coords.latitude;
+					const lng = position.coords.longitude;
+					location = `${lat},${lng}`;
+					if (mapRef) {
+						mapRef.setCenter([lng, lat], 14);
+						mapRef.setMarkerPosition([lng, lat]);
+					}
 				},
 				// Error callback
 				(error) => {
@@ -327,9 +333,9 @@
 				on:locationSelected={handleLocationSelected}
 			/>
 			<div class="modal-actions">
-				<Button text="Use My Current Location" on:click={getCurrentLocation} />
+				<Button text="Current Location" on:click={getCurrentLocation} />
 				<Button
-					text="Clear Location"
+					text="Clear"
 					variant="danger"
 					on:click={() => {
 						mapRef.clearMarker();
@@ -405,8 +411,15 @@
 	.modal-actions {
 		display: flex;
 		justify-content: flex-end;
-		gap: 1rem;
+		gap: 0.5rem;
 		margin-top: 1rem;
+		flex-wrap: wrap;
+	}
+
+	@media (max-width: 480px) {
+		.modal-actions {
+			justify-content: center;
+		}
 	}
 
 	.select-group {
