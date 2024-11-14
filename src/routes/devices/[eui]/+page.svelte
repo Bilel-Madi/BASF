@@ -38,10 +38,10 @@
 	let currentRange = '1d';
 	let dateRange = { start: null, end: null };
 
-	let activeTab = 'metadata';
+	let activeTab = 'readings';
 	const tabs = [
-		{ id: 'metadata', label: 'Metadata' },
 		{ id: 'readings', label: 'Latest Readings' },
+		{ id: 'metadata', label: 'Metadata' },
 		{ id: 'location', label: 'Location' },
 		{ id: 'historical', label: 'Historical Data' }
 	];

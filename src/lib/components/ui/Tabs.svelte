@@ -34,22 +34,23 @@
 	.tabs {
 		display: flex;
 		gap: 1rem;
-		border-bottom: 2px solid var(--color-border);
+		border-bottom: 1px solid rgb(23, 0, 151);
 		margin-bottom: 1rem;
 		min-width: min-content; /* Ensures tabs don't shrink */
 		padding-bottom: 2px; /* Prevent border from being cut off */
 	}
 
 	.tab-button {
-		padding: 0.75rem 1rem; /* Slightly reduced horizontal padding */
+		padding: 0.15rem 0rem 0.75rem 0; /* No padding on the left */
 		border: none;
+		margin-right: 1rem;
 		background: none;
 		cursor: pointer;
 		font-weight: 500;
-		color: var(--color-text-secondary);
 		border-bottom: 2px solid transparent;
 		margin-bottom: -2px;
 		white-space: nowrap; /* Prevent text wrapping */
+		color: #666666;
 	}
 
 	.tab-button:hover {
