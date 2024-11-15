@@ -21,6 +21,14 @@
 		{ label: data.device.name }
 	];
 
+	const deviceImagePath = {
+		SOIL_MOISTURE: '/images/soil.png',
+		CO2_SENSOR: '/images/co2_sensor.png',
+		UNKNOWN: '/images/unknown_device.png'
+	};
+
+	const preSavedImage = deviceImagePath[data.device.type] || '/images/default_device.png';
+
 	const MAPBOX_ACCESS_TOKEN =
 		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg';
 
@@ -203,17 +211,23 @@
 
 <div class="page-container">
 	<Breadcrumbs items={breadcrumbItems} />
-	<div class="header">
-		<h1 class="title">{data.device.name}</h1>
-		<div class="device-meta">
-			<div class="meta-item">
-				<span class="meta-label">EUI:</span>
-				<code class="meta-value">{data.device.eui}</code>
+	<div class="device-banner">
+		<div class="banner-info">
+			<h1 class="title">{data.device.name}</h1>
+			<div class="device-meta">
+				<div class="meta-item">
+					<span class="meta-label">EUI:</span>
+					<code class="meta-value">{data.device.eui}</code>
+				</div>
+				<div class="meta-item">
+					<span class="meta-label">Last Seen:</span>
+					<code class="meta-value">{getTimeAgo(data.device.last_seen)}</code>
+				</div>
 			</div>
-			<div class="meta-item">
-				<span class="meta-label">Last Seen:</span>
-				<code class="meta-value">{getTimeAgo(data.device.last_seen)}</code>
-			</div>
+		</div>
+		<div class="banner-spacer" />
+		<div class="banner-image">
+			<img src={preSavedImage} alt="Device Image" />
 		</div>
 	</div>
 
@@ -685,6 +699,65 @@
 	@media (max-width: 640px) {
 		.readings-grid {
 			grid-template-columns: 1fr;
+		}
+	}
+
+	.device-banner {
+		display: grid;
+		grid-template-columns: 1fr 1fr 300px;
+		gap: 1rem;
+		background-color: var(--color-background-secondary, #f5f5f5);
+		border-radius: 12px;
+		padding: 1.5rem;
+		margin-bottom: 2rem;
+		align-items: center;
+	}
+
+	.banner-info {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.banner-image {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.banner-image img {
+		max-width: 200px;
+		max-height: 200px;
+		object-fit: contain;
+	}
+
+	/* Update existing styles */
+	.title {
+		font-size: 1.75rem;
+		font-weight: 700;
+		margin: 0;
+		color: var(--color-text-primary);
+	}
+
+	.device-meta {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	/* Mobile responsiveness */
+	@media (max-width: 768px) {
+		.device-banner {
+			grid-template-columns: 1fr;
+			gap: 1.5rem;
+		}
+
+		.banner-spacer {
+			display: none;
+		}
+
+		.banner-image {
+			order: -1;
 		}
 	}
 </style>
