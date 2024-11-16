@@ -18,6 +18,7 @@
 	export let width: string = '100%';
 	export let maxZoom: number = 16; // Maximum zoom when fitting bounds
 	export let minZoom: number = 5; // Minimum zoom when fitting bounds
+	export let mapFeatures: any[] = [];
 
 	let mapContainer: HTMLElement;
 	let map: mapboxgl.Map;
@@ -57,9 +58,76 @@
 			marker = new mapboxgl.Marker().setLngLat(markerPosition).addTo(map);
 		}
 
-		// If polygon data is provided, add it to the map
-		if (polygonData) {
-			map.on('load', () => {
+		map.on('load', () => {
+			// Add features source
+			map.addSource('features', {
+				type: 'geojson',
+				data: {
+					type: 'FeatureCollection',
+					features: mapFeatures
+				}
+			});
+
+			// Add zones layers
+			map.addLayer({
+				id: 'zones-fill',
+				type: 'fill',
+				source: 'features',
+				filter: ['==', ['get', 'type'], 'zone'],
+				paint: {
+					'fill-color': '#088',
+					'fill-opacity': 0.5
+				}
+			});
+
+			map.addLayer({
+				id: 'zones-outline',
+				type: 'line',
+				source: 'features',
+				filter: ['==', ['get', 'type'], 'zone'],
+				paint: {
+					'line-color': '#000',
+					'line-width': 2
+				}
+			});
+
+			// Add devices layer
+			map.addLayer({
+				id: 'devices',
+				type: 'circle',
+				source: 'features',
+				filter: ['==', ['get', 'type'], 'device'],
+				paint: {
+					'circle-color': [
+						'match',
+						['get', 'deviceType'],
+						'CO2_SENSOR',
+						'#ff0000',
+						'SOIL_MOISTURE',
+						'#0000ff',
+						/* other */ '#888888'
+					],
+					'circle-radius': 6
+				}
+			});
+
+			// Add device interaction handlers
+			map.on('click', 'devices', (e) => {
+				const features = map.queryRenderedFeatures(e.point, {
+					layers: ['devices']
+				});
+				dispatch('deviceClick', { features });
+			});
+
+			map.on('mouseenter', 'devices', () => {
+				map.getCanvas().style.cursor = 'pointer';
+			});
+			map.on('mouseleave', 'devices', () => {
+				map.getCanvas().style.cursor = '';
+			});
+
+			// If polygon data is provided, add it to the map
+			if (polygonData) {
 				// Add the polygon as a source
 				map.addSource('polygon', {
 					type: 'geojson',
@@ -97,8 +165,8 @@
 				}, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
 
 				map.fitBounds(bounds, { padding: 20, maxZoom, minZoom });
-			});
-		}
+			}
+		});
 
 		// If marker placement is allowed, set up the click handler
 		if (allowMarkerPlacement) {
