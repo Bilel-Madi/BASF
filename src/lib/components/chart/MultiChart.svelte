@@ -17,6 +17,8 @@
 	export let devices: Device[] = [];
 	export let selectedDevices: Device[] = [];
 	export let selectedReadings: string[] = [];
+	export let timeFrame: string;
+	export let timeFrames: string[] = [];
 
 	let chartCanvas: HTMLCanvasElement;
 	let chart: Chart;
@@ -277,16 +279,26 @@
 					x: {
 						type: 'time',
 						time: {
-							// This will be updated dynamically
-							unit: 'hour'
+							unit: 'hour',
+							displayFormats: {
+								hour: 'HH:mm',
+								day: 'MMM d',
+								week: 'MMM d',
+								month: 'MMM yyyy'
+							}
 						},
 						ticks: {
 							maxTicksLimit: 10,
-							autoSkip: true
+							autoSkip: true,
+							display: true
+						},
+						display: true,
+						grid: {
+							display: true
 						},
 						adapters: {
 							date: {
-								locale: enUS // Make sure to import { enUS } from 'date-fns/locale'
+								locale: enUS
 							}
 						}
 					}
@@ -356,6 +368,16 @@
 		if (diffInHours <= 4380) return 'month'; // For 6 months
 		return 'month'; // For anything longer
 	}
+
+	// Function to handle time frame change
+	function handleTimeFrameChange(frame: string) {
+		timeFrame = frame;
+		// Dispatch an event to notify parent component
+		dispatch('timeFrameChange', frame);
+	}
+
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 </script>
 
 <div class="chart-wrapper">
@@ -401,6 +423,18 @@
 	</div>
 
 	<div class="chart-container">
+		<div class="chart-header">
+			<div class="time-controls">
+				{#each timeFrames as frame}
+					<button
+						class:selected={timeFrame === frame}
+						on:click={() => handleTimeFrameChange(frame)}
+					>
+						{frame}
+					</button>
+				{/each}
+			</div>
+		</div>
 		<canvas bind:this={chartCanvas} />
 	</div>
 </div>
@@ -410,6 +444,7 @@
 		height: 100%;
 		display: flex;
 		flex-direction: column;
+		min-height: 0;
 	}
 
 	.controls {
@@ -505,13 +540,46 @@
 	}
 
 	.chart-container {
+		display: flex;
+		flex-direction: column;
 		flex: 1;
-		position: relative;
 		min-height: 0;
+		position: relative;
+	}
+
+	.chart-header {
+		flex: 0 0 auto;
+		padding-bottom: 0.5rem;
+	}
+
+	.time-controls {
+		display: flex;
+		gap: 0.25rem;
+		flex-wrap: wrap;
+	}
+
+	.time-controls button {
+		padding: 0.25rem 0.5rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		background: white;
+		cursor: pointer;
+		font-size: 0.8rem;
+	}
+
+	.time-controls button.selected {
+		background: #1b0ab1;
+		color: white;
+		border-color: #1b0ab1;
+	}
+
+	.time-controls button:hover:not(.selected) {
+		background: #f0f0f0;
 	}
 
 	canvas {
+		flex: 1;
 		width: 100% !important;
-		height: 100% !important;
+		min-height: 0;
 	}
 </style>

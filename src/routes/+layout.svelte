@@ -8,11 +8,13 @@
 	let currentTime = new Date();
 	let isLoading = true;
 	let timeInterval;
+	let showColon = true;
 
 	onMount(() => {
 		// Start the time interval
 		timeInterval = setInterval(() => {
 			currentTime = new Date();
+			showColon = !showColon;
 		}, 1000);
 
 		// Fetch devices
@@ -31,11 +33,16 @@
 	$: shouldShowHeader = !['/auth/signup', '/'].includes($page.url.pathname);
 
 	// Format time to HH:mm
-	$: formattedTime = currentTime.toLocaleTimeString('en-US', {
-		hour: '2-digit',
-		minute: '2-digit',
-		hour12: false
-	});
+	$: formattedTime = (() => {
+		const timeStr = currentTime.toLocaleTimeString('en-US', {
+			hour: '2-digit',
+			minute: '2-digit',
+			hour12: false
+		});
+		// Split the time and join with a conditional colon
+		const [hours, minutes] = timeStr.split(':');
+		return `${hours}${showColon ? ':' : ' '}${minutes}`;
+	})();
 
 	// Add this reactive statement to handle logo visibility
 	$: logoClass = isMenuOpen ? 'logo hidden' : 'logo';

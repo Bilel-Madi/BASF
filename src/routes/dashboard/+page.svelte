@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import { writable, get } from 'svelte/store';
 	import type { Zone, Device } from '@prisma/client';
+	import { clickOutside } from '$lib/actions/clickOutside';
 
 	export let data: {
 		zones: Array<Zone & { devices: Device[] }>;
@@ -117,54 +118,182 @@
 			fetchChartData();
 		}
 	}
+
+	async function handleTimeFrameChange(event: CustomEvent<string>) {
+		selectedTimeFrame = event.detail;
+		await fetchChartData();
+	}
+
+	let isDropdownOpen = false;
+	let searchQuery = '';
+
+	const deviceImagePath = {
+		SOIL_MOISTURE: '/images/soil.png',
+		CO2_SENSOR: '/images/co2_sensor.png',
+		UNKNOWN: '/images/unknown_device.png'
+	};
+
+	function toggleDevice(device: Device) {
+		selectedDevices.update((devices) => {
+			if (devices.find((d) => d.eui === device.eui)) {
+				return devices.filter((d) => d.eui !== device.eui);
+			} else {
+				return [...devices, device];
+			}
+		});
+	}
+
+	$: filteredDevices = data.devices.filter(
+		(device) =>
+			device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			device.eui.toLowerCase().includes(searchQuery.toLowerCase())
+	);
 </script>
 
 <div class="dashboard">
-	<div class="dashboard-header">
-		<h1>Dashboard</h1>
-		<div class="timeframe-controls">
-			{#each timeFrames as frame}
-				<button class:selected={selectedTimeFrame === frame} on:click={() => setTimeFrame(frame)}>
-					{frame}
-				</button>
-			{/each}
+	<div class="top-row">
+		<div class="info-card last-seen">
+			<h3>Last Seen</h3>
+		</div>
+		<div class="info-card alerts">
+			<h3>Alerts</h3>
+		</div>
+		<div class="info-card weather">
+			<h3>Weather</h3>
 		</div>
 	</div>
 
 	<div class="dashboard-grid">
-		<div class="map-section">
-			<h2>Map View</h2>
-			<MapboxMap
-				accessToken={MAPBOX_ACCESS_TOKEN}
-				{mapFeatures}
-				on:deviceClick={handleDeviceClick}
-			/>
-		</div>
+		<div class="main-column">
+			<div class="map-section">
+				<MapboxMap
+					accessToken={MAPBOX_ACCESS_TOKEN}
+					{mapFeatures}
+					on:deviceClick={handleDeviceClick}
+				/>
+			</div>
+			<div class="chart-section">
+				<h2>Data Analysis</h2>
+				<div class="device-selector">
+					<button class="dropdown-trigger" on:click={() => (isDropdownOpen = !isDropdownOpen)}>
+						Select Devices ({$selectedDevices.length})
+					</button>
 
-		<div class="chart-section">
-			<h2>Data Analysis</h2>
-			<MultiChart
-				data={$chartData}
-				devices={data.devices}
-				bind:selectedDevices={$selectedDevices}
-				bind:selectedReadings={$selectedReadings}
-			/>
+					{#if isDropdownOpen}
+						<div
+							class="dropdown-menu"
+							use:clickOutside
+							on:outclick={() => (isDropdownOpen = false)}
+						>
+							<div class="search-container">
+								<input type="text" placeholder="Search devices..." bind:value={searchQuery} />
+							</div>
+
+							<div class="device-list">
+								{#each filteredDevices as device}
+									<div
+										class="device-item"
+										class:selected={$selectedDevices.find((d) => d.eui === device.eui)}
+										on:click={() => toggleDevice(device)}
+									>
+										<div class="device-image">
+											<img
+												src={deviceImagePath[device.type] || deviceImagePath.UNKNOWN}
+												alt={device.type}
+											/>
+										</div>
+										<div class="device-info">
+											<span class="device-name">{device.name}</span>
+											<span class="device-eui">{device.eui}</span>
+										</div>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</div>
+				<MultiChart
+					data={$chartData}
+					devices={data.devices}
+					bind:selectedDevices={$selectedDevices}
+					bind:selectedReadings={$selectedReadings}
+					bind:timeFrame={selectedTimeFrame}
+					{timeFrames}
+					on:timeFrameChange={handleTimeFrameChange}
+				/>
+			</div>
+		</div>
+		<div class="side-column">
+			<div class="latest-readings">
+				<h2>Latest Readings</h2>
+			</div>
+			<div class="metadata-section">
+				<h2>Metadata</h2>
+			</div>
 		</div>
 	</div>
 </div>
 
 <style>
 	.dashboard {
-		padding: 1rem;
-		max-width: 1600px;
-		margin: 0 auto;
+		position: fixed;
+		top: 4rem;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		padding: 0.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		overflow: hidden;
+		background-color: #f5f5f5;
+		z-index: 1;
 	}
 
-	.dashboard-header {
+	.top-row {
+		flex: 0 0 auto;
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		gap: 0.5rem;
+		height: 50px;
+	}
+
+	.info-card {
+		background: white;
+		border-radius: 8px;
+		padding: 0.5rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		height: 50px; /* Reduced height */
+	}
+
+	.dashboard-grid {
+		flex: 1;
+		display: grid;
+		grid-template-columns: 3fr 1fr;
+		gap: 0.5rem;
+		min-height: 0;
+	}
+
+	.main-column,
+	.side-column {
+		display: grid;
+		grid-template-rows: 1fr 1fr;
+		gap: 0.5rem;
+		min-height: 0;
+	}
+
+	.map-section,
+	.chart-section,
+	.latest-readings,
+	.metadata-section {
+		background: white;
+		border-radius: 8px;
+		padding: 1rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		overflow: hidden;
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 2rem;
+		flex-direction: column;
+		min-height: 0;
 	}
 
 	h1 {
@@ -173,56 +302,129 @@
 	}
 
 	h2 {
-		margin: 0 0 1rem 0;
+		margin: 0 0 0.5rem 0;
 		font-size: 1.2rem;
 	}
 
-	.timeframe-controls {
-		display: flex;
-		gap: 0.5rem;
+	h3 {
+		margin: 0;
+		font-size: 1rem;
 	}
 
-	.timeframe-controls button {
-		padding: 0.5rem 1rem;
-		border: 1px solid #ddd;
-		background: white;
-		border-radius: 4px;
-		cursor: pointer;
-		transition: all 0.2s;
+	.last-seen {
+		grid-column: span 1; /* Takes 1/6 of the space */
 	}
 
-	.timeframe-controls button.selected {
-		background: #007bff;
-		color: white;
-		border-color: #0056b3;
+	.alerts {
+		grid-column: span 2; /* Takes 2/6 of the space */
 	}
 
-	.dashboard-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 2rem;
-		margin-top: 1rem;
-	}
-
-	.map-section,
-	.chart-section {
-		background: white;
-		border-radius: 8px;
-		padding: 1rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	.map-section {
-		height: 600px;
-	}
-
-	.chart-section {
-		height: 600px;
+	.weather {
+		grid-column: span 3; /* Takes 3/6 of the space */
 	}
 
 	@media (max-width: 1024px) {
 		.dashboard-grid {
 			grid-template-columns: 1fr;
 		}
+
+		.top-row {
+			grid-template-columns: 1fr;
+		}
+
+		.last-seen,
+		.alerts,
+		.weather {
+			grid-column: 1;
+		}
+	}
+
+	.device-selector {
+		position: relative;
+		margin-bottom: 1rem;
+	}
+
+	.dropdown-trigger {
+		padding: 0.5rem 1rem;
+		background: white;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 0.875rem;
+	}
+
+	.dropdown-menu {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		width: 300px;
+		background: white;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		z-index: 1000;
+	}
+
+	.search-container {
+		padding: 0.5rem;
+		border-bottom: 1px solid #ddd;
+	}
+
+	.search-container input {
+		width: 100%;
+		padding: 0.5rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-size: 0.875rem;
+	}
+
+	.device-list {
+		max-height: 300px;
+		overflow-y: auto;
+	}
+
+	.device-item {
+		display: grid;
+		grid-template-columns: 60px 1fr;
+		gap: 0.5rem;
+		padding: 0.5rem;
+		cursor: pointer;
+		border-bottom: 1px solid #f5f5f5;
+	}
+
+	.device-item:hover {
+		background: #f5f5f5;
+	}
+
+	.device-item.selected {
+		background: #e3f2fd;
+	}
+
+	.device-image {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.device-image img {
+		width: 40px;
+		height: 40px;
+		object-fit: contain;
+	}
+
+	.device-info {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.device-name {
+		font-weight: 500;
+		font-size: 0.875rem;
+	}
+
+	.device-eui {
+		font-size: 0.75rem;
+		color: #666;
 	}
 </style>
