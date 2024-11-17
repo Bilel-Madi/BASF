@@ -14,7 +14,8 @@ model User {
   email          String       @unique
   password       String?
   googleId       String?      @unique
-  name           String?
+  firstName      String?
+  lastName       String?
   role           Role         @default(USER)
   sessions       Session[]
   organizationId String       @db.ObjectId
@@ -42,6 +43,7 @@ model Zone {
   name           String
   area           Float
   geometry       Json // Store GeoJSON or similar
+  color          String
   cropType       String
   plantingDate   DateTime
   harvestDate    DateTime
@@ -122,4 +124,13 @@ enum Role {
   USER
   VIEWER
   SUPER_ADMIN
+}
+
+enum ZoneColor {
+  PASTEL_PINK
+  PASTEL_ORANGE
+  PASTEL_YELLOW
+  PASTEL_GREEN
+  PASTEL_BLUE
+  PASTEL_PURPLE
 }

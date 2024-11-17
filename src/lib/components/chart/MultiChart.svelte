@@ -18,7 +18,6 @@
 	export let selectedDevices: Device[] = [];
 	export let selectedReadings: string[] = [];
 	export let timeFrame: string;
-	export let timeFrames: string[] = [];
 
 	let chartCanvas: HTMLCanvasElement;
 	let chart: Chart;
@@ -32,6 +31,97 @@
 		)
 	];
 
+	// Define base colors for each reading type
+	const READING_COLORS = {
+		moisture: {
+			base: '#1976D2', // Main blue
+			shades: [
+				'#1976D2', // Main blue
+				'#2196F3', // Lighter blue
+				'#64B5F6', // Even lighter blue
+				'#0D47A1', // Darker blue
+				'#1565C0' // Another shade of blue
+			]
+		},
+		temperature: {
+			base: '#4CAF50', // Main green
+			shades: [
+				'#4CAF50', // Main green
+				'#66BB6A', // Lighter green
+				'#81C784', // Even lighter green
+				'#2E7D32', // Darker green
+				'#388E3C' // Another shade of green
+			]
+		},
+		ec: {
+			base: '#795548', // Main brown
+			shades: [
+				'#795548', // Main brown
+				'#8D6E63', // Lighter brown
+				'#A1887F', // Even lighter brown
+				'#4E342E', // Darker brown
+				'#5D4037' // Another shade of brown
+			]
+		},
+		co2: {
+			base: '#8BC34A', // Main lime green
+			shades: [
+				'#8BC34A', // Main lime green
+				'#9CCC65', // Lighter lime green
+				'#AED581', // Even lighter lime green
+				'#558B2F', // Darker lime green
+				'#689F38' // Another shade of lime green
+			]
+		},
+		humidity: {
+			base: '#9C27B0', // Main purple
+			shades: [
+				'#9C27B0', // Main purple
+				'#AB47BC', // Lighter purple
+				'#BA68C8', // Even lighter purple
+				'#6A1B9A', // Darker purple
+				'#7B1FA2' // Another shade of purple
+			]
+		},
+		pressure: {
+			base: '#FF9800', // Main orange
+			shades: [
+				'#FF9800', // Main orange
+				'#FFA726', // Lighter orange
+				'#FFB74D', // Even lighter orange
+				'#E65100', // Darker orange
+				'#EF6C00' // Another shade of orange
+			]
+		}
+	};
+
+	// Replace getRandomColor with this function
+	function getReadingColor(readingType: string, index: number = 0): string {
+		const normalizedType = readingType.toLowerCase();
+		let colorConfig;
+
+		// Find the matching color config
+		for (const [type, config] of Object.entries(READING_COLORS)) {
+			if (normalizedType.includes(type)) {
+				colorConfig = config;
+				break;
+			}
+		}
+
+		if (!colorConfig) {
+			// Fallback color if no match is found
+			return '#757575';
+		}
+
+		// If there's only one device, use the base color
+		if (selectedDevices.length === 1) {
+			return colorConfig.base;
+		}
+
+		// Otherwise, use a shade based on the index
+		return colorConfig.shades[index % colorConfig.shades.length];
+	}
+
 	// Define scale configurations for different reading types
 	const SCALE_CONFIGS = {
 		ec: {
@@ -44,7 +134,9 @@
 				text: 'EC (µS/cm)'
 			},
 			grid: {
-				drawOnChartArea: false // only show grid for primary axis
+				drawOnChartArea: false,
+				drawTicks: false,
+				display: false
 			}
 		},
 		moisture: {
@@ -58,7 +150,8 @@
 			},
 			grid: {
 				drawOnChartArea: false,
-				drawTicks: true
+				drawTicks: false,
+				display: false
 			},
 			border: {
 				display: true
@@ -72,6 +165,11 @@
 			title: {
 				display: true,
 				text: '°C'
+			},
+			grid: {
+				drawOnChartArea: false,
+				drawTicks: false,
+				display: false
 			}
 		},
 		co2: {
@@ -84,7 +182,9 @@
 				text: 'PPM'
 			},
 			grid: {
-				drawOnChartArea: false
+				drawOnChartArea: false,
+				drawTicks: false,
+				display: false
 			}
 		},
 		humidity: {
@@ -95,6 +195,11 @@
 			title: {
 				display: true,
 				text: 'Humidity %'
+			},
+			grid: {
+				drawOnChartArea: false,
+				drawTicks: false,
+				display: false
 			}
 		},
 		pressure: {
@@ -107,7 +212,9 @@
 				text: 'hPa'
 			},
 			grid: {
-				drawOnChartArea: false
+				drawOnChartArea: false,
+				drawTicks: false,
+				display: false
 			}
 		}
 	};
@@ -188,8 +295,8 @@
 			}, {})
 		};
 
-		// Second pass: create datasets using the same logic as before
-		data.forEach((deviceData) => {
+		// Second pass: create datasets and track which scales are actually used
+		data.forEach((deviceData, deviceIndex) => {
 			if (!deviceData?.data) return;
 
 			const deviceReadings =
@@ -198,7 +305,7 @@
 			selectedReadings.forEach((readingType) => {
 				if (deviceReadings.some((r) => r.value === readingType)) {
 					const scaleId = DYNAMIC_SCALE_CONFIGS[readingType]?.id || 'default';
-					usedScales.add(scaleId);
+					usedScales.add(scaleId); // Track which scales are being used
 
 					const dataset = {
 						label: `${deviceData.device.name} - ${
@@ -210,8 +317,13 @@
 								x: new Date(reading.receivedAt),
 								y: reading[readingType]
 							})),
-						borderColor: getRandomColor(),
-						fill: false,
+						borderColor: getReadingColor(readingType, deviceIndex),
+						backgroundColor: function (context) {
+							const chart = context.chart;
+							const { ctx } = chart;
+							return getGradient(ctx, getReadingColor(readingType, deviceIndex));
+						},
+						fill: true,
 						yAxisID: scaleId,
 						pointRadius: 0,
 						tension: 0.4
@@ -240,9 +352,8 @@
 
 			// Update the time axis configuration
 			chart.options.scales = {
-				...chart.options.scales,
 				x: {
-					...chart.options.scales.x,
+					type: 'time',
 					time: {
 						unit: timeUnit,
 						displayFormats: {
@@ -251,13 +362,32 @@
 							week: 'MMM d',
 							month: 'MMM yyyy'
 						}
+					},
+					grid: {
+						display: true,
+						drawOnChartArea: true
 					}
 				}
 			};
-		}
 
-		chart.data.datasets = datasets;
-		chart.update();
+			// Only add scales that are actually being used
+			Object.entries(DYNAMIC_SCALE_CONFIGS).forEach(([readingType, scaleConfig]) => {
+				if (usedScales.has(scaleConfig.id)) {
+					chart.options.scales[scaleConfig.id] = {
+						...scaleConfig,
+						display: true, // Show axis
+						grid: {
+							drawOnChartArea: false,
+							drawTicks: false,
+							display: false
+						}
+					};
+				}
+			});
+
+			chart.data.datasets = datasets;
+			chart.update('none'); // Use 'none' animation for smoother updates
+		}
 	}
 
 	onMount(() => {
@@ -275,37 +405,16 @@
 					axis: 'x',
 					intersect: false
 				},
-				scales: {
-					x: {
-						type: 'time',
-						time: {
-							unit: 'hour',
-							displayFormats: {
-								hour: 'HH:mm',
-								day: 'MMM d',
-								week: 'MMM d',
-								month: 'MMM yyyy'
-							}
-						},
-						ticks: {
-							maxTicksLimit: 10,
-							autoSkip: true,
-							display: true
-						},
-						display: true,
-						grid: {
-							display: true
-						},
-						adapters: {
-							date: {
-								locale: enUS
-							}
-						}
-					}
-				},
 				plugins: {
 					legend: {
-						position: 'top'
+						position: 'top',
+						labels: {
+							usePointStyle: true,
+							pointStyle: 'circle',
+							boxWidth: 8,
+							boxHeight: 8,
+							padding: 20
+						}
 					},
 					tooltip: {
 						mode: 'index',
@@ -337,6 +446,34 @@
 							}
 						}
 					}
+				},
+				scales: {
+					x: {
+						type: 'time',
+						time: {
+							unit: 'hour',
+							displayFormats: {
+								hour: 'HH:mm',
+								day: 'MMM d',
+								week: 'MMM d',
+								month: 'MMM yyyy'
+							}
+						},
+						ticks: {
+							maxTicksLimit: 10,
+							autoSkip: true,
+							display: true
+						},
+						grid: {
+							display: true,
+							drawOnChartArea: true
+						},
+						adapters: {
+							date: {
+								locale: enUS
+							}
+						}
+					}
 				}
 			}
 		});
@@ -345,15 +482,6 @@
 	onDestroy(() => {
 		if (chart) chart.destroy();
 	});
-
-	function getRandomColor() {
-		const letters = '0123456789ABCDEF';
-		let color = '#';
-		for (let i = 0; i < 6; i++) {
-			color += letters[Math.floor(Math.random() * 16)];
-		}
-		return color;
-	}
 
 	// Add this function to determine the appropriate time unit
 	function getTimeUnit(firstDate: Date, lastDate: Date): string {
@@ -369,72 +497,17 @@
 		return 'month'; // For anything longer
 	}
 
-	// Function to handle time frame change
-	function handleTimeFrameChange(frame: string) {
-		timeFrame = frame;
-		// Dispatch an event to notify parent component
-		dispatch('timeFrameChange', frame);
+	// Add this function near the top with your other utility functions
+	function getGradient(ctx: CanvasRenderingContext2D, color: string): CanvasGradient {
+		const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+		gradient.addColorStop(0, `${color}33`); // 20% opacity version of the color
+		gradient.addColorStop(1, `${color}00`); // 0% opacity version of the color
+		return gradient;
 	}
-
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
 </script>
 
 <div class="chart-wrapper">
-	<div class="controls">
-		<div class="control-group">
-			<details class="dropdown">
-				<summary>Devices</summary>
-				<div class="checkbox-list">
-					{#each devices as device}
-						<label class="checkbox-label">
-							<input
-								type="checkbox"
-								checked={selectedDevices.includes(device)}
-								on:change={() => toggleDevice(device)}
-							/>
-							<span class="device-name">
-								{device.name}
-								<span class="device-type">({device.type})</span>
-							</span>
-						</label>
-					{/each}
-				</div>
-			</details>
-		</div>
-
-		<div class="control-group">
-			<details class="dropdown">
-				<summary>Readings</summary>
-				<div class="checkbox-list">
-					{#each availableReadings as reading}
-						<label class="checkbox-label">
-							<input
-								type="checkbox"
-								checked={selectedReadings.includes(reading.value)}
-								on:change={() => toggleReading(reading.value)}
-							/>
-							{reading.label}
-						</label>
-					{/each}
-				</div>
-			</details>
-		</div>
-	</div>
-
 	<div class="chart-container">
-		<div class="chart-header">
-			<div class="time-controls">
-				{#each timeFrames as frame}
-					<button
-						class:selected={timeFrame === frame}
-						on:click={() => handleTimeFrameChange(frame)}
-					>
-						{frame}
-					</button>
-				{/each}
-			</div>
-		</div>
 		<canvas bind:this={chartCanvas} />
 	</div>
 </div>
@@ -447,134 +520,12 @@
 		min-height: 0;
 	}
 
-	.controls {
-		display: flex;
-		gap: 2rem;
-		margin-bottom: 1rem;
-	}
-
-	.control-group {
-		flex: 1;
-	}
-
-	.dropdown {
-		position: relative;
-	}
-
-	.dropdown summary {
-		padding: 0.75rem 1rem;
-		background: white;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		cursor: pointer;
-		font-weight: 600;
-		user-select: none;
-	}
-
-	.dropdown summary:hover {
-		background: #f8f9fa;
-	}
-
-	.dropdown summary:focus {
-		outline: none;
-		border-color: #007bff;
-	}
-
-	/* Remove default arrow */
-	.dropdown summary::-webkit-details-marker {
-		display: none;
-	}
-
-	/* Custom arrow */
-	.dropdown summary::after {
-		content: '▼';
-		float: right;
-		font-size: 0.8em;
-		transition: transform 0.2s;
-	}
-
-	.dropdown[open] summary::after {
-		transform: rotate(180deg);
-	}
-
-	.checkbox-list {
-		position: absolute;
-		top: 100%;
-		left: 0;
-		right: 0;
-		margin-top: 0.25rem;
-		background: white;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-		z-index: 1000;
-		max-height: 200px;
-		overflow-y: auto;
-	}
-
-	.checkbox-label {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem;
-		cursor: pointer;
-	}
-
-	.checkbox-label:hover {
-		background: #f8f9fa;
-	}
-
-	.checkbox-label input {
-		margin: 0;
-	}
-
-	.device-name {
-		display: flex;
-		gap: 0.5rem;
-		align-items: center;
-	}
-
-	.device-type {
-		font-size: 0.8em;
-		color: #666;
-	}
-
 	.chart-container {
 		display: flex;
 		flex-direction: column;
 		flex: 1;
 		min-height: 0;
 		position: relative;
-	}
-
-	.chart-header {
-		flex: 0 0 auto;
-		padding-bottom: 0.5rem;
-	}
-
-	.time-controls {
-		display: flex;
-		gap: 0.25rem;
-		flex-wrap: wrap;
-	}
-
-	.time-controls button {
-		padding: 0.25rem 0.5rem;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		background: white;
-		cursor: pointer;
-		font-size: 0.8rem;
-	}
-
-	.time-controls button.selected {
-		background: #1b0ab1;
-		color: white;
-		border-color: #1b0ab1;
-	}
-
-	.time-controls button:hover:not(.selected) {
-		background: #f0f0f0;
 	}
 
 	canvas {

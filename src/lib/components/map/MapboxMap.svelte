@@ -2,8 +2,10 @@
 <script lang="ts">
 	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import mapboxgl from 'mapbox-gl';
+	import MapboxDraw from '@mapbox/mapbox-gl-draw';
 	import centroid from '@turf/centroid';
-	import type { Feature, Polygon } from 'geojson';
+	import turfArea from '@turf/area';
+	import type { Feature, Polygon, GeoJSON } from 'geojson';
 
 	// Props
 	export let accessToken: string;
@@ -19,12 +21,34 @@
 	export let maxZoom: number = 16; // Maximum zoom when fitting bounds
 	export let minZoom: number = 5; // Minimum zoom when fitting bounds
 	export let mapFeatures: any[] = [];
+	export let allowPolygonDrawing: boolean = false;
+	export let fillColor: string = '#088'; // Default color
 
 	let mapContainer: HTMLElement;
 	let map: mapboxgl.Map;
 	let marker: mapboxgl.Marker | null = null;
+	let draw: any; // MapboxDraw instance
 
 	const dispatch = createEventDispatcher();
+
+	// Debugging: Log received props
+	console.log('MapboxMap Props:', {
+		accessToken,
+		center,
+		zoom,
+		style,
+		markerPosition,
+		polygonData,
+		allowMarkerPlacement,
+		showControls,
+		height,
+		width,
+		maxZoom,
+		minZoom,
+		mapFeatures,
+		allowPolygonDrawing,
+		fillColor
+	});
 
 	// Calculate centroid for centering the map
 	let calculatedCenter: [number, number] = center;
@@ -40,6 +64,11 @@
 	}
 
 	onMount(() => {
+		if (!accessToken) {
+			console.error('Mapbox access token is missing.');
+			return;
+		}
+
 		mapboxgl.accessToken = accessToken;
 
 		map = new mapboxgl.Map({
@@ -58,73 +87,92 @@
 			marker = new mapboxgl.Marker().setLngLat(markerPosition).addTo(map);
 		}
 
+		if (allowPolygonDrawing) {
+			draw = new MapboxDraw({
+				displayControlsDefault: false,
+				controls: {
+					polygon: true,
+					trash: true
+				},
+				defaultMode: 'draw_polygon'
+			});
+			map.addControl(draw);
+
+			// Handle drawing events
+			map.on('draw.create', updateGeometry);
+			map.on('draw.delete', updateGeometry);
+			map.on('draw.update', updateGeometry);
+		}
+
 		map.on('load', () => {
 			// Add features source
-			map.addSource('features', {
-				type: 'geojson',
-				data: {
-					type: 'FeatureCollection',
-					features: mapFeatures
-				}
-			});
-
-			// Add zones layers
-			map.addLayer({
-				id: 'zones-fill',
-				type: 'fill',
-				source: 'features',
-				filter: ['==', ['get', 'type'], 'zone'],
-				paint: {
-					'fill-color': '#088',
-					'fill-opacity': 0.5
-				}
-			});
-
-			map.addLayer({
-				id: 'zones-outline',
-				type: 'line',
-				source: 'features',
-				filter: ['==', ['get', 'type'], 'zone'],
-				paint: {
-					'line-color': '#000',
-					'line-width': 2
-				}
-			});
-
-			// Add devices layer
-			map.addLayer({
-				id: 'devices',
-				type: 'circle',
-				source: 'features',
-				filter: ['==', ['get', 'type'], 'device'],
-				paint: {
-					'circle-color': [
-						'match',
-						['get', 'deviceType'],
-						'CO2_SENSOR',
-						'#ff0000',
-						'SOIL_MOISTURE',
-						'#0000ff',
-						/* other */ '#888888'
-					],
-					'circle-radius': 6
-				}
-			});
-
-			// Add device interaction handlers
-			map.on('click', 'devices', (e) => {
-				const features = map.queryRenderedFeatures(e.point, {
-					layers: ['devices']
+			if (mapFeatures.length > 0) {
+				map.addSource('features', {
+					type: 'geojson',
+					data: {
+						type: 'FeatureCollection',
+						features: mapFeatures
+					}
 				});
-				dispatch('deviceClick', { features });
-			});
 
-			map.on('mouseenter', 'devices', () => {
-				map.getCanvas().style.cursor = 'pointer';
-			});
-			map.on('mouseleave', 'devices', () => {
-				map.getCanvas().style.cursor = '';
-			});
+				// Add zones layers
+				map.addLayer({
+					id: 'zones-fill',
+					type: 'fill',
+					source: 'features',
+					filter: ['==', ['get', 'type'], 'zone'],
+					paint: {
+						'fill-color': '#088',
+						'fill-opacity': 0.5
+					}
+				});
+
+				map.addLayer({
+					id: 'zones-outline',
+					type: 'line',
+					source: 'features',
+					filter: ['==', ['get', 'type'], 'zone'],
+					paint: {
+						'line-color': '#000',
+						'line-width': 2
+					}
+				});
+
+				// Add devices layer
+				map.addLayer({
+					id: 'devices',
+					type: 'circle',
+					source: 'features',
+					filter: ['==', ['get', 'type'], 'device'],
+					paint: {
+						'circle-color': [
+							'match',
+							['get', 'deviceType'],
+							'CO2_SENSOR',
+							'#ff0000',
+							'SOIL_MOISTURE',
+							'#0000ff',
+							/* other */ '#888888'
+						],
+						'circle-radius': 6
+					}
+				});
+
+				// Add device interaction handlers
+				map.on('click', 'devices', (e) => {
+					const features = map.queryRenderedFeatures(e.point, {
+						layers: ['devices']
+					});
+					dispatch('deviceClick', { features });
+				});
+
+				map.on('mouseenter', 'devices', () => {
+					map.getCanvas().style.cursor = 'pointer';
+				});
+				map.on('mouseleave', 'devices', () => {
+					map.getCanvas().style.cursor = '';
+				});
+			}
 
 			// If polygon data is provided, add it to the map
 			if (polygonData) {
@@ -141,7 +189,7 @@
 					source: 'polygon',
 					layout: {},
 					paint: {
-						'fill-color': '#088',
+						'fill-color': fillColor,
 						'fill-opacity': 0.5
 					}
 				});
@@ -165,6 +213,16 @@
 				}, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
 
 				map.fitBounds(bounds, { padding: 20, maxZoom, minZoom });
+
+				// Debugging: Log successful map setup
+				console.log('MapboxMap successfully added polygon and fitted bounds.');
+			} else {
+				console.warn('No polygonData provided to MapboxMap.');
+			}
+
+			// Update the polygon fill color if it exists
+			if (polygonData) {
+				map.setPaintProperty('polygon-fill', 'fill-color', fillColor);
 			}
 		});
 
@@ -218,10 +276,48 @@
 			});
 		}
 	}
+
+	// Add function to handle drawing updates
+	function updateGeometry() {
+		const features = draw.getAll();
+		if (features.features.length > 0) {
+			const polygon = features.features[0];
+			const area = turfArea(polygon);
+			dispatch('geometryChanged', {
+				geometry: polygon.geometry,
+				area: area
+			});
+		} else {
+			dispatch('geometryChanged', {
+				geometry: null,
+				area: 0
+			});
+		}
+	}
+
+	// Add method to update fill color
+	export function updateFillColor(color: string) {
+		if (map) {
+			if (polygonData) {
+				map.setPaintProperty('polygon-fill', 'fill-color', color);
+			}
+			if (draw) {
+				const features = draw.getAll();
+				if (features.features.length > 0) {
+					map.setPaintProperty('gl-draw-polygon-fill-active', 'fill-color', color);
+					map.setPaintProperty('gl-draw-polygon-fill-active', 'fill-opacity', 0.5);
+				}
+			}
+		}
+	}
 </script>
 
 <div bind:this={mapContainer} style="width: {width}; height: {height};" />
 
 <style>
-	/* You can add component-specific styles here */
+	/* Ensure the map container fills its parent */
+	div {
+		width: 100%;
+		height: 100%;
+	}
 </style>

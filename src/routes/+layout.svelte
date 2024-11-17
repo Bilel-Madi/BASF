@@ -30,7 +30,7 @@
 		isMenuOpen = false;
 	}
 
-	$: shouldShowHeader = !['/auth/signup', '/'].includes($page.url.pathname);
+	$: shouldShowHeader = !['/auth/signup', '/', '/auth/onboarding'].includes($page.url.pathname);
 
 	// Format time to HH:mm
 	$: formattedTime = (() => {

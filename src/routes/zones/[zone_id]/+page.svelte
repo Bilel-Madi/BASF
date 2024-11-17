@@ -48,6 +48,19 @@
 		{ label: 'Zones', href: '/zones' },
 		{ label: zone.name }
 	];
+
+	// Add the getPastelColor helper function at the top with other functions
+	function getPastelColor(color: string): string {
+		const colorMap: Record<string, string> = {
+			PASTEL_PINK: '#FFB3BA',
+			PASTEL_ORANGE: '#FFDFBA',
+			PASTEL_YELLOW: '#FFFFBA',
+			PASTEL_GREEN: '#BAFFC9',
+			PASTEL_BLUE: '#BAE1FF',
+			PASTEL_PURPLE: '#D5BAFF'
+		};
+		return colorMap[color] || '#FFFFFF'; // Default to white if color not found
+	}
 </script>
 
 <div class="page-container">
@@ -74,6 +87,7 @@
 				height="400px"
 				maxZoom={16}
 				minZoom={10}
+				fillColor={getPastelColor(zone.color)}
 			/>
 		</div>
 

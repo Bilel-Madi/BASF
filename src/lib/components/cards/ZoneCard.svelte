@@ -1,4 +1,5 @@
-<!-- src/lib/components/ZoneCard.svelte -->
+<!-- src/lib/components/cards/ZoneCard.svelte -->
+
 <script lang="ts">
 	import MapboxMap from '$lib/components/map/MapboxMap.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -22,20 +23,41 @@
 	const plantingDate = new Date(zone.plantingDate).toLocaleDateString();
 	const harvestDate = new Date(zone.harvestDate).toLocaleDateString();
 	const dateCreated = new Date(zone.createdAt).toLocaleDateString();
+
+	// Helper function to map ZoneColor enum to actual pastel color codes
+	function getPastelColor(color: string): string {
+		const colorMap: Record<string, string> = {
+			PASTEL_PINK: '#FFB3BA',
+			PASTEL_ORANGE: '#FFDFBA',
+			PASTEL_YELLOW: '#FFFFBA',
+			PASTEL_GREEN: '#BAFFC9',
+			PASTEL_BLUE: '#BAE1FF',
+			PASTEL_PURPLE: '#D5BAFF'
+		};
+		return colorMap[color] || '#FFFFFF'; // Default to white if color not found
+	}
+
+	// Debugging: Log the received zone data
+	console.log('ZoneCard received zone:', zone);
 </script>
 
 <a href={`/zones/${zone.id}`} class="card-link">
-	<div class="card">
+	<div class="card" style="border-left: 8px solid {getPastelColor(zone.color)};">
 		<div class="card-header">
 			<h2 class="zone-name">{zone.name}</h2>
 		</div>
 		<div class="map-container">
-			<MapboxMap
-				accessToken={MAPBOX_ACCESS_TOKEN}
-				{polygonData}
-				height="200px"
-				showControls={false}
-			/>
+			{#if polygonData}
+				<MapboxMap
+					accessToken={MAPBOX_ACCESS_TOKEN}
+					{polygonData}
+					height="200px"
+					showControls={false}
+					fillColor={getPastelColor(zone.color)}
+				/>
+			{:else}
+				<p>No geometry data available.</p>
+			{/if}
 		</div>
 		<div class="zone-info">
 			<p><strong>Crop Type:</strong> {zone.cropType}</p>

@@ -72,9 +72,10 @@
 
 	.grid-container {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(300px, 350px));
 		gap: 1.5rem;
 		padding: 1rem 0;
+		justify-content: start;
 	}
 
 	.card-link {

@@ -23,16 +23,16 @@ export const actions = {
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const organization = await prisma.organization.create({
-        data: { name: 'Default Organization' },
-      });
-
       const user = await prisma.user.create({
         data: {
           email,
           password: hashedPassword,
           role: 'USER',
-          organizationId: organization.id,
+          organization: {
+            create: {
+              name: 'Temporary Organization'
+            }
+          }
         },
       });
 
@@ -40,10 +40,8 @@ export const actions = {
       const session = await createSession(sessionToken, user.id);
       setSessionCookie(event, sessionToken, session.expiresAt);
 
-      // Redirect to /zones
-      throw redirect(303, '/zones');
+      throw redirect(303, '/auth/onboarding');
     } catch (error: any) {
-      // Check if the error is a redirect
       if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
         throw error;
       }

@@ -2,9 +2,8 @@
 
 <script lang="ts">
 	import MapboxMap from '$lib/components/map/MapboxMap.svelte';
-	import MultiChart from '$lib/components/chart/MultiChart.svelte';
+	import Chart from '$lib/components/chart/Chart.svelte';
 	import { onMount } from 'svelte';
-	import { writable, get } from 'svelte/store';
 	import type { Zone, Device } from '@prisma/client';
 	import { clickOutside } from '$lib/actions/clickOutside';
 
@@ -15,15 +14,6 @@
 
 	const MAPBOX_ACCESS_TOKEN =
 		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg';
-
-	// Stores for selected devices and readings
-	const selectedDevices = writable<Device[]>([]);
-	const selectedReadings = writable<string[]>([]);
-	const chartData = writable([]);
-
-	// Time frame selection
-	const timeFrames = ['1d', '3d', '1w', '2w', '1m', '3m', '6m', '1y', 'all'];
-	let selectedTimeFrame = '1w';
 
 	// Prepare GeoJSON data for the map
 	$: mapFeatures = [
@@ -75,55 +65,6 @@
 		}
 	}
 
-	// Function to fetch data for selected devices
-	async function fetchChartData() {
-		const devices = get(selectedDevices);
-		const readings = get(selectedReadings);
-
-		if (devices.length === 0 || readings.length === 0) {
-			chartData.set([]);
-			return;
-		}
-
-		const params = new URLSearchParams();
-		params.set('range', selectedTimeFrame);
-
-		try {
-			const dataPromises = devices.map(async (device) => {
-				const res = await fetch(`/api/devices/${device.eui}/data?${params.toString()}`);
-				if (!res.ok) throw new Error(`Failed to fetch data for device ${device.eui}`);
-				const deviceData = await res.json();
-				return { device, data: deviceData };
-			});
-
-			const results = await Promise.all(dataPromises);
-			chartData.set(results);
-		} catch (error) {
-			console.error('Error fetching chart data:', error);
-			chartData.set([]);
-		}
-	}
-
-	// Reactive statement to fetch data when selection changes
-	$: {
-		if (get(selectedDevices).length > 0 && get(selectedReadings).length > 0) {
-			fetchChartData();
-		}
-	}
-
-	// Function to handle time frame change
-	function setTimeFrame(frame: string) {
-		selectedTimeFrame = frame;
-		if (get(selectedDevices).length > 0 && get(selectedReadings).length > 0) {
-			fetchChartData();
-		}
-	}
-
-	async function handleTimeFrameChange(event: CustomEvent<string>) {
-		selectedTimeFrame = event.detail;
-		await fetchChartData();
-	}
-
 	let isDropdownOpen = false;
 	let searchQuery = '';
 
@@ -172,56 +113,7 @@
 					on:deviceClick={handleDeviceClick}
 				/>
 			</div>
-			<div class="chart-section">
-				<h2>Data Analysis</h2>
-				<div class="device-selector">
-					<button class="dropdown-trigger" on:click={() => (isDropdownOpen = !isDropdownOpen)}>
-						Select Devices ({$selectedDevices.length})
-					</button>
-
-					{#if isDropdownOpen}
-						<div
-							class="dropdown-menu"
-							use:clickOutside
-							on:outclick={() => (isDropdownOpen = false)}
-						>
-							<div class="search-container">
-								<input type="text" placeholder="Search devices..." bind:value={searchQuery} />
-							</div>
-
-							<div class="device-list">
-								{#each filteredDevices as device}
-									<div
-										class="device-item"
-										class:selected={$selectedDevices.find((d) => d.eui === device.eui)}
-										on:click={() => toggleDevice(device)}
-									>
-										<div class="device-image">
-											<img
-												src={deviceImagePath[device.type] || deviceImagePath.UNKNOWN}
-												alt={device.type}
-											/>
-										</div>
-										<div class="device-info">
-											<span class="device-name">{device.name}</span>
-											<span class="device-eui">{device.eui}</span>
-										</div>
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/if}
-				</div>
-				<MultiChart
-					data={$chartData}
-					devices={data.devices}
-					bind:selectedDevices={$selectedDevices}
-					bind:selectedReadings={$selectedReadings}
-					bind:timeFrame={selectedTimeFrame}
-					{timeFrames}
-					on:timeFrameChange={handleTimeFrameChange}
-				/>
-			</div>
+			<Chart {data} />
 		</div>
 		<div class="side-column">
 			<div class="latest-readings">

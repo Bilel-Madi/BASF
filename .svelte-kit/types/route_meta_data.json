@@ -14,6 +14,9 @@
 	"/api/data": [
 		"src/routes/api/data/+server.ts"
 	],
+	"/api/devices": [
+		"src/routes/api/devices/+server.ts"
+	],
 	"/api/devices/check": [
 		"src/routes/api/devices/check/+server.ts"
 	],
@@ -26,9 +29,6 @@
 	"/api/devices/latest-readings": [
 		"src/routes/api/devices/latest-readings/+server.ts"
 	],
-	"/api/devices/[eui]": [
-		"src/routes/api/devices/[eui]/+server.ts"
-	],
 	"/api/devices/[eui]/data": [
 		"src/routes/api/devices/[eui]/data/+server.ts"
 	],
@@ -37,6 +37,11 @@
 	],
 	"/auth/logout": [
 		"src/routes/auth/logout/+server.ts"
+	],
+	"/auth/onboarding": [
+		"src/routes/auth/onboarding/+page.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
 	],
 	"/auth/signup": [
 		"src/routes/auth/signup/+page.server.ts",
@@ -68,6 +73,10 @@
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts",
 		"src/routes/zones/+server.ts"
+	],
+	"/zones/add": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
 	],
 	"/zones/[zone_id]": [
 		"src/routes/zones/[zone_id]/+page.server.ts",
