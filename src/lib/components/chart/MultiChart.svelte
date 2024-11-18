@@ -127,8 +127,8 @@
 		ec: {
 			id: 'ec',
 			position: 'right',
-			min: 0,
-			max: 3000,
+			min: 200,
+			max: 1500,
 			title: {
 				display: true,
 				text: 'EC (µS/cm)'
@@ -142,8 +142,8 @@
 		moisture: {
 			id: 'moisture',
 			position: 'left',
-			min: 0,
-			max: 60,
+			min: 15,
+			max: 40,
 			title: {
 				display: true,
 				text: 'Moisture %'
@@ -281,6 +281,8 @@
 		const DYNAMIC_SCALE_CONFIGS = {
 			...SCALE_CONFIGS,
 			...Object.entries(dataRanges).reduce((acc, [readingType, range]) => {
+				if (readingType === 'moisture' || readingType === 'temperature' || readingType === 'ec')
+					return acc;
 				const padding = (range.max - range.min) * 0.1; // 10% padding
 				const baseConfig = SCALE_CONFIGS[readingType];
 
@@ -305,8 +307,9 @@
 			selectedReadings.forEach((readingType) => {
 				if (deviceReadings.some((r) => r.value === readingType)) {
 					const scaleId = DYNAMIC_SCALE_CONFIGS[readingType]?.id || 'default';
-					usedScales.add(scaleId); // Track which scales are being used
+					usedScales.add(scaleId);
 
+					const color = getReadingColor(readingType, deviceIndex);
 					const dataset = {
 						label: `${deviceData.device.name} - ${
 							deviceReadings.find((r) => r.value === readingType)?.label || readingType
@@ -317,16 +320,19 @@
 								x: new Date(reading.receivedAt),
 								y: reading[readingType]
 							})),
-						borderColor: getReadingColor(readingType, deviceIndex),
-						backgroundColor: function (context) {
-							const chart = context.chart;
-							const { ctx } = chart;
-							return getGradient(ctx, getReadingColor(readingType, deviceIndex));
-						},
-						fill: true,
+						borderColor: color,
+						backgroundColor:
+							readingType === 'moisture'
+								? function (context) {
+										const chart = context.chart;
+										const { ctx } = chart;
+										return getGradient(ctx, color);
+								  }
+								: color,
+						fill: readingType === 'moisture', // Only enable fill for moisture
 						yAxisID: scaleId,
 						pointRadius: 0,
-						tension: 0.4
+						tension: 0.1
 					};
 					datasets.push(dataset);
 				}
@@ -413,7 +419,7 @@
 							pointStyle: 'circle',
 							boxWidth: 8,
 							boxHeight: 8,
-							padding: 20
+							padding: 10
 						}
 					},
 					tooltip: {

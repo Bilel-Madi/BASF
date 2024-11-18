@@ -1,3 +1,4 @@
+<!-- src/routes/+layout.svelte -->
 <script>
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
