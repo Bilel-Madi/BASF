@@ -42,33 +42,43 @@
 </script>
 
 <a href={`/zones/${zone.id}`} class="card-link">
-	<div class="card" style="border-left: 8px solid {getPastelColor(zone.color)};">
+	<div class="card">
 		<div class="card-header">
 			<h2 class="zone-name">{zone.name}</h2>
+			<span class="device-count">{zone.devices.length} devices</span>
 		</div>
 		<div class="map-container">
 			{#if polygonData}
 				<MapboxMap
 					accessToken={MAPBOX_ACCESS_TOKEN}
 					{polygonData}
-					height="200px"
+					height="180px"
 					showControls={false}
 					fillColor={getPastelColor(zone.color)}
 				/>
 			{:else}
-				<p>No geometry data available.</p>
+				<p class="no-data">No geometry data available.</p>
 			{/if}
 		</div>
 		<div class="zone-info">
-			<p><strong>Crop Type:</strong> {zone.cropType}</p>
-			<p><strong>Planting Date:</strong> {plantingDate}</p>
-			<p><strong>Harvest Date:</strong> {harvestDate}</p>
-			<p><strong>Soil Type:</strong> {zone.soilType}</p>
-			<p><strong>Date Created:</strong> {dateCreated}</p>
-			<p><strong>Assigned Devices:</strong> {zone.devices.length}</p>
-		</div>
-		<div class="card-footer">
-			<Button text="View Details" variant="primary" href={`/zones/${zone.id}`} />
+			<div class="info-grid">
+				<div class="info-item">
+					<span class="label">Crop</span>
+					<span class="value">{zone.cropType}</span>
+				</div>
+				<div class="info-item">
+					<span class="label">Soil</span>
+					<span class="value">{zone.soilType}</span>
+				</div>
+				<div class="info-item">
+					<span class="label">Planting</span>
+					<span class="value">{plantingDate}</span>
+				</div>
+				<div class="info-item">
+					<span class="label">Harvest</span>
+					<span class="value">{harvestDate}</span>
+				</div>
+			</div>
 		</div>
 	</div>
 </a>
@@ -77,54 +87,82 @@
 	.card-link {
 		text-decoration: none;
 		color: inherit;
+		display: block;
 	}
 
 	.card {
 		background: white;
-		border-radius: 12px;
-		box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
-		padding: 1rem;
-		transition: transform 0.3s, box-shadow 0.3s;
-		border: 1px solid #e0e0e0;
+		border-radius: 16px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+		padding: 1.5rem;
+		transition: all 0.2s ease-in-out;
+		border: 1px solid #f0f0f0;
 		display: flex;
 		flex-direction: column;
-		height: 100%;
+		gap: 1.25rem;
 	}
 
 	.card:hover {
-		transform: translateY(-5px);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 	}
 
 	.card-header {
-		margin-bottom: 0.5rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 	}
 
 	.zone-name {
 		font-size: 1.25rem;
-		font-weight: 600;
+		font-weight: 500;
+		color: #1a1a1a;
 		margin: 0;
 	}
 
+	.device-count {
+		font-size: 0.875rem;
+		color: #666;
+		background: #f5f5f5;
+		padding: 0.25rem 0.75rem;
+		border-radius: 1rem;
+	}
+
 	.map-container {
-		margin-bottom: 1rem;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid #f0f0f0;
 	}
 
-	.zone-info p {
-		margin: 0.25rem 0;
-		font-size: 0.95rem;
+	.no-data {
+		text-align: center;
+		color: #666;
+		padding: 2rem;
+		background: #fafafa;
+		margin: 0;
 	}
 
-	.zone-info p strong {
-		color: #333;
+	.info-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1rem;
 	}
 
-	.card-footer {
-		margin-top: auto;
-		text-align: right;
+	.info-item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
 	}
 
-	.card-footer a {
-		text-decoration: none;
+	.label {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		color: #666;
+	}
+
+	.value {
+		font-size: 0.925rem;
+		color: #1a1a1a;
 	}
 </style>

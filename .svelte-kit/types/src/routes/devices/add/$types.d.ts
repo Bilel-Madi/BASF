@@ -13,5 +13,3 @@ type PageParentData = EnsureDefined<import('../../$types.js').LayoutData>;
 
 export type PageServerData = null;
 export type PageData = Expand<PageParentData>;
-export type RequestHandler = Kit.RequestHandler<RouteParams, RouteId>;
-export type RequestEvent = Kit.RequestEvent<RouteParams, RouteId>;

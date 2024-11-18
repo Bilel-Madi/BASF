@@ -70,53 +70,74 @@
 		<h1 class="title">{zone.name}</h1>
 		<div class="actions">
 			<a href={`/zones/${zone.id}/edit`}>
-				<Button text="Edit Zone" />
+				<Button text="Edit" variant="outline" />
 			</a>
 			<a href={`/zones/${zone.id}/delete`}>
-				<Button text="Delete Zone" variant="danger" />
+				<Button text="Delete" variant="danger-outline" />
 			</a>
 		</div>
 	</div>
 
 	<div class="content">
 		<div class="map-section">
-			<!-- Map component with adjustable zoom levels -->
 			<MapboxMap
 				accessToken={MAPBOX_ACCESS_TOKEN}
 				{polygonData}
-				height="400px"
+				height="500px"
 				maxZoom={16}
 				minZoom={10}
 				fillColor={getPastelColor(zone.color)}
 			/>
 		</div>
 
-		<div class="zone-details">
-			<h2>Zone Details</h2>
-			<p><strong>Crop Type:</strong> {zone.cropType}</p>
-			<p><strong>Planting Date:</strong> {plantingDate}</p>
-			<p><strong>Harvest Date:</strong> {harvestDate}</p>
-			<p><strong>Soil Type:</strong> {zone.soilType}</p>
-			<p><strong>Date Created:</strong> {dateCreated}</p>
-			<p><strong>Notes:</strong> {zone.notes}</p>
-
-			<h2>Assigned Devices</h2>
-			{#if zone.devices.length > 0}
-				<div class="devices-grid">
-					{#each zone.devices as device}
-						<DeviceCard {device} />
-					{/each}
+		<div class="info-grid">
+			<div class="zone-details card">
+				<h2>Details</h2>
+				<div class="details-grid">
+					<div class="detail-item">
+						<span class="label">Crop Type</span>
+						<span class="value">{zone.cropType}</span>
+					</div>
+					<div class="detail-item">
+						<span class="label">Planting Date</span>
+						<span class="value">{plantingDate}</span>
+					</div>
+					<div class="detail-item">
+						<span class="label">Harvest Date</span>
+						<span class="value">{harvestDate}</span>
+					</div>
+					<div class="detail-item">
+						<span class="label">Soil Type</span>
+						<span class="value">{zone.soilType}</span>
+					</div>
 				</div>
-			{:else}
-				<p>No devices assigned to this zone.</p>
-			{/if}
+				{#if zone.notes}
+					<div class="notes">
+						<span class="label">Notes</span>
+						<p class="value">{zone.notes}</p>
+					</div>
+				{/if}
+			</div>
+
+			<div class="devices card">
+				<h2>Devices</h2>
+				{#if zone.devices.length > 0}
+					<div class="devices-grid">
+						{#each zone.devices as device}
+							<DeviceCard {device} />
+						{/each}
+					</div>
+				{:else}
+					<p class="no-devices">No devices assigned</p>
+				{/if}
+			</div>
 		</div>
 	</div>
 </div>
 
 <style>
 	.page-container {
-		max-width: 1200px;
+		max-width: 1400px;
 		margin: 0 auto;
 		padding: 2rem;
 	}
@@ -125,72 +146,128 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 2rem;
-		flex-wrap: wrap;
-		gap: 1rem;
+		margin: 2rem 0 3rem;
 	}
 
 	.title {
-		font-size: 2rem;
-		font-weight: 700;
+		font-size: 2.5rem;
+		font-weight: 500;
+		color: #2c3e50;
 		margin: 0;
 	}
 
 	.actions {
 		display: flex;
-		align-items: center;
 		gap: 1rem;
 	}
 
 	.content {
+		display: flex;
+		flex-direction: column;
+		gap: 3rem;
+	}
+
+	.map-section {
+		width: 100%;
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+	}
+
+	.info-grid {
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 2rem;
 	}
 
-	.map-section {
-		width: 100%;
+	.card {
+		background: white;
+		border-radius: 12px;
+		padding: 2rem;
+		box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
 	}
 
-	.zone-details {
-		margin-top: 2rem;
-	}
-
-	.zone-details h2 {
+	h2 {
 		font-size: 1.5rem;
-		margin-bottom: 1rem;
+		font-weight: 500;
+		color: #2c3e50;
+		margin: 0 0 1.5rem;
 	}
 
-	.zone-details p {
-		margin: 0.5rem 0;
+	.details-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 2rem;
+	}
+
+	.detail-item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.label {
+		font-size: 0.875rem;
+		color: #64748b;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.value {
 		font-size: 1rem;
+		color: #334155;
 	}
 
-	.zone-details p strong {
-		color: #333;
+	.notes {
+		margin-top: 2rem;
+		padding-top: 2rem;
+		border-top: 1px solid #e2e8f0;
+	}
+
+	.notes .value {
+		margin-top: 0.5rem;
+		line-height: 1.6;
 	}
 
 	.devices-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 		gap: 1.5rem;
-		margin-top: 1rem;
 	}
 
-	a {
-		color: #3498db;
-		text-decoration: none;
-		transition: color 0.2s;
+	.no-devices {
+		color: #64748b;
+		font-size: 0.875rem;
+		text-align: center;
+		padding: 2rem;
+		background: #f8fafc;
+		border-radius: 8px;
 	}
 
-	a:hover {
-		color: #2980b9;
+	@media (min-width: 1024px) {
+		.info-grid {
+			grid-template-columns: 400px 1fr;
+		}
 	}
 
-	/* Responsive Adjustments */
 	@media (max-width: 768px) {
-		.content {
+		.page-container {
+			padding: 1rem;
+		}
+
+		.header {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 1rem;
+		}
+
+		.title {
+			font-size: 2rem;
+		}
+
+		.details-grid {
 			grid-template-columns: 1fr;
+			gap: 1.5rem;
 		}
 	}
 </style>

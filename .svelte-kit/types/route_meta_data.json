@@ -17,6 +17,9 @@
 	"/api/devices": [
 		"src/routes/api/devices/+server.ts"
 	],
+	"/api/devices/add": [
+		"src/routes/api/devices/add/+server.ts"
+	],
 	"/api/devices/check": [
 		"src/routes/api/devices/check/+server.ts"
 	],
@@ -32,8 +35,17 @@
 	"/api/devices/[eui]/data": [
 		"src/routes/api/devices/[eui]/data/+server.ts"
 	],
+	"/api/organizations": [
+		"src/routes/api/organizations/+server.ts"
+	],
+	"/api/organizations/[id]": [
+		"src/routes/api/organizations/[id]/+server.ts"
+	],
 	"/api/zones": [
 		"src/routes/api/zones/+server.ts"
+	],
+	"/api/zones/add": [
+		"src/routes/api/zones/add/+server.ts"
 	],
 	"/auth/logout": [
 		"src/routes/auth/logout/+server.ts"
@@ -60,8 +72,7 @@
 	],
 	"/devices/add": [
 		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts",
-		"src/routes/devices/add/+server.ts"
+		"src/routes/+layout.server.ts"
 	],
 	"/devices/[eui]": [
 		"src/routes/devices/[eui]/+page.server.ts",
@@ -71,8 +82,7 @@
 	"/zones": [
 		"src/routes/zones/+page.server.ts",
 		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts",
-		"src/routes/zones/+server.ts"
+		"src/routes/+layout.server.ts"
 	],
 	"/zones/add": [
 		"src/routes/+layout.ts",
@@ -81,7 +91,6 @@
 	"/zones/[zone_id]": [
 		"src/routes/zones/[zone_id]/+page.server.ts",
 		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts",
-		"src/routes/zones/[zone_id]/+server.ts"
+		"src/routes/+layout.server.ts"
 	]
 }

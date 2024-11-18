@@ -27,12 +27,10 @@
 <div class="page-container">
 	<Breadcrumbs items={breadcrumbItems} />
 	<div class="header">
-		<h1 class="title">My Devices</h1>
-		<div class="actions">
-			<a href="/devices/add" class="no-underline">
-				<Button text="＋ Register Device" />
-			</a>
-		</div>
+		<h1 class="title">Devices</h1>
+		<a href="/devices/add" class="no-underline">
+			<Button text="Add Device" />
+		</a>
 	</div>
 
 	<div class="grid-container">
@@ -44,43 +42,32 @@
 
 <style>
 	.page-container {
-		max-width: 1200px;
+		max-width: 1400px;
 		margin: 0 auto;
-		padding: 1rem;
+		padding: 2rem;
 	}
 
 	.header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 2rem;
-		flex-wrap: wrap;
-		gap: 1rem;
+		margin: 2.5rem 0 3rem;
+		padding-bottom: 1.5rem;
+		border-bottom: 1px solid var(--border-color, #eaeaea);
 	}
 
 	.title {
-		font-size: 2rem;
-		font-weight: 700;
-		margin: 0;
-	}
-
-	.actions {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
+		font-size: 1.75rem;
+		font-weight: 500;
+		letter-spacing: -0.02em;
+		color: var(--text-primary, #111);
 	}
 
 	.grid-container {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 350px));
-		gap: 1.5rem;
-		padding: 1rem 0;
-		justify-content: start;
-	}
-
-	.card-link {
-		text-decoration: none;
-		color: inherit;
+		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+		gap: 2rem;
+		align-items: start;
 	}
 
 	.no-underline {
@@ -88,10 +75,16 @@
 	}
 
 	@media (max-width: 768px) {
+		.page-container {
+			padding: 1.5rem;
+		}
+
 		.header {
-			flex-direction: column;
-			gap: 1rem;
-			align-items: flex-start;
+			margin: 1.5rem 0 2rem;
+		}
+
+		.grid-container {
+			gap: 1.5rem;
 		}
 	}
 </style>

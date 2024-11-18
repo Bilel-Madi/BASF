@@ -83,7 +83,7 @@
 		};
 
 		// Send a POST request to create the zone
-		const response = await fetch('/zones', {
+		const response = await fetch('/api/zones/add', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(zoneData)

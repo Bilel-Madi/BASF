@@ -77,7 +77,7 @@
 	const handleSubmit = async (event) => {
 		event.preventDefault();
 
-		const response = await fetch('/devices/add', {
+		const response = await fetch('/api/devices/add', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
