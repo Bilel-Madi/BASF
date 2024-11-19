@@ -3,7 +3,7 @@
 	export let level: number; // Battery level from 0 to 100
 
 	// Determine battery status color based on level
-	let color = '#4CAF50'; // Green by default
+	let color = '#00d87e'; // Green by default
 	if (level < 20) {
 		color = '#F44336'; // Red
 	} else if (level < 50) {

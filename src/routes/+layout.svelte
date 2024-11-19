@@ -506,7 +506,7 @@
 	.status-dot {
 		width: 8px;
 		height: 8px;
-		background-color: #00ff00;
+		background-color: #00d87e;
 		border-radius: 50%;
 		display: inline-block;
 		margin-right: 8px;

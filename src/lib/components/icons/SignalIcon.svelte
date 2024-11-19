@@ -17,9 +17,9 @@
 	}
 
 	// Determine color based on signal strength
-	let color = '#9E9E9E'; // Grey by default
+	let color = '#00d87e'; // Grey by default
 	if (signalLevel > 66) {
-		color = '#4CAF50'; // Green
+		color = '#00d87e'; // Green
 	} else if (signalLevel > 33) {
 		color = '#FFC107'; // Yellow
 	} else if (signalLevel > 0) {

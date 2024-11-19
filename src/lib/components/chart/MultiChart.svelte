@@ -341,7 +341,21 @@
 				},
 				plugins: {
 					legend: {
-						display: false
+						position: 'bottom',
+						align: 'start',
+
+						labels: {
+							usePointStyle: true,
+							pointStyle: 'circle',
+							boxWidth: 8,
+							boxHeight: 8,
+							padding: 10,
+							color: '#050575',
+							font: {
+								size: 12,
+								weight: '200'
+							}
+						}
 					},
 					tooltip: {
 						mode: 'index',

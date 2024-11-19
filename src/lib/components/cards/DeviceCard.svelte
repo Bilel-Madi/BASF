@@ -3,6 +3,7 @@
 	import MiniLineChart from '$lib/components/MiniChart/MiniLineChart.svelte';
 	import BatteryIcon from '$lib/components/icons/BatteryIcon.svelte';
 	import SignalIcon from '$lib/components/icons/SignalIcon.svelte';
+	import StatusDot from '$lib/components/ui/StatusDot.svelte';
 	import type { Device, Zone } from '@prisma/client';
 
 	export let device: DeviceWithZoneWithReadings;
@@ -27,10 +28,10 @@
 		return Math.floor(diffMs / 60000); // Convert milliseconds to minutes
 	}
 
-	// Function to determine status (green or red)
-	function getStatus(receivedAt: string): 'green' | 'red' {
+	// Function to determine status color
+	function getStatusColor(receivedAt: string): string {
 		const minutes = timeSinceLastMessage(receivedAt);
-		return minutes < 120 ? 'green' : 'red';
+		return minutes < 120 ? '#00d87e' : '#f44336';
 	}
 
 	// Function to format time since last message
@@ -68,10 +69,7 @@
 	<div class="card">
 		<div class="card-header">
 			<h2 class="device-name">{device.name}</h2>
-			<span
-				class="status-light {getStatus(device.last_seen.toISOString())}"
-				aria-label={getStatus(device.last_seen.toISOString()) === 'green' ? 'Online' : 'Offline'}
-			/>
+			<StatusDot color={getStatusColor(device.last_seen.toISOString())} size="12px" />
 		</div>
 		<p class="eui-text"><strong>EUI:</strong> {device.eui}</p>
 		<div class="chart-container">
@@ -86,7 +84,7 @@
 				<MiniLineChart
 					data={device.mainReadings}
 					color={getColor(device.type)}
-					width={350}
+					width="100%"
 					height={60}
 				/>
 			{:else}
@@ -173,35 +171,6 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-	}
-
-	.status-light {
-		width: 12px;
-		height: 12px;
-		border-radius: 50%;
-		display: inline-block;
-		margin-top: 0;
-	}
-
-	.status-light.green {
-		background-color: #4caf50;
-		animation: blink 1.5s infinite;
-	}
-
-	.status-light.red {
-		background-color: #f44336;
-	}
-
-	@keyframes blink {
-		0% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0.4;
-		}
-		100% {
-			opacity: 1;
-		}
 	}
 
 	.last-seen {
