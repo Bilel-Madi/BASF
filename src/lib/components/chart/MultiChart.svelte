@@ -425,8 +425,8 @@
 				plugins: {
 					topBorder: {},
 					legend: {
-						position: 'left',
-						align: 'start',
+						position: 'top',
+						align: 'center',
 
 						labels: {
 							usePointStyle: true,
@@ -436,8 +436,8 @@
 							padding: 10,
 							color: '#050575',
 							font: {
-								size: 11,
-								weight: '200'
+								size: 12,
+								weight: '500'
 							}
 						}
 					},

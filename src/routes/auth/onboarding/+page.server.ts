@@ -1,3 +1,5 @@
+// src/routes/auth/onboarding/+page.server.ts
+
 import { fail, redirect } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 import type { PageServerLoad } from './$types';

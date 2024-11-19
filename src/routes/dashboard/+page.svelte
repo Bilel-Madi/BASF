@@ -170,7 +170,7 @@
 	.main-column,
 	.side-column {
 		display: grid;
-		grid-template-rows: 0.8fr 1fr;
+		grid-template-rows: 1fr 1fr;
 		gap: 0.5rem;
 		min-height: 0;
 	}

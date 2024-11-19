@@ -202,6 +202,10 @@
 	.chart-container {
 		position: relative;
 		width: 100%;
+		background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+		background-size: 13px 13px;
+		border-radius: 8px;
+		padding: 1rem 0;
 	}
 
 	.main-reading {

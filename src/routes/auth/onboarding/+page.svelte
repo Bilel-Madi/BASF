@@ -1,3 +1,5 @@
+<!-- src/routes/auth/onboarding/+page.svelte -->
+
 <script lang="ts">
 	import TextInput from '$lib/components/ui/TextInput.svelte';
 	import Button from '$lib/components/ui/Button.svelte';

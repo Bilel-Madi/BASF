@@ -61,8 +61,6 @@
 	}
 </script>
 
-// Title comment
-
 <div class="controls-container">
 	<div class="left-controls">
 		<div class="selectors">
