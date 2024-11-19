@@ -1,12 +1,10 @@
-<!-- src/lib/components/chart/MultiLineChart.svelte -->
-
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { Chart, registerables } from 'chart.js';
-	import 'chartjs-adapter-date-fns';
+	import { DateTime } from 'luxon';
+	import 'chartjs-scale-timestack';
 	import type { Device } from '@prisma/client';
 	import { DEVICE_READINGS } from '$lib/constants/deviceReadings';
-	import { enUS } from 'date-fns/locale';
 
 	Chart.register(...registerables);
 
@@ -35,72 +33,34 @@
 	const READING_COLORS = {
 		moisture: {
 			base: '#1976D2', // Main blue
-			shades: [
-				'#1976D2', // Main blue
-				'#2196F3', // Lighter blue
-				'#64B5F6', // Even lighter blue
-				'#0D47A1', // Darker blue
-				'#1565C0' // Another shade of blue
-			]
+			shades: ['#1976D2', '#2196F3', '#64B5F6', '#0D47A1', '#1565C0']
 		},
 		temperature: {
 			base: '#4CAF50', // Main green
-			shades: [
-				'#4CAF50', // Main green
-				'#66BB6A', // Lighter green
-				'#81C784', // Even lighter green
-				'#2E7D32', // Darker green
-				'#388E3C' // Another shade of green
-			]
+			shades: ['#4CAF50', '#66BB6A', '#81C784', '#2E7D32', '#388E3C']
 		},
 		ec: {
 			base: '#795548', // Main brown
-			shades: [
-				'#795548', // Main brown
-				'#8D6E63', // Lighter brown
-				'#A1887F', // Even lighter brown
-				'#4E342E', // Darker brown
-				'#5D4037' // Another shade of brown
-			]
+			shades: ['#795548', '#8D6E63', '#A1887F', '#4E342E', '#5D4037']
 		},
 		co2: {
 			base: '#8BC34A', // Main lime green
-			shades: [
-				'#8BC34A', // Main lime green
-				'#9CCC65', // Lighter lime green
-				'#AED581', // Even lighter lime green
-				'#558B2F', // Darker lime green
-				'#689F38' // Another shade of lime green
-			]
+			shades: ['#8BC34A', '#9CCC65', '#AED581', '#558B2F', '#689F38']
 		},
 		humidity: {
 			base: '#9C27B0', // Main purple
-			shades: [
-				'#9C27B0', // Main purple
-				'#AB47BC', // Lighter purple
-				'#BA68C8', // Even lighter purple
-				'#6A1B9A', // Darker purple
-				'#7B1FA2' // Another shade of purple
-			]
+			shades: ['#9C27B0', '#AB47BC', '#BA68C8', '#6A1B9A', '#7B1FA2']
 		},
 		pressure: {
 			base: '#FF9800', // Main orange
-			shades: [
-				'#FF9800', // Main orange
-				'#FFA726', // Lighter orange
-				'#FFB74D', // Even lighter orange
-				'#E65100', // Darker orange
-				'#EF6C00' // Another shade of orange
-			]
+			shades: ['#FF9800', '#FFA726', '#FFB74D', '#E65100', '#EF6C00']
 		}
 	};
 
-	// Replace getRandomColor with this function
 	function getReadingColor(readingType: string, index: number = 0): string {
 		const normalizedType = readingType.toLowerCase();
 		let colorConfig;
 
-		// Find the matching color config
 		for (const [type, config] of Object.entries(READING_COLORS)) {
 			if (normalizedType.includes(type)) {
 				colorConfig = config;
@@ -109,34 +69,43 @@
 		}
 
 		if (!colorConfig) {
-			// Fallback color if no match is found
 			return '#757575';
 		}
 
-		// If there's only one device, use the base color
 		if (selectedDevices.length === 1) {
 			return colorConfig.base;
 		}
 
-		// Otherwise, use a shade based on the index
 		return colorConfig.shades[index % colorConfig.shades.length];
 	}
 
-	// Define scale configurations for different reading types
 	const SCALE_CONFIGS = {
 		ec: {
 			id: 'ec',
-			position: 'right',
+			position: 'left',
 			min: 200,
 			max: 1500,
 			title: {
 				display: true,
-				text: 'EC (µS/cm)'
+				text: 'EC (µS/cm)',
+				position: 'top',
+				align: 'start',
+				color: '#050575',
+				font: {
+					size: 14
+				},
+				padding: {
+					top: 14
+				}
 			},
-			grid: {
-				drawOnChartArea: false,
-				drawTicks: false,
-				display: false
+			ticks: {
+				color: '#030359',
+				padding: 4
+			},
+			border: {
+				display: true,
+				color: 'rgba(3, 3, 89, 0.3)',
+				width: 1
 			}
 		},
 		moisture: {
@@ -146,30 +115,60 @@
 			max: 40,
 			title: {
 				display: true,
-				text: 'Moisture %'
+				text: 'Moisture RH',
+				position: 'top',
+				align: 'start',
+				color: '#050575',
+				font: {
+					size: 14
+				},
+				padding: {
+					top: 14
+				}
 			},
-			grid: {
-				drawOnChartArea: false,
-				drawTicks: false,
-				display: false
+			ticks: {
+				callback: function (value) {
+					return `${value}%`;
+				},
+				color: '#030359',
+				padding: 4
 			},
+
 			border: {
-				display: true
+				display: true,
+				color: 'rgba(3, 3, 89, 0.3)',
+				width: 1
 			}
 		},
 		temperature: {
 			id: 'temperature',
-			position: 'left',
+			position: 'right',
 			min: 0,
 			max: 50,
 			title: {
 				display: true,
-				text: '°C'
+				text: 'Temperature °C',
+				position: 'top',
+				align: 'start',
+				color: '#050575',
+				font: {
+					size: 14
+				},
+				padding: {
+					top: 14
+				}
 			},
-			grid: {
-				drawOnChartArea: false,
-				drawTicks: false,
-				display: false
+			ticks: {
+				callback: function (value) {
+					return `${value}°C`;
+				},
+				color: '#030359',
+				padding: 4
+			},
+			border: {
+				display: true,
+				color: 'rgba(3, 3, 89, 0.3)',
+				width: 1
 			}
 		},
 		co2: {
@@ -180,11 +179,6 @@
 			title: {
 				display: true,
 				text: 'PPM'
-			},
-			grid: {
-				drawOnChartArea: false,
-				drawTicks: false,
-				display: false
 			}
 		},
 		humidity: {
@@ -195,11 +189,6 @@
 			title: {
 				display: true,
 				text: 'Humidity %'
-			},
-			grid: {
-				drawOnChartArea: false,
-				drawTicks: false,
-				display: false
 			}
 		},
 		pressure: {
@@ -210,11 +199,6 @@
 			title: {
 				display: true,
 				text: 'hPa'
-			},
-			grid: {
-				drawOnChartArea: false,
-				drawTicks: false,
-				display: false
 			}
 		}
 	};
@@ -237,7 +221,6 @@
 			: [...selectedReadings, reading];
 	}
 
-	// Update chart when data or selections change
 	$: if (chart && data) {
 		updateChart();
 	}
@@ -247,57 +230,7 @@
 
 		const datasets = [];
 		const usedScales = new Set(['x']); // Always include x-axis
-		const dataRanges: Record<string, { min: number; max: number }> = {};
 
-		// First pass: collect all data points and find min/max for each reading type
-		data.forEach((deviceData) => {
-			if (!deviceData?.data) return;
-
-			const deviceReadings =
-				DEVICE_READINGS[deviceData.device.type as keyof typeof DEVICE_READINGS] || [];
-
-			selectedReadings.forEach((readingType) => {
-				if (deviceReadings.some((r) => r.value === readingType)) {
-					const values = deviceData.data
-						.filter((reading) => reading[readingType] !== undefined)
-						.map((reading) => reading[readingType]);
-
-					if (values.length > 0) {
-						const min = Math.min(...values);
-						const max = Math.max(...values);
-
-						if (!dataRanges[readingType]) {
-							dataRanges[readingType] = { min, max };
-						} else {
-							dataRanges[readingType].min = Math.min(dataRanges[readingType].min, min);
-							dataRanges[readingType].max = Math.max(dataRanges[readingType].max, max);
-						}
-					}
-				}
-			});
-		});
-
-		// Update SCALE_CONFIGS with dynamic ranges
-		const DYNAMIC_SCALE_CONFIGS = {
-			...SCALE_CONFIGS,
-			...Object.entries(dataRanges).reduce((acc, [readingType, range]) => {
-				if (readingType === 'moisture' || readingType === 'temperature' || readingType === 'ec')
-					return acc;
-				const padding = (range.max - range.min) * 0.1; // 10% padding
-				const baseConfig = SCALE_CONFIGS[readingType];
-
-				return {
-					...acc,
-					[readingType]: {
-						...baseConfig,
-						min: Math.floor(range.min - padding),
-						max: Math.ceil(range.max + padding)
-					}
-				};
-			}, {})
-		};
-
-		// Second pass: create datasets and track which scales are actually used
 		data.forEach((deviceData, deviceIndex) => {
 			if (!deviceData?.data) return;
 
@@ -306,7 +239,7 @@
 
 			selectedReadings.forEach((readingType) => {
 				if (deviceReadings.some((r) => r.value === readingType)) {
-					const scaleId = DYNAMIC_SCALE_CONFIGS[readingType]?.id || 'default';
+					const scaleId = SCALE_CONFIGS[readingType]?.id || 'default';
 					usedScales.add(scaleId);
 
 					const color = getReadingColor(readingType, deviceIndex);
@@ -317,7 +250,7 @@
 						data: deviceData.data
 							.filter((reading) => reading[readingType] !== undefined)
 							.map((reading) => ({
-								x: new Date(reading.receivedAt),
+								x: new Date(reading.receivedAt).getTime(), // Convert to milliseconds
 								y: reading[readingType]
 							})),
 						borderColor: color,
@@ -329,71 +262,66 @@
 										return getGradient(ctx, color);
 								  }
 								: color,
-						fill: readingType === 'moisture', // Only enable fill for moisture
+						fill: readingType === 'moisture',
 						yAxisID: scaleId,
+						tension: 0.1,
+						borderWidth: 2.5,
 						pointRadius: 0,
-						tension: 0.1
+						pointHitRadius: 55,
+						pointHoverRadius: 5
 					};
 					datasets.push(dataset);
 				}
 			});
 		});
 
-		// Find the date range in the data
-		let firstDate: Date | null = null;
-		let lastDate: Date | null = null;
+		// Only add scales that are actually being used
+		chart.options.scales = {
+			x: {
+				type: 'timestack',
+				timescale: {
+					datetime: {
+						zone: 'local',
+						locale: 'en-US'
+					},
+					density: 0.5
+				},
+				ticks: {
+					color: '#000238', // Blue color for the text
+					align: 'center',
+					padding: 2,
+					font: {
+						size: 11
+					}
+				},
+				grid: {
+					color: '#e8e8e8',
+					drawTicks: true,
+					tickLength: 8,
+					tickWidth: 4
+				}
+			}
+		};
 
-		data.forEach((deviceData) => {
-			if (!deviceData?.data?.length) return;
-
-			deviceData.data.forEach((reading) => {
-				const date = new Date(reading.receivedAt);
-				if (!firstDate || date < firstDate) firstDate = date;
-				if (!lastDate || date > lastDate) lastDate = date;
-			});
+		Object.entries(SCALE_CONFIGS).forEach(([readingType, scaleConfig]) => {
+			if (usedScales.has(scaleConfig.id)) {
+				chart.options.scales[scaleConfig.id] = {
+					...scaleConfig,
+					display: true,
+					grid: {
+						drawOnChartArea: false,
+						drawTicks: true,
+						display: true,
+						tickLength: 6,
+						tickWidth: 1,
+						color: 'rgba(60, 55, 205, 1)'
+					}
+				};
+			}
 		});
 
-		if (firstDate && lastDate) {
-			const timeUnit = getTimeUnit(firstDate, lastDate);
-
-			// Update the time axis configuration
-			chart.options.scales = {
-				x: {
-					type: 'time',
-					time: {
-						unit: timeUnit,
-						displayFormats: {
-							hour: 'HH:mm',
-							day: 'MMM d',
-							week: 'MMM d',
-							month: 'MMM yyyy'
-						}
-					},
-					grid: {
-						display: true,
-						drawOnChartArea: true
-					}
-				}
-			};
-
-			// Only add scales that are actually being used
-			Object.entries(DYNAMIC_SCALE_CONFIGS).forEach(([readingType, scaleConfig]) => {
-				if (usedScales.has(scaleConfig.id)) {
-					chart.options.scales[scaleConfig.id] = {
-						...scaleConfig,
-						display: true, // Show axis
-						grid: {
-							drawOnChartArea: false,
-							drawTicks: false,
-							display: false
-						}
-					};
-				}
-			});
-
-			chart.data.datasets = datasets;
-			chart.update('none'); // Use 'none' animation for smoother updates
-		}
+		chart.data.datasets = datasets;
+		chart.update('none');
 	}
 
 	onMount(() => {
@@ -413,19 +341,16 @@
 				},
 				plugins: {
 					legend: {
-						position: 'top',
-						labels: {
-							usePointStyle: true,
-							pointStyle: 'circle',
-							boxWidth: 8,
-							boxHeight: 8,
-							padding: 10
-						}
+						display: false
 					},
 					tooltip: {
 						mode: 'index',
 						intersect: false,
 						callbacks: {
+							title: function (context) {
+								const timestamp = context[0].parsed.x;
+								return DateTime.fromMillis(timestamp).toLocaleString(DateTime.DATETIME_MED);
+							},
 							label: function (context) {
 								let label = context.dataset.label || '';
 								if (label) {
@@ -434,7 +359,6 @@
 								const value = context.parsed.y;
 								const readingType = context.dataset.label.split(' - ')[1].toLowerCase();
 
-								// Add appropriate units
 								if (readingType.includes('temperature')) {
 									label += value.toFixed(1) + ' °C';
 								} else if (readingType.includes('humidity') || readingType.includes('moisture')) {
@@ -455,31 +379,22 @@
 				},
 				scales: {
 					x: {
-						type: 'time',
-						time: {
-							unit: 'hour',
-							displayFormats: {
-								hour: 'HH:mm',
-								day: 'MMM d',
-								week: 'MMM d',
-								month: 'MMM yyyy'
-							}
+						type: 'timestack',
+						timescale: {
+							datetime: {
+								zone: 'local',
+								locale: 'en-US'
+							},
+							density: 0.5
 						},
 						ticks: {
-							maxTicksLimit: 10,
-							autoSkip: true,
-							display: true
+							color: '#1976D2' // Blue color for the text
 						},
 						grid: {
-							display: true,
-							drawOnChartArea: true
-						},
-						adapters: {
-							date: {
-								locale: enUS
-							}
+							color: '#1976D2' // Blue color for the ticks
 						}
 					}
+					// Y-axes will be added dynamically in updateChart()
 				}
 			}
 		});
@@ -489,21 +404,6 @@
 		if (chart) chart.destroy();
 	});
 
-	// Add this function to determine the appropriate time unit
-	function getTimeUnit(firstDate: Date, lastDate: Date): string {
-		const diffInHours = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60);
-
-		if (diffInHours <= 24) return 'hour';
-		if (diffInHours <= 72) return 'day'; // For 3 days
-		if (diffInHours <= 168) return 'day'; // For 1 week
-		if (diffInHours <= 336) return 'week'; // For 2 weeks
-		if (diffInHours <= 730) return 'week'; // For 1 month
-		if (diffInHours <= 2190) return 'month'; // For 3 months
-		if (diffInHours <= 4380) return 'month'; // For 6 months
-		return 'month'; // For anything longer
-	}
-
-	// Add this function near the top with your other utility functions
 	function getGradient(ctx: CanvasRenderingContext2D, color: string): CanvasGradient {
 		const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
 		gradient.addColorStop(0, `${color}33`); // 20% opacity version of the color

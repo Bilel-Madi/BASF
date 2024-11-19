@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import type { Zone, Device } from '@prisma/client';
 	import { clickOutside } from '$lib/actions/clickOutside';
+	import LastActivity from '$lib/components/Activity/LastActivity.svelte';
 
 	export let data: {
 		zones: Array<Zone & { devices: Device[] }>;
@@ -94,7 +95,7 @@
 <div class="dashboard">
 	<div class="top-row">
 		<div class="info-card last-seen">
-			<h3>Last Seen</h3>
+			<LastActivity />
 		</div>
 		<div class="info-card alerts">
 			<h3>Alerts</h3>

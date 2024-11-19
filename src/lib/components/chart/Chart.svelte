@@ -19,6 +19,21 @@
 	const timeFrames = ['1d', '3d', '1w', '2w', '1m', '3m', '6m', '1y', 'all'];
 	let selectedTimeFrame = DEFAULT_TIME_FRAME;
 
+	// Add state for active datasets
+	let activeDatasets = new Set();
+
+	// Add console.log to debug
+	$: console.log('Chart Component Data:', data);
+
+	// Initialize activeDatasets with all datasets active
+	$: {
+		if ($chartData.length > 0) {
+			activeDatasets = new Set(
+				$chartData.flatMap((d) => d.data.datasets?.map((ds) => ds.label) || [])
+			);
+		}
+	}
+
 	// Function to handle selection changes
 	async function handleSelectionChange() {
 		const devices = get(selectedDevices);
@@ -63,6 +78,16 @@
 		selectedTimeFrame = event.detail;
 		await fetchChartData();
 	}
+
+	function handleDatasetToggle(event: CustomEvent<string>) {
+		const datasetLabel = event.detail;
+		if (activeDatasets.has(datasetLabel)) {
+			activeDatasets.delete(datasetLabel);
+		} else {
+			activeDatasets.add(datasetLabel);
+		}
+		activeDatasets = activeDatasets; // trigger reactivity
+	}
 </script>
 
 <div class="chart-section">
@@ -71,9 +96,11 @@
 		bind:selectedDevices={$selectedDevices}
 		bind:selectedReadings={$selectedReadings}
 		bind:timeFrame={selectedTimeFrame}
+		chartDatasets={$chartData.flatMap((d) => d.data.datasets)}
 		{timeFrames}
 		on:selectionChange={handleSelectionChange}
 		on:timeFrameChange={handleTimeFrameChange}
+		on:toggleDataset={handleDatasetToggle}
 	/>
 
 	<MultiChart
@@ -82,6 +109,7 @@
 		bind:selectedDevices={$selectedDevices}
 		bind:selectedReadings={$selectedReadings}
 		bind:timeFrame={selectedTimeFrame}
+		{activeDatasets}
 	/>
 </div>
 
