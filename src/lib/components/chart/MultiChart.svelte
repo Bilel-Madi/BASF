@@ -415,8 +415,8 @@
 			data: { datasets: [] },
 			options: {
 				responsive: true,
-
 				maintainAspectRatio: false,
+
 				interaction: {
 					mode: 'nearest',
 					axis: 'x',
@@ -425,18 +425,18 @@
 				plugins: {
 					topBorder: {},
 					legend: {
-						position: 'bottom',
+						position: 'left',
 						align: 'start',
 
 						labels: {
 							usePointStyle: true,
 							pointStyle: 'circle',
-							boxWidth: 8,
-							boxHeight: 8,
+							boxWidth: 6,
+							boxHeight: 6,
 							padding: 10,
 							color: '#050575',
 							font: {
-								size: 12,
+								size: 11,
 								weight: '200'
 							}
 						}

@@ -162,7 +162,7 @@
 	.dashboard-grid {
 		flex: 1;
 		display: grid;
-		grid-template-columns: 3fr 1fr;
+		grid-template-columns: 4fr 1fr;
 		gap: 0.5rem;
 		min-height: 0;
 	}
@@ -170,7 +170,7 @@
 	.main-column,
 	.side-column {
 		display: grid;
-		grid-template-rows: 1fr 1fr;
+		grid-template-rows: 0.8fr 1fr;
 		gap: 0.5rem;
 		min-height: 0;
 	}
@@ -180,7 +180,7 @@
 	.latest-readings,
 	.metadata-section {
 		background: white;
-		border-radius: 8px;
+		border-radius: 10px;
 		padding: 1rem;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		overflow: hidden;
