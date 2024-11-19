@@ -111,8 +111,8 @@
 		moisture: {
 			id: 'moisture',
 			position: 'left',
-			min: 15,
-			max: 40,
+			min: 10,
+			max: 45,
 			title: {
 				display: true,
 				text: 'Moisture RH',
@@ -324,6 +324,88 @@
 		chart.update('none');
 	}
 
+	// Add this plugin definition before the onMount function
+	const topBorderPlugin = {
+		id: 'topBorder',
+		beforeDraw(chart: Chart) {
+			const { ctx, chartArea } = chart;
+			if (!chartArea) return;
+
+			ctx.save();
+			ctx.beginPath();
+			ctx.strokeStyle = '#e8e8e8';
+			ctx.lineWidth = 1;
+			ctx.moveTo(chartArea.left, chartArea.top);
+			ctx.lineTo(chartArea.right, chartArea.top);
+			ctx.stroke();
+			ctx.restore();
+		}
+	};
+
+	// Register the plugin globally
+	Chart.register(topBorderPlugin);
+
+	// Add these new constants for the ranges
+	const ANNOTATION_RANGES = {
+		moisture: [
+			{ lower: 10, upper: 15, color: 'rgba(255, 99, 71, 0.03)', lineColor: '#FF6347' },
+			{ lower: 15, upper: 25, color: 'rgba(245, 243, 154, 0.03)', lineColor: '#00ff95' },
+			{ lower: 25, upper: 40, color: 'rgba(0, 255, 149, 0.03)', lineColor: '#00ff95' },
+			{ lower: 40, upper: 45, color: 'rgba(173, 216, 230, 0.0)', lineColor: '#00ff95' }
+		]
+		// Add other reading types as needed
+	};
+
+	// Add this before the chart initialization
+	const annotationBoxPlugin = {
+		id: 'annotationBox',
+		beforeDraw(chart) {
+			const { ctx, chartArea, scales } = chart;
+			if (!chartArea) return;
+
+			const { left, right } = chartArea;
+			const boxWidth = right - left;
+
+			// Draw boxes for each reading type that has a scale
+			Object.entries(ANNOTATION_RANGES).forEach(([readingType, ranges]) => {
+				const scaleId = SCALE_CONFIGS[readingType]?.id;
+				if (scales[scaleId]) {
+					drawAnnotationBoxes(ctx, scales[scaleId], left, right, boxWidth, ranges);
+				}
+			});
+		}
+	};
+
+	function drawAnnotationBoxes(ctx, scale, left, right, boxWidth, ranges) {
+		ranges.forEach((range, index) => {
+			const boxTop = scale.getPixelForValue(range.upper);
+			const boxBottom = scale.getPixelForValue(range.lower);
+			const boxHeight = boxBottom - boxTop;
+
+			ctx.save();
+
+			// Draw the filled box
+			ctx.fillStyle = range.color;
+			ctx.fillRect(left, boxTop, boxWidth, boxHeight);
+
+			// Draw the dashed line unless it's the highest box
+			if (index !== ranges.length - 1) {
+				ctx.beginPath();
+				ctx.setLineDash([5, 5]);
+				ctx.moveTo(left, boxTop);
+				ctx.lineTo(right, boxTop);
+				ctx.strokeStyle = range.lineColor;
+				ctx.lineWidth = 1;
+				ctx.stroke();
+			}
+
+			ctx.restore();
+		});
+	}
+
+	// Register the plugin globally
+	Chart.register(annotationBoxPlugin);
+
 	onMount(() => {
 		const ctx = chartCanvas.getContext('2d');
 		if (!ctx) return;
@@ -333,6 +415,7 @@
 			data: { datasets: [] },
 			options: {
 				responsive: true,
+
 				maintainAspectRatio: false,
 				interaction: {
 					mode: 'nearest',
@@ -340,6 +423,7 @@
 					intersect: false
 				},
 				plugins: {
+					topBorder: {},
 					legend: {
 						position: 'bottom',
 						align: 'start',
@@ -389,7 +473,8 @@
 								return label;
 							}
 						}
-					}
+					},
+					annotationBox: {}
 				},
 				scales: {
 					x: {
@@ -421,7 +506,7 @@
 	function getGradient(ctx: CanvasRenderingContext2D, color: string): CanvasGradient {
 		const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
 		gradient.addColorStop(0, `${color}33`); // 20% opacity version of the color
-		gradient.addColorStop(1, `${color}00`); // 0% opacity version of the color
+		gradient.addColorStop(0.5, `${color}00`); // 0% opacity version of the color
 		return gradient;
 	}
 </script>

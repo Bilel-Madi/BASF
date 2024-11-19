@@ -22,18 +22,6 @@
 	// Add state for active datasets
 	let activeDatasets = new Set();
 
-	// Add console.log to debug
-	$: console.log('Chart Component Data:', data);
-
-	// Initialize activeDatasets with all datasets active
-	$: {
-		if ($chartData.length > 0) {
-			activeDatasets = new Set(
-				$chartData.flatMap((d) => d.data.datasets?.map((ds) => ds.label) || [])
-			);
-		}
-	}
-
 	// Function to handle selection changes
 	async function handleSelectionChange() {
 		const devices = get(selectedDevices);
