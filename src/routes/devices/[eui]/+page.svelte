@@ -12,6 +12,7 @@
 	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import ThresholdBar from '$lib/components/ui/ThresholdBar.svelte'; // Import ThresholdBar
 	import type { PageLoad } from './$types';
+	import { colorMap } from '$lib/colorMap';
 
 	export let data;
 
@@ -476,27 +477,33 @@
 					allowMarkerPlacement={false}
 					showControls={true}
 					mapFeatures={[
-						// Project boundary
-						{
-							type: 'Feature',
-							geometry: data.project.geometry,
-							properties: {
-								type: 'projectBoundary',
-								id: data.project.id,
-								name: data.project.name
-							}
-						},
-						// Zone polygon
-						{
-							type: 'Feature',
-							geometry: data.device.zone.geometry,
-							properties: {
-								type: 'zone',
-								id: data.device.zone.id,
-								name: data.device.zone.name,
-								color: getPastelColor(data.device.zone.color)
-							}
-						}
+						...(data.project?.geometry
+							? [
+									{
+										type: 'Feature',
+										geometry: data.project.geometry,
+										properties: {
+											type: 'projectBoundary',
+											id: data.project.id,
+											name: data.project.name
+										}
+									}
+							  ]
+							: []),
+						...(data.device.zone?.geometry
+							? [
+									{
+										type: 'Feature',
+										geometry: data.device.zone.geometry,
+										properties: {
+											type: 'zone',
+											id: data.device.zone.id,
+											name: data.device.zone.name,
+											color: colorMap[data.device.zone.color] || '#BAE1FF' // Default to PASTEL_BLUE if color is undefined
+										}
+									}
+							  ]
+							: [])
 					]}
 				/>
 			</div>
