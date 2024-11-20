@@ -11,6 +11,8 @@
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import { tick } from 'svelte';
 	import jsQR from 'jsqr';
+	import { colorMap } from '$lib/colorMap';
+	import type { ZoneColor } from '@prisma/client';
 
 	let eui = '';
 	let error = '';
@@ -214,6 +216,10 @@
 
 	$: if (data.project && data.project.center) {
 		projectCenter = data.project.center.coordinates as [number, number];
+	}
+
+	function getPastelColor(color: ZoneColor | null): string {
+		return color ? colorMap[color] : '#CCCCCC'; // Use the colorMap for known colors
 	}
 </script>
 
