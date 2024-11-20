@@ -51,6 +51,6 @@ export const actions = {
 			return fail(500, { error: 'Internal server error' });
 		}
 
-		throw redirect(303, '/zones');
+		throw redirect(303, '/projects/add');
 	}
 }; 

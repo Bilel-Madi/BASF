@@ -2,12 +2,27 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import socket from '$lib/socket';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import DeviceCard from '$lib/components/cards/DeviceCard.svelte';
 	import type { Device, Zone } from '@prisma/client';
 
 	export let data: { devices: DeviceWithZoneWithReadings[] };
+	let devices = data.devices;
+
+	onMount(() => {
+		socket.on('device_update', (updatedDevice) => {
+			const index = devices.findIndex((device) => device.eui === updatedDevice.eui);
+			if (index !== -1) {
+				devices[index] = updatedDevice;
+			}
+		});
+
+		return () => {
+			socket.off('device_update');
+		};
+	});
 
 	interface DeviceWithZoneWithReadings extends Device {
 		zone: Zone;
@@ -34,7 +49,7 @@
 	</div>
 
 	<div class="grid-container">
-		{#each data.devices as device}
+		{#each devices as device}
 			<DeviceCard {device} />
 		{/each}
 	</div>

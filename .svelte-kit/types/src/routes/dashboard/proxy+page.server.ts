@@ -4,11 +4,8 @@
 import { redirect } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 import type { PageServerLoad } from './$types';
-import { subDays } from 'date-fns';
 
 export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
-  console.log('User:', locals.user);
-
   const user = locals.user;
 
   if (!user) {
@@ -21,46 +18,49 @@ export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
   }
 
   try {
-    // Fetch zones with devices
-    const zones = await prisma.zone.findMany({
+    // Fetch the user's project
+    const project = await prisma.project.findFirst({
       where: { organizationId: user.organizationId },
+    });
+
+    if (!project) {
+      throw redirect(303, '/projects/add');
+    }
+
+    // Fetch zones associated with the project
+    const zones = await prisma.zone.findMany({
+      where: { projectId: project.id },
       include: {
         devices: true,
       },
     });
-    console.log('Fetched zones:', JSON.stringify(zones, null, 2));
 
     // Fetch latest readings for devices
     const devicesWithReadings = await Promise.all(
-      zones.flatMap(zone =>
-        zone.devices.map(async device => {
-          console.log('Processing device:', device.eui, 'Type:', device.type);
-          
+      zones.flatMap((zone) =>
+        zone.devices.map(async (device) => {
           let latestData = {};
           if (device.type === 'CO2_SENSOR') {
             const data = await prisma.air.findFirst({
               where: { deviceId: device.eui },
               orderBy: { receivedAt: 'desc' },
             });
-            console.log('CO2 sensor latest data:', data);
             latestData = data || {};
           } else if (device.type === 'SOIL_MOISTURE') {
             const data = await prisma.soil.findFirst({
               where: { deviceId: device.eui },
               orderBy: { receivedAt: 'desc' },
             });
-            console.log('Soil moisture latest data:', data);
             latestData = data || {};
           }
           return { ...device, latestData };
         })
       )
     );
-    console.log('Final devices with readings:', JSON.stringify(devicesWithReadings, null, 2));
 
-    return { zones, devices: devicesWithReadings };
+    return { project, zones, devices: devicesWithReadings };
   } catch (error) {
     console.error('Error fetching data:', error);
-    return { zones: [], devices: [] };
+    return { project: null, zones: [], devices: [] };
   }
 };

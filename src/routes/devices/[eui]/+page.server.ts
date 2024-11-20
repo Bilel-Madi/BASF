@@ -13,14 +13,22 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
   const eui = params.eui;
 
-  const device = await prisma.device.findUnique({
-    where: { eui },
-    include: { zone: true },
-  });
+  const [device, project] = await Promise.all([
+    prisma.device.findUnique({
+      where: { eui },
+      include: { zone: true },
+    }),
+    prisma.project.findFirst({
+      where: { organizationId: user.organizationId }
+    })
+  ]);
 
   if (!device || device.zone?.organizationId !== user.organizationId) {
     throw error(404, 'Device not found');
   }
 
-  return { device };
+  return { 
+    device,
+    project 
+  };
 };

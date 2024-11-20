@@ -16,20 +16,29 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   // Define the start date for 1 day's data
   const startDate = subDays(new Date(), 1);
 
-  // Fetch the zone with devices
-  const zone = await prisma.zone.findUnique({
-    where: { id: zoneId },
-    include: {
-      devices: {
-        include: {
-          zone: true,
+  // Fetch both the zone and project data
+  const [zone, project] = await Promise.all([
+    prisma.zone.findUnique({
+      where: { id: zoneId },
+      include: {
+        devices: {
+          include: {
+            zone: true,
+          }
         }
       }
-    }
-  });
+    }),
+    prisma.project.findFirst({
+      where: { organizationId: user.organizationId }
+    })
+  ]);
 
   if (!zone || zone.organizationId !== user.organizationId) {
     throw redirect(303, '/zones');
+  }
+
+  if (!project) {
+    throw redirect(303, '/');
   }
 
   // Fetch data for all devices
@@ -94,6 +103,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     zone: {
       ...zone,
       devices: enhancedDevices
-    }
+    },
+    project
   };
 };

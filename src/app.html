@@ -25,6 +25,8 @@
 	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 	<link href="https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css" rel="stylesheet" />
 
+	<link rel="preload" href="/fonts/Matter.ttf" as="font" type="font/ttf" crossorigin>
+
 </head>
 
 <body data-sveltekit-preload-data="hover">
@@ -36,8 +38,7 @@
 <style>
 	@font-face {
 		font-family: 'Matter';
-		src: url('Matter.ttf') format('truetype');
-		/* Adjusted path, assuming the font is in the static folder */
+		src: url('/fonts/Matter.ttf') format('truetype');
 		font-display: swap;
 	}
 

@@ -41,6 +41,12 @@
 	"/api/organizations/[id]": [
 		"src/routes/api/organizations/[id]/+server.ts"
 	],
+	"/api/projects": [
+		"src/routes/api/projects/+server.ts"
+	],
+	"/api/projects/add": [
+		"src/routes/api/projects/add/+server.ts"
+	],
 	"/api/zones": [
 		"src/routes/api/zones/+server.ts"
 	],
@@ -71,11 +77,25 @@
 		"src/routes/+layout.server.ts"
 	],
 	"/devices/add": [
+		"src/routes/devices/add/+page.server.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],
 	"/devices/[eui]": [
 		"src/routes/devices/[eui]/+page.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/projects": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/projects/add": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/projects/[project_id]": [
+		"src/routes/projects/[project_id]/+page.server.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],
@@ -85,6 +105,7 @@
 		"src/routes/+layout.server.ts"
 	],
 	"/zones/add": [
+		"src/routes/zones/add/+page.server.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],

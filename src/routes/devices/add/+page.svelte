@@ -202,6 +202,19 @@
 			alert('Geolocation is not supported by this browser.');
 		}
 	};
+
+	// Add project data to the exported data type
+	export let data: {
+		project: Project;
+		zones: Zone[];
+	};
+
+	// Extract the project's center coordinates
+	let projectCenter: [number, number] = [0, 0];
+
+	$: if (data.project && data.project.center) {
+		projectCenter = data.project.center.coordinates as [number, number];
+	}
 </script>
 
 <div class="page-container">
@@ -327,10 +340,33 @@
 			<MapboxMap
 				bind:this={mapRef}
 				accessToken={MAPBOX_ACCESS_TOKEN}
-				center={[0, 0]}
-				zoom={2}
+				center={projectCenter}
+				zoom={15}
 				allowMarkerPlacement={true}
 				on:locationSelected={handleLocationSelected}
+				mapFeatures={[
+					// Project boundary
+					{
+						type: 'Feature',
+						geometry: data.project.geometry,
+						properties: {
+							type: 'projectBoundary',
+							id: data.project.id,
+							name: data.project.name
+						}
+					},
+					// Zone boundaries
+					...data.zones.map((zone) => ({
+						type: 'Feature',
+						geometry: zone.geometry,
+						properties: {
+							type: 'zone',
+							id: zone.id,
+							name: zone.name,
+							color: getPastelColor(zone.color)
+						}
+					}))
+				]}
 			/>
 			<div class="modal-actions">
 				<Button text="Current Location" on:click={getCurrentLocation} />

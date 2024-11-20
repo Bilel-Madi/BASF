@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import MapboxMap from '$lib/components/map/MapboxMap.svelte';
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -33,6 +34,26 @@
 
 	// Device data
 	let devices: Array<{ id: string; name: string }> = [];
+
+	// Add project center initialization
+	let projectCenter: [number, number] = [0, 0];
+
+	$: if ($page.data.project?.center?.coordinates) {
+		projectCenter = $page.data.project.center.coordinates;
+	}
+
+	// Add mapFeatures array for the project boundary
+	$: mapFeatures = [
+		{
+			type: 'Feature',
+			geometry: $page.data.project.geometry,
+			properties: {
+				type: 'projectBoundary',
+				id: $page.data.project.id,
+				name: $page.data.project.name
+			}
+		}
+	];
 
 	// Fetch available devices on mount
 	onMount(async () => {
@@ -144,6 +165,9 @@
 				on:geometryChanged={handleGeometryChanged}
 				height="400px"
 				width="100%"
+				center={projectCenter}
+				zoom={15}
+				{mapFeatures}
 			/>
 		</div>
 

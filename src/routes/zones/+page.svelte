@@ -8,8 +8,11 @@
 
 	const breadcrumbItems = [{ label: 'Home', href: '/' }, { label: 'Zones' }];
 
-	// Access zones data from page data
-	export let data: { zones: any[] };
+	// Access zones and project data from page data
+	export let data: {
+		zones: any[];
+		project: any;
+	};
 </script>
 
 <div class="page-container">
@@ -23,7 +26,7 @@
 
 	<div class="grid-container">
 		{#each data.zones as zone}
-			<ZoneCard {zone} />
+			<ZoneCard {zone} project={data.project} />
 		{/each}
 	</div>
 </div>

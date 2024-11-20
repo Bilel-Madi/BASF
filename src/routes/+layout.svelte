@@ -117,6 +117,9 @@
 					<a href="/dashboard" on:click={closeMenu}>
 						<span>Dashboard</span>
 					</a>
+					<a href="/projects" on:click={closeMenu}>
+						<span>Projects</span>
+					</a>
 					<a href="/zones" on:click={closeMenu}>
 						<span>Zones</span>
 					</a>

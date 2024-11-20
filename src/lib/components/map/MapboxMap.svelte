@@ -1,4 +1,5 @@
 <!-- src/lib/components/map/MapboxMap.svelte -->
+
 <script lang="ts">
 	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import mapboxgl from 'mapbox-gl';
@@ -20,7 +21,7 @@
 	export let width: string = '100%';
 	export let maxZoom: number = 16; // Maximum zoom when fitting bounds
 	export let minZoom: number = 5; // Minimum zoom when fitting bounds
-	export let mapFeatures: any[] = [];
+	export let mapFeatures: any[] = []; // Existing zones and project boundaries
 	export let allowPolygonDrawing: boolean = false;
 	export let fillColor: string = '#088'; // Default color
 
@@ -115,14 +116,14 @@
 					}
 				});
 
-				// Add zones layers
+				// Add zones layers with dynamic fill colors
 				map.addLayer({
 					id: 'zones-fill',
 					type: 'fill',
 					source: 'features',
 					filter: ['==', ['get', 'type'], 'zone'],
 					paint: {
-						'fill-color': '#088',
+						'fill-color': ['get', 'color'], // Use the color property from the feature
 						'fill-opacity': 0.5
 					}
 				});
@@ -134,6 +135,23 @@
 					filter: ['==', ['get', 'type'], 'zone'],
 					paint: {
 						'line-color': '#000',
+						'line-width': 2
+					}
+				});
+
+				// Add project boundary layer with dashed lines and no fill
+				map.addLayer({
+					id: 'project-boundary',
+					type: 'line',
+					source: 'features',
+					filter: ['==', ['get', 'type'], 'projectBoundary'],
+					layout: {
+						'line-cap': 'round',
+						'line-join': 'round'
+					},
+					paint: {
+						'line-color': '#00d87e',
+						'line-dasharray': [2, 2],
 						'line-width': 2
 					}
 				});
@@ -174,7 +192,7 @@
 				});
 			}
 
-			// If polygon data is provided, add it to the map
+			// If polygon data is provided, add it to the map (additional polygon, likely not needed)
 			if (polygonData) {
 				// Add the polygon as a source
 				map.addSource('polygon', {
@@ -189,7 +207,7 @@
 					source: 'polygon',
 					layout: {},
 					paint: {
-						'fill-color': fillColor,
+						'fill-color': ['get', 'color'], // Use the color from properties
 						'fill-opacity': 0.5
 					}
 				});
@@ -282,15 +300,19 @@
 		const features = draw.getAll();
 		if (features.features.length > 0) {
 			const polygon = features.features[0];
-			const area = turfArea(polygon);
+			const polygonArea = turfArea(polygon);
+			const polygonCentroid = centroid(polygon);
+
 			dispatch('geometryChanged', {
 				geometry: polygon.geometry,
-				area: area
+				area: polygonArea,
+				center: polygonCentroid.geometry
 			});
 		} else {
 			dispatch('geometryChanged', {
 				geometry: null,
-				area: 0
+				area: 0,
+				center: null
 			});
 		}
 	}
@@ -298,9 +320,10 @@
 	// Add method to update fill color
 	export function updateFillColor(color: string) {
 		if (map) {
-			if (polygonData) {
-				map.setPaintProperty('polygon-fill', 'fill-color', color);
-			}
+			// Update zones-fill layer to use the color property from each feature
+			map.setPaintProperty('zones-fill', 'fill-color', ['get', 'color']);
+
+			// Update draw polygon fill color if drawing is active
 			if (draw) {
 				const features = draw.getAll();
 				if (features.features.length > 0) {
@@ -312,9 +335,16 @@
 	}
 </script>
 
-<div bind:this={mapContainer} style="width: {width}; height: {height};" />
+<div class="map-container">
+	<div bind:this={mapContainer} style="width: {width}; height: {height};" />
+</div>
 
 <style>
+	.map-container {
+		width: 100%;
+		height: 100%;
+	}
+
 	/* Ensure the map container fills its parent */
 	div {
 		width: 100%;

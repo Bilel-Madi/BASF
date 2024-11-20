@@ -18,16 +18,33 @@ export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
   }
 
   try {
+    // Get the project for this organization
+    const project = await prisma.project.findFirst({
+      where: { organizationId: user.organizationId }
+    });
+
+    if (!project) {
+      console.error('No project found for organization:', user.organizationId);
+      throw redirect(303, '/');
+    }
+
+    // Get zones with their devices
     const zones = await prisma.zone.findMany({
       where: { organizationId: user.organizationId },
       include: {
-        devices: true, // Include assigned devices
+        devices: true,
       },
     });
 
-    return { zones };
+    return { 
+      zones,
+      project 
+    };
   } catch (error) {
-    console.error('Error fetching zones:', error);
-    return { zones: [] };
+    console.error('Error fetching zones and project:', error);
+    return { 
+      zones: [],
+      project: null 
+    };
   }
 };

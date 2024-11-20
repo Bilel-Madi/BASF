@@ -4,7 +4,7 @@
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DeviceCard from '$lib/components/cards/DeviceCard.svelte'; // Import the DeviceCard component
-	import type { Device, Zone } from '@prisma/client';
+	import type { Device, Zone, Project } from '@prisma/client';
 
 	export let data: {
 		zone: Zone & {
@@ -22,6 +22,7 @@
 				}
 			>;
 		};
+		project: Project;
 	};
 
 	const zone = data.zone;
@@ -61,6 +62,31 @@
 		};
 		return colorMap[color] || '#FFFFFF'; // Default to white if color not found
 	}
+
+	// Prepare map features array
+	$: mapFeatures = [
+		// Project boundary
+		{
+			type: 'Feature',
+			geometry: data.project.geometry,
+			properties: {
+				type: 'projectBoundary',
+				id: data.project.id,
+				name: data.project.name
+			}
+		},
+		// Zone polygon
+		{
+			type: 'Feature',
+			geometry: data.zone.geometry,
+			properties: {
+				type: 'zone',
+				id: data.zone.id,
+				name: data.zone.name,
+				color: getPastelColor(data.zone.color)
+			}
+		}
+	];
 </script>
 
 <div class="page-container">
@@ -83,6 +109,7 @@
 			<MapboxMap
 				accessToken={MAPBOX_ACCESS_TOKEN}
 				{polygonData}
+				{mapFeatures}
 				height="500px"
 				maxZoom={16}
 				minZoom={10}

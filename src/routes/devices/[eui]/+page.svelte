@@ -475,6 +475,29 @@
 					markerPosition={[deviceLocation.longitude, deviceLocation.latitude]}
 					allowMarkerPlacement={false}
 					showControls={true}
+					mapFeatures={[
+						// Project boundary
+						{
+							type: 'Feature',
+							geometry: data.project.geometry,
+							properties: {
+								type: 'projectBoundary',
+								id: data.project.id,
+								name: data.project.name
+							}
+						},
+						// Zone polygon
+						{
+							type: 'Feature',
+							geometry: data.device.zone.geometry,
+							properties: {
+								type: 'zone',
+								id: data.device.zone.id,
+								name: data.device.zone.name,
+								color: getPastelColor(data.device.zone.color)
+							}
+						}
+					]}
 				/>
 			</div>
 		{/if}

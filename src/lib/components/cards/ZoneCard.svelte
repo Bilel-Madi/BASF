@@ -3,26 +3,13 @@
 <script lang="ts">
 	import MapboxMap from '$lib/components/map/MapboxMap.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { Zone, Device } from '@prisma/client';
+	import type { Zone, Device, Project } from '@prisma/client';
 
 	export let zone: Zone & { devices: Device[] };
+	export let project: Project;
 
 	const MAPBOX_ACCESS_TOKEN =
 		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg'; // Replace with your actual token
-
-	// Prepare polygon data for the map
-	const polygonData = zone.geometry
-		? {
-				type: 'Feature',
-				geometry: zone.geometry,
-				properties: {}
-		  }
-		: null;
-
-	// Format dates
-	const plantingDate = new Date(zone.plantingDate).toLocaleDateString();
-	const harvestDate = new Date(zone.harvestDate).toLocaleDateString();
-	const dateCreated = new Date(zone.createdAt).toLocaleDateString();
 
 	// Helper function to map ZoneColor enum to actual pastel color codes
 	function getPastelColor(color: string): string {
@@ -37,8 +24,49 @@
 		return colorMap[color] || '#FFFFFF'; // Default to white if color not found
 	}
 
+	// Format dates
+	const plantingDate = new Date(zone.plantingDate).toLocaleDateString();
+	const harvestDate = new Date(zone.harvestDate).toLocaleDateString();
+	const dateCreated = new Date(zone.createdAt).toLocaleDateString();
+
 	// Debugging: Log the received zone data
 	console.log('ZoneCard received zone:', zone);
+
+	// Prepare map features array
+	$: mapFeatures = [
+		// Project boundary
+		{
+			type: 'Feature',
+			geometry: project.geometry,
+			properties: {
+				type: 'projectBoundary',
+				id: project.id,
+				name: project.name
+			}
+		},
+		// Zone polygon
+		{
+			type: 'Feature',
+			geometry: zone.geometry,
+			properties: {
+				type: 'zone',
+				id: zone.id,
+				name: zone.name,
+				color: getPastelColor(zone.color)
+			}
+		}
+	];
+
+	// Prepare polygon data for the map (this is needed for initial centering)
+	$: polygonData = zone.geometry
+		? {
+				type: 'Feature',
+				geometry: zone.geometry,
+				properties: {
+					color: getPastelColor(zone.color)
+				}
+		  }
+		: null;
 </script>
 
 <a href={`/zones/${zone.id}`} class="card-link">
@@ -48,13 +76,14 @@
 			<span class="device-count">{zone.devices.length} devices</span>
 		</div>
 		<div class="map-container">
-			{#if polygonData}
+			{#if zone.geometry}
 				<MapboxMap
 					accessToken={MAPBOX_ACCESS_TOKEN}
+					{mapFeatures}
 					{polygonData}
+					fillColor={getPastelColor(zone.color)}
 					height="180px"
 					showControls={false}
-					fillColor={getPastelColor(zone.color)}
 				/>
 			{:else}
 				<p class="no-data">No geometry data available.</p>
