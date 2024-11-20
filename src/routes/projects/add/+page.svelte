@@ -6,6 +6,7 @@
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+	import { PUBLIC_MAPBOX_ACCESS_TOKEN } from '$env/static/public';
 
 	// Project details
 	let name: string = '';
@@ -20,9 +21,6 @@
 		geometry = event.detail.geometry;
 		center = event.detail.center;
 	}
-
-	const MAPBOX_ACCESS_TOKEN =
-		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg';
 
 	// Handle form submission
 	async function submitProject() {
@@ -68,7 +66,7 @@
 		<!-- Map where users can draw the project boundaries -->
 		<div class="map-section">
 			<MapboxMap
-				accessToken={MAPBOX_ACCESS_TOKEN}
+				accessToken={PUBLIC_MAPBOX_ACCESS_TOKEN}
 				allowPolygonDrawing={true}
 				on:geometryChanged={handleGeometryChanged}
 				height="400px"
