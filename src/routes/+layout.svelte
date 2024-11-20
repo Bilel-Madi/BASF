@@ -67,6 +67,9 @@
 			closeMenu();
 		}
 	}
+
+	export let data;
+	const { userDetails } = data;
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -118,13 +121,13 @@
 						<span>Dashboard</span>
 					</a>
 					<a href="/projects" on:click={closeMenu}>
-						<span>Projects</span>
+						<span>Projects<sup class="count-badge">{userDetails?.projectCount || 0}</sup></span>
 					</a>
 					<a href="/zones" on:click={closeMenu}>
-						<span>Zones</span>
+						<span>Zones<sup class="count-badge">{userDetails?.zoneCount || 0}</sup></span>
 					</a>
 					<a href="/devices" on:click={closeMenu}>
-						<span>Devices</span>
+						<span>Devices<sup class="count-badge">{userDetails?.deviceCount || 0}</sup></span>
 					</a>
 					<a href="/analytics" on:click={closeMenu}>
 						<span>Analytics</span>
@@ -136,21 +139,35 @@
 						<span>About</span>
 					</a>
 				</div>
-				<div class="menu-footer">
-					<img src="/favicon.png" alt="Arddata Logo" class="footer-logo" />
-					<p class="copyright">Arddata™ - All Rights Reserved 2024</p>
-					<p class="support">
-						For support email us at: <a href="mailto:info@misbargeo.com">info@misbargeo.com</a>
-					</p>
-					<p class="website">
-						<a href="https://www.arddata.com" target="_blank">www.arddata.com</a>
-					</p>
-					<div class="footer-actions">
-						<div class="status-widget">
-							<span class="status-dot" />
-							<span class="system-status">All Systems Operational&nbsp;&nbsp;</span>
+
+				<div class="menu-bottom">
+					<div class="user-info">
+						<div class="user-avatar" />
+						<div class="user-header">
+							<h2>Hello <span class="username">{userDetails?.firstName || 'User'}</span>!</h2>
+							<p class="org-info">
+								{userDetails?.organizationName || 'Organization'} -
+								{userDetails?.projectName || 'Project'}
+							</p>
 						</div>
-						<a href="/auth/logout" class="logout" on:click={closeMenu}>Logout</a>
+					</div>
+
+					<div class="menu-footer">
+						<img src="/favicon.png" alt="Arddata Logo" class="footer-logo" />
+						<p class="copyright">Arddata™ - All Rights Reserved 2024</p>
+						<p class="support">
+							For support email us at: <a href="mailto:info@misbargeo.com">info@misbargeo.com</a>
+						</p>
+						<p class="website">
+							<a href="https://www.arddata.com" target="_blank">www.arddata.com</a>
+						</p>
+						<div class="footer-actions">
+							<div class="status-widget">
+								<span class="status-dot" />
+								<span class="system-status">All Systems Operational&nbsp;&nbsp;</span>
+							</div>
+							<a href="/auth/logout" class="logout" on:click={closeMenu}>Logout</a>
+						</div>
 					</div>
 				</div>
 			</nav>
@@ -518,5 +535,93 @@
 	/* Optional: Add a subtle glow effect to the dot */
 	.status-dot {
 		box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+	}
+
+	.count-badge {
+		font-size: 0.7rem;
+		background-color: #00ffbf;
+		color: black;
+		padding: 0.25rem;
+		border-radius: 25%;
+		margin-left: 0.5rem;
+		position: relative;
+		top: -1.5em;
+		font-weight: 700;
+		min-width: 1.2rem;
+		height: 1.2rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		line-height: 1;
+	}
+
+	.menu-bottom {
+		margin-top: auto;
+	}
+
+	.user-info {
+		padding: 2rem 0;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 1rem;
+		text-align: left;
+	}
+
+	.user-avatar {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #00ff87 0%, #60efff 50%, #ff59f8 100%);
+		border: 3px solid rgba(255, 255, 255, 0.2);
+		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+		animation: gradientShift 10s ease infinite;
+		background-size: 300% 300%;
+		flex-shrink: 0;
+	}
+
+	@keyframes gradientShift {
+		0% {
+			background-position: 0% 50%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+		100% {
+			background-position: 0% 50%;
+		}
+	}
+
+	.user-info h2 {
+		margin-top: 0.5rem;
+		color: white;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0;
+	}
+
+	.username {
+		color: white;
+		font-weight: 600;
+	}
+
+	.user-header {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.org-info {
+		color: rgba(255, 255, 255, 0.8);
+		font-size: 0.9rem;
+		margin: 0;
+	}
+
+	/* Update menu grid items to handle the new badge positioning */
+	.menu-grid a span {
+		display: inline-flex;
+		align-items: baseline;
 	}
 </style>

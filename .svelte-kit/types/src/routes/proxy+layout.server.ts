@@ -1,8 +1,9 @@
+// @ts-nocheck
 import { redirect } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals }) => {
+export const load = async ({ locals }: Parameters<LayoutServerLoad>[0]) => {
   const user = locals.user;
 
   if (!user) {
