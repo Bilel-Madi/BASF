@@ -2,7 +2,7 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import socket from '$lib/socket';
+
 	import Button from '$lib/components/ui/Button.svelte';
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import DeviceCard from '$lib/components/cards/DeviceCard.svelte';
