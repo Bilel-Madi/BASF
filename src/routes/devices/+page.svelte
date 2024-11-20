@@ -9,20 +9,6 @@
 	import type { Device, Zone } from '@prisma/client';
 
 	export let data: { devices: DeviceWithZoneWithReadings[] };
-	let devices = data.devices;
-
-	onMount(() => {
-		socket.on('device_update', (updatedDevice) => {
-			const index = devices.findIndex((device) => device.eui === updatedDevice.eui);
-			if (index !== -1) {
-				devices[index] = updatedDevice;
-			}
-		});
-
-		return () => {
-			socket.off('device_update');
-		};
-	});
 
 	interface DeviceWithZoneWithReadings extends Device {
 		zone: Zone;
@@ -49,7 +35,7 @@
 	</div>
 
 	<div class="grid-container">
-		{#each devices as device}
+		{#each data.devices as device}
 			<DeviceCard {device} />
 		{/each}
 	</div>
