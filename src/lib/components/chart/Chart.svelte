@@ -10,6 +10,7 @@
 		zones: Array<Zone & { devices: Device[] }>;
 		devices: Device[];
 	};
+	export let selectedDevice: Device | null;
 
 	// Stores for selected devices and readings
 	const selectedDevices = writable<Device[]>([]);
@@ -23,6 +24,22 @@
 
 	// Add state for active datasets
 	let activeDatasets = new Set();
+
+	// Watch for changes in selectedDevice
+	$: if (selectedDevice) {
+		// Update selectedDevices store with the new device
+		selectedDevices.set([selectedDevice]);
+
+		// Set default readings based on device type
+		if (selectedDevice.type === 'CO2_SENSOR') {
+			selectedReadings.set(['co2', 'temperature']);
+		} else if (selectedDevice.type === 'SOIL_MOISTURE') {
+			selectedReadings.set(['moisture', 'temperature', 'ec']);
+		}
+
+		// Fetch data for the selected device
+		handleSelectionChange();
+	}
 
 	// Function to handle selection changes
 	async function handleSelectionChange() {
@@ -105,13 +122,11 @@
 
 <style>
 	.chart-section {
-		background: white;
-		border-radius: 8px;
 		padding: 1rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+		max-height: 400px;
 	}
 </style>

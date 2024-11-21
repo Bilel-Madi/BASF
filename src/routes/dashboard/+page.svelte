@@ -2,6 +2,8 @@
 
 <script lang="ts">
 	import { writable } from 'svelte/store';
+	import { sensorThresholds, sensorRanges, sensorUnits } from '$lib/stores/thresholds';
+	import SensorReading from '$lib/components/sensors/SensorReading.svelte';
 	import ThresholdBar from '$lib/components/ui/ThresholdBar.svelte';
 	import MapboxMap from '$lib/components/map/MapboxMap.svelte';
 	import Chart from '$lib/components/chart/Chart.svelte';
@@ -86,86 +88,15 @@
 		}
 	}
 
-	// Thresholds definitions (copied from [eui] page)
-	const moistureThresholds = [
-		{ start: 0, end: 10, color: '#ff4d4d', label: 'Critical' },
-		{ start: 10, end: 20, color: '#ffa500', label: 'Low' },
-		{ start: 20, end: 40, color: '#00cc44', label: 'Good' },
-		{ start: 40, end: 50, color: '#3399ff', label: 'High' },
-		{ start: 50, end: 100, color: '#9933ff', label: 'Very High' }
-	];
-
-	const co2Thresholds = [
-		{ start: 0, end: 400, color: '#00cc44', label: 'Good' },
-		{ start: 400, end: 800, color: '#ffa500', label: 'Moderate' },
-		{ start: 800, end: 1200, color: '#ff4d4d', label: 'High' },
-		{ start: 1200, end: 2000, color: '#990000', label: 'Very High' }
-	];
-
-	const humidityThresholds = [
-		{ start: 0, end: 30, color: '#ff4d4d', label: 'Low' },
-		{ start: 30, end: 60, color: '#ffa500', label: 'Moderate' },
-		{ start: 60, end: 90, color: '#00cc44', label: 'High' },
-		{ start: 90, end: 100, color: '#3399ff', label: 'Very High' }
-	];
-
-	const pressureThresholds = [
-		{ start: 900, end: 950, color: '#ff4d4d', label: 'Low' },
-		{ start: 950, end: 1000, color: '#ffa500', label: 'Moderate' },
-		{ start: 1000, end: 1050, color: '#00cc44', label: 'High' },
-		{ start: 1050, end: 1100, color: '#3399ff', label: 'Very High' }
-	];
-
-	const temperatureThresholds = [
-		{ start: -10, end: 0, color: '#00ccff', label: 'Very Cold' },
-		{ start: 0, end: 15, color: '#66ccff', label: 'Cold' },
-		{ start: 15, end: 25, color: '#00cc44', label: 'Comfortable' },
-		{ start: 25, end: 35, color: '#ffa500', label: 'Warm' },
-		{ start: 35, end: 50, color: '#ff4d4d', label: 'Hot' }
-	];
-
-	const ecThresholds = [
-		{ start: 0, end: 500, color: '#ff4d4d', label: 'Low' },
-		{ start: 500, end: 1000, color: '#ffa500', label: 'Moderate' },
-		{ start: 1000, end: 1500, color: '#00cc44', label: 'High' },
-		{ start: 1500, end: 2000, color: '#3399ff', label: 'Very High' }
-	];
-
 	// Subscribe to selectedDevice to reactively update selectedDeviceData
 	let selectedDeviceData = null;
 
 	selectedDevice.subscribe((device) => {
-		if (device) {
-			selectedDeviceData = device;
-		} else {
-			selectedDeviceData = null;
-		}
+		selectedDeviceData = device;
 	});
 
-	let isDropdownOpen = false;
-	let searchQuery = '';
-
-	const deviceImagePath = {
-		SOIL_MOISTURE: '/images/soil.png',
-		CO2_SENSOR: '/images/co2_sensor.png',
-		UNKNOWN: '/images/unknown_device.png'
-	};
-
-	function toggleDevice(device: Device) {
-		selectedDevices.update((devices) => {
-			if (devices.find((d) => d.eui === device.eui)) {
-				return devices.filter((d) => d.eui !== device.eui);
-			} else {
-				return [...devices, device];
-			}
-		});
-	}
-
-	$: filteredDevices = data.devices.filter(
-		(device) =>
-			device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			device.eui.toLowerCase().includes(searchQuery.toLowerCase())
-	);
+	const CO2_SENSOR_READINGS = ['co2', 'humidity', 'pressure', 'temperature'];
+	const SOIL_MOISTURE_READINGS = ['moisture', 'ec', 'temperature'];
 </script>
 
 <div class="dashboard">
@@ -175,11 +106,9 @@
 		</div>
 		<div class="info-card alerts">
 			<h3>Alerts</h3>
-			<!-- Implement alerts logic here -->
 		</div>
 		<div class="info-card weather">
 			<h3>Weather</h3>
-			<!-- Implement weather logic here -->
 		</div>
 	</div>
 
@@ -191,237 +120,52 @@
 					{mapFeatures}
 					on:deviceClick={handleDeviceClick}
 					center={projectCenter}
-					zoom={15}
+					zoom={17}
+					height="100%"
+					borderRadius="15px"
 				/>
 			</div>
-			<Chart {data} />
+			<div class="chart-container">
+				<Chart {data} selectedDevice={$selectedDevice} />
+			</div>
 		</div>
 		<div class="side-column">
+			<div class="metadata-section card">
+				<h2>Metadata</h2>
+				<p><strong>Project Purpose:</strong> {data.project.purpose}</p>
+				<p><strong>Created At:</strong> {new Date(data.project.createdAt).toLocaleDateString()}</p>
+			</div>
 			<div class="latest-readings card">
 				<h2>Current Values</h2>
 				{#if selectedDeviceData}
 					<div class="device-reading">
 						{#if selectedDeviceData.type === 'CO2_SENSOR'}
-							<!-- Display CO2_SENSOR readings using ThresholdBar -->
-							<div class="reading-item">
-								<div class="reading-header">
-									<div class="reading-title">
-										<span class="label">CO₂:</span>
-										<span class="current-value">{selectedDeviceData.latestData.co2} ppm</span>
-									</div>
-									<div
-										class="status-tag"
-										style="background-color: {co2Thresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.co2 >= t.start &&
-												selectedDeviceData.latestData.co2 <= t.end
-										)?.color || '#f0f0f0'}"
-									>
-										{co2Thresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.co2 >= t.start &&
-												selectedDeviceData.latestData.co2 <= t.end
-										)?.label || ''}
-									</div>
-								</div>
-								<ThresholdBar
-									value={selectedDeviceData.latestData.co2}
-									min={0}
-									max={2000}
-									thresholds={co2Thresholds}
+							{#each CO2_SENSOR_READINGS as sensorType}
+								<SensorReading
+									label={sensorType.charAt(0).toUpperCase() + sensorType.slice(1)}
+									value={selectedDeviceData.latestData[sensorType]}
+									unit={sensorUnits[sensorType]}
+									thresholds={$sensorThresholds[sensorType]}
+									min={$sensorRanges[sensorType].min}
+									max={$sensorRanges[sensorType].max}
 								/>
-							</div>
-
-							<div class="reading-item">
-								<div class="reading-header">
-									<div class="reading-title">
-										<span class="label">Humidity:</span>
-										<span class="current-value">{selectedDeviceData.latestData.humidity} %</span>
-									</div>
-									<div
-										class="status-tag"
-										style="background-color: {humidityThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.humidity >= t.start &&
-												selectedDeviceData.latestData.humidity <= t.end
-										)?.color || '#f0f0f0'}"
-									>
-										{humidityThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.humidity >= t.start &&
-												selectedDeviceData.latestData.humidity <= t.end
-										)?.label || ''}
-									</div>
-								</div>
-								<ThresholdBar
-									value={selectedDeviceData.latestData.humidity}
-									min={0}
-									max={100}
-									thresholds={humidityThresholds}
-								/>
-							</div>
-
-							<div class="reading-item">
-								<div class="reading-header">
-									<div class="reading-title">
-										<span class="label">Pressure:</span>
-										<span class="current-value">{selectedDeviceData.latestData.pressure} hPa</span>
-									</div>
-									<div
-										class="status-tag"
-										style="background-color: {pressureThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.pressure >= t.start &&
-												selectedDeviceData.latestData.pressure <= t.end
-										)?.color || '#f0f0f0'}"
-									>
-										{pressureThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.pressure >= t.start &&
-												selectedDeviceData.latestData.pressure <= t.end
-										)?.label || ''}
-									</div>
-								</div>
-								<ThresholdBar
-									value={selectedDeviceData.latestData.pressure}
-									min={900}
-									max={1100}
-									thresholds={pressureThresholds}
-								/>
-							</div>
-
-							<div class="reading-item">
-								<div class="reading-header">
-									<div class="reading-title">
-										<span class="label">Temperature:</span>
-										<span class="current-value">{selectedDeviceData.latestData.temperature} °C</span
-										>
-									</div>
-									<div
-										class="status-tag"
-										style="background-color: {temperatureThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.temperature >= t.start &&
-												selectedDeviceData.latestData.temperature <= t.end
-										)?.color || '#f0f0f0'}"
-									>
-										{temperatureThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.temperature >= t.start &&
-												selectedDeviceData.latestData.temperature <= t.end
-										)?.label || ''}
-									</div>
-								</div>
-								<ThresholdBar
-									value={selectedDeviceData.latestData.temperature}
-									min={-10}
-									max={50}
-									thresholds={temperatureThresholds}
-								/>
-							</div>
+							{/each}
 						{:else if selectedDeviceData.type === 'SOIL_MOISTURE'}
-							<!-- Reordered: Moisture first, then EC, then Temperature -->
-							<div class="reading-item">
-								<div class="reading-header">
-									<div class="reading-title">
-										<span class="label">Moisture:</span>
-										<span class="current-value">{selectedDeviceData.latestData.moisture} %</span>
-									</div>
-									<div
-										class="status-tag"
-										style="background-color: {moistureThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.moisture >= t.start &&
-												selectedDeviceData.latestData.moisture <= t.end
-										)?.color || '#f0f0f0'}"
-									>
-										{moistureThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.moisture >= t.start &&
-												selectedDeviceData.latestData.moisture <= t.end
-										)?.label || ''}
-									</div>
-								</div>
-								<ThresholdBar
-									value={selectedDeviceData.latestData.moisture}
-									min={0}
-									max={100}
-									thresholds={moistureThresholds}
+							{#each SOIL_MOISTURE_READINGS as sensorType}
+								<SensorReading
+									label={sensorType.charAt(0).toUpperCase() + sensorType.slice(1)}
+									value={selectedDeviceData.latestData[sensorType]}
+									unit={sensorUnits[sensorType]}
+									thresholds={$sensorThresholds[sensorType]}
+									min={$sensorRanges[sensorType].min}
+									max={$sensorRanges[sensorType].max}
 								/>
-							</div>
-
-							<!-- EC reading moved to second position -->
-							<div class="reading-item">
-								<div class="reading-header">
-									<div class="reading-title">
-										<span class="label">EC:</span>
-										<span class="current-value">{selectedDeviceData.latestData.ec} µS/cm</span>
-									</div>
-									<div
-										class="status-tag"
-										style="background-color: {ecThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.ec >= t.start &&
-												selectedDeviceData.latestData.ec <= t.end
-										)?.color || '#f0f0f0'}"
-									>
-										{ecThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.ec >= t.start &&
-												selectedDeviceData.latestData.ec <= t.end
-										)?.label || ''}
-									</div>
-								</div>
-								<ThresholdBar
-									value={selectedDeviceData.latestData.ec}
-									min={0}
-									max={2000}
-									thresholds={ecThresholds}
-								/>
-							</div>
-
-							<!-- Temperature reading moved to last position -->
-							<div class="reading-item">
-								<div class="reading-header">
-									<div class="reading-title">
-										<span class="label">Temperature:</span>
-										<span class="current-value">{selectedDeviceData.latestData.temperature} °C</span
-										>
-									</div>
-									<div
-										class="status-tag"
-										style="background-color: {temperatureThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.temperature >= t.start &&
-												selectedDeviceData.latestData.temperature <= t.end
-										)?.color || '#f0f0f0'}"
-									>
-										{temperatureThresholds.find(
-											(t) =>
-												selectedDeviceData.latestData.temperature >= t.start &&
-												selectedDeviceData.latestData.temperature <= t.end
-										)?.label || ''}
-									</div>
-								</div>
-								<ThresholdBar
-									value={selectedDeviceData.latestData.temperature}
-									min={-10}
-									max={50}
-									thresholds={temperatureThresholds}
-								/>
-							</div>
+							{/each}
 						{/if}
 					</div>
 				{:else}
 					<p>Please select a device on the map to see its latest readings.</p>
 				{/if}
-			</div>
-
-			<div class="metadata-section card">
-				<h2>Metadata</h2>
-				<p><strong>Project Purpose:</strong> {data.project.purpose}</p>
-				<p><strong>Created At:</strong> {new Date(data.project.createdAt).toLocaleDateString()}</p>
-				<!-- Add more metadata as needed -->
 			</div>
 		</div>
 	</div>
@@ -434,49 +178,61 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		background-color: #f5f5f5;
 		height: 100vh;
+		max-height: 93vh;
 		overflow: hidden;
 	}
 
 	.top-row {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: 2fr 3fr 5fr;
 		gap: 0.5rem;
+		height: 50px;
+		min-height: 50px;
 	}
 
 	.info-card {
 		background: white;
 		border-radius: 8px;
-		padding: 1rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		padding: 0.5rem;
+		border: 1px solid #d8d8d8;
 	}
 
 	.dashboard-grid {
 		display: grid;
 		grid-template-columns: 4fr 1fr;
 		gap: 0.5rem;
-		flex: 1;
+		height: calc(96vh - 90px);
 		overflow: hidden;
 	}
 
 	.main-column {
 		display: grid;
-		grid-template-rows: 2fr 1fr;
+		grid-template-rows: 3fr 1fr;
 		gap: 0.5rem;
+		overflow: hidden;
 	}
 
 	.map-section {
 		background: white;
 		border-radius: 10px;
-		padding: 1rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		padding: 0.5rem;
+		border: 1px solid #d8d8d8;
 		overflow: hidden;
 	}
 
+	.chart-container {
+		background: white;
+		border-radius: 10px;
+		overflow: hidden;
+		height: auto;
+		border: 1px solid #d8d8d8;
+		max-height: 400px;
+	}
+
 	.side-column {
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-rows: 1fr 1fr;
 		gap: 0.5rem;
 		overflow: hidden;
 	}
@@ -485,10 +241,9 @@
 	.metadata-section {
 		background: white;
 		border-radius: 10px;
-		padding: 1.5rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		padding: 1rem;
+		border: 1px solid #d8d8d8;
 		overflow-y: auto;
-		max-height: 432px;
 	}
 
 	.latest-readings h2,
@@ -499,69 +254,14 @@
 	}
 
 	.device-reading {
-		margin-bottom: 1rem;
-	}
-
-	.device-reading h3 {
-		margin-bottom: 0.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
 	}
 
 	.card {
 		display: flex;
 		flex-direction: column;
-	}
-
-	@media (max-width: 1024px) {
-		.dashboard-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.main-column,
-		.side-column {
-			grid-template-rows: auto;
-		}
-	}
-
-	/* Latest Readings Styles */
-	.reading-item {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		margin-bottom: 1rem;
-	}
-
-	.reading-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 0.5rem;
-	}
-
-	.reading-title {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.label {
-		font-size: 0.875rem;
-		color: #666;
-		font-weight: 500;
-	}
-
-	.current-value {
-		font-weight: 600;
-		color: #111;
-	}
-
-	.status-tag {
-		padding: 4px 8px;
-		border-radius: 10px;
-		color: white;
-		font-size: 10px;
-		font-weight: 500;
-		opacity: 0.8;
-		margin-left: auto;
 	}
 
 	/* Adjust card heights */
@@ -574,8 +274,7 @@
 
 	.map-section,
 	.latest-readings,
-	.metadata-section,
-	.chart-section {
+	.metadata-section {
 		flex: 1;
 		display: flex;
 		flex-direction: column;

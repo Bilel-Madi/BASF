@@ -24,6 +24,7 @@
 	export let mapFeatures: any[] = []; // Existing zones and project boundaries
 	export let allowPolygonDrawing: boolean = false;
 	export let fillColor: string = '#088'; // Default color
+	export let borderRadius: string = '0px'; // Add this new prop
 
 	let mapContainer: HTMLElement;
 	let map: mapboxgl.Map;
@@ -48,7 +49,8 @@
 		minZoom,
 		mapFeatures,
 		allowPolygonDrawing,
-		fillColor
+		fillColor,
+		borderRadius
 	});
 
 	// Calculate centroid for centering the map
@@ -335,14 +337,18 @@
 	}
 </script>
 
-<div class="map-container">
-	<div bind:this={mapContainer} style="width: {width}; height: {height};" />
+<div class="map-container" style="border-radius: {borderRadius};">
+	<div
+		bind:this={mapContainer}
+		style="width: {width}; height: {height}; border-radius: {borderRadius};"
+	/>
 </div>
 
 <style>
 	.map-container {
 		width: 100%;
 		height: 100%;
+		overflow: hidden; /* Add this to ensure border-radius clips the content */
 	}
 
 	/* Ensure the map container fills its parent */
