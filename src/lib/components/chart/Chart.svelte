@@ -1,3 +1,5 @@
+<!-- src/lib/components/chart/Chart.svelte -->
+
 <script lang="ts">
 	import MultiChart from './MultiChart.svelte';
 	import ChartControls from './ChartControls.svelte';

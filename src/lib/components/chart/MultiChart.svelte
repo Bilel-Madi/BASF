@@ -1,3 +1,4 @@
+<!-- src/lib/components/chart/MultiChart.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { Chart, registerables } from 'chart.js';

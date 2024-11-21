@@ -1,3 +1,4 @@
+<!-- src/lib/components/ui/ThresholdBar.svelte -->
 <script lang="ts">
 	export let value: number;
 	export let min: number = 0;
@@ -48,7 +49,9 @@
 		<div
 			class="threshold-bar__background"
 			style="background: linear-gradient(to right, {gradient || '#f0f0f0'});"
-		/>
+		>
+			<div class="vertical-bars" />
+		</div>
 		<div class="threshold-bar__indicator" style="left: {valuePercentage}%;">
 			<div class="threshold-bar__dial" />
 		</div>
@@ -72,7 +75,7 @@
 		position: relative;
 		width: 100%;
 		height: 24px;
-		border-radius: 12px;
+		border-radius: 8px;
 		background: rgba(240, 240, 240, 0.1);
 		overflow: visible;
 		backdrop-filter: blur(8px);
@@ -86,11 +89,25 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		border-radius: 12px;
+		border-radius: 8px;
 		transition: background 0.5s ease;
 		opacity: 0.9;
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
+		overflow: hidden;
+	}
+
+	.vertical-bars {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-image: repeating-linear-gradient(
+			to right,
+			rgba(255, 255, 255) 1px,
+			rgba(255, 255, 255) 1px,
+			transparent 2px,
+			transparent 6px
+		);
 	}
 
 	.threshold-bar__indicator {
@@ -103,33 +120,36 @@
 
 	.threshold-bar__dial {
 		position: relative;
-		width: 3px;
-		height: 30px;
+		width: 2px;
+		height: 36px;
 		background: rgb(40, 40, 40);
-		border-radius: 2px;
+		border-radius: 1px;
 		transition: all 0.3s ease;
 		transform-origin: bottom center;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
 	.threshold-bar__dial::before {
 		content: '';
 		position: absolute;
-		bottom: -5px;
+		bottom: -4px;
 		left: 50%;
 		transform: translateX(-50%);
-		width: 0px;
-		height: 8px;
+		width: 6px;
+		height: 6px;
 		background: rgb(40, 40, 40);
 		border-radius: 50%;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
 	.threshold-marker {
 		position: absolute;
 		top: 0px;
-		width: 2px;
+		width: 1px;
 		height: 24px;
-		background: rgba(0, 0, 0, 0.2);
+		background: rgba(0, 0, 0, 0.15);
 		transform: translateX(-50%);
+		box-shadow: 1px 0 0 rgba(255, 255, 255, 0.1);
 	}
 
 	@media (max-width: 600px) {
