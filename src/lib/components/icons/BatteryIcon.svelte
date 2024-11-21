@@ -11,24 +11,32 @@
 	}
 </script>
 
-<svg
-	width="24"
-	height="24"
-	viewBox="0 0 24 24"
-	fill="none"
-	xmlns="http://www.w3.org/2000/svg"
-	aria-label={`Battery level: ${level}%`}
->
-	<!-- Battery Body -->
-	<rect x="1" y="6" width="18" height="12" rx="2" stroke={color} stroke-width="2" fill="none" />
-	<!-- Battery Tip -->
-	<rect x="20" y="10" width="2" height="4" fill={color} />
-	<!-- Battery Level -->
-	<rect x="3" y="8" width={(level / 100) * 14} height="8" fill={color} rx="1" />
-</svg>
+<div class="battery-container">
+	<svg
+		width="24"
+		height="24"
+		viewBox="0 0 24 24"
+		fill="none"
+		xmlns="http://www.w3.org/2000/svg"
+		aria-label={`Battery level: ${level}%`}
+		style="transform: rotate(-90deg)"
+	>
+		<!-- Battery Body -->
+		<rect x="1" y="6" width="18" height="12" rx="2" stroke={color} stroke-width="2" fill="none" />
+		<!-- Battery Tip -->
+		<rect x="20" y="10" width="2" height="4" fill={color} />
+		<!-- Battery Level -->
+		<rect x="3" y="8" width={(level / 100) * 14} height="8" fill={color} rx="1" />
+	</svg>
+</div>
 
 <style>
 	svg {
 		vertical-align: middle;
+	}
+
+	.battery-container {
+		display: inline-flex;
+		align-items: center;
 	}
 </style>

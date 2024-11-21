@@ -1,4 +1,3 @@
-<!-- src/lib/components/chart/MultiChart.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { Chart, registerables } from 'chart.js';
@@ -437,8 +436,7 @@
 							padding: 10,
 							color: '#050575',
 							font: {
-								size: 12,
-								weight: '500'
+								size: 13
 							}
 						}
 					},

@@ -1,5 +1,3 @@
-<!-- src/lib/components/chart/ChartControls.svelte -->
-
 <script lang="ts">
 	import type { Device } from '@prisma/client';
 	import { clickOutside } from '$lib/actions/clickOutside';

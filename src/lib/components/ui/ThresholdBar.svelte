@@ -120,9 +120,9 @@
 
 	.threshold-bar__dial {
 		position: relative;
-		width: 2px;
-		height: 36px;
-		background: rgb(40, 40, 40);
+		width: 3px;
+		height: 30px;
+		background: rgb(0, 0, 0);
 		border-radius: 1px;
 		transition: all 0.3s ease;
 		transform-origin: bottom center;
@@ -132,14 +132,14 @@
 	.threshold-bar__dial::before {
 		content: '';
 		position: absolute;
-		bottom: -4px;
+		bottom: -2px;
 		left: 50%;
 		transform: translateX(-50%);
-		width: 6px;
-		height: 6px;
-		background: rgb(40, 40, 40);
-		border-radius: 50%;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		width: 3px;
+		height: 10px;
+		background: rgb(255, 17, 0);
+
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
 	.threshold-marker {
@@ -147,7 +147,7 @@
 		top: 0px;
 		width: 1px;
 		height: 24px;
-		background: rgba(0, 0, 0, 0.15);
+		background: rgba(0, 0, 0, 1);
 		transform: translateX(-50%);
 		box-shadow: 1px 0 0 rgba(255, 255, 255, 0.1);
 	}

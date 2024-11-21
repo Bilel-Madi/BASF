@@ -21,10 +21,10 @@ export const sensorThresholds = readable<Record<string, Threshold[]>>({
     { start: 50, end: 100, color: '#9933ff', label: 'Very High' }
   ],
   co2: [
-    { start: 0, end: 400, color: '#00cc44', label: 'Good' },
-    { start: 400, end: 800, color: '#ffa500', label: 'Moderate' },
-    { start: 800, end: 1200, color: '#ff4d4d', label: 'High' },
-    { start: 1200, end: 2000, color: '#990000', label: 'Very High' }
+    { start: 400, end: 800, color: '#99cc00', label: 'Good' },
+    { start: 800, end: 1200, color: '#00cc44', label: 'Optimum' },
+    { start: 1200, end: 2000 , color: '#ff5f4d', label: 'High' },
+    { start: 2000, end: 3000, color: '#1c0000', label: 'Dangerous' }
   ],
   humidity: [
     { start: 0, end: 30, color: '#ff4d4d', label: 'Low' },
@@ -55,7 +55,7 @@ export const sensorThresholds = readable<Record<string, Threshold[]>>({
 
 export const sensorRanges = readable<Record<string, SensorRange>>({
   moisture: { min: 0, max: 100 },
-  co2: { min: 0, max: 2000 },
+  co2: { min: 0, max: 3000 },
   humidity: { min: 0, max: 100 },
   pressure: { min: 900, max: 1100 },
   temperature: { min: -10, max: 50 },
