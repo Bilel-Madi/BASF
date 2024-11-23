@@ -30,15 +30,15 @@
 </script>
 
 <div class="last-activity">
-	<h4>Last Activity:</h4>
 	{#if loading}
 		<p>Loading...</p>
 	{:else if error}
 		<p class="error">{error}</p>
 	{:else if lastActivity}
 		<div class="activity-info">
-			<StatusDot />
 			<span class="activity-time">{lastActivity.toLocaleString()}</span>
+			<span class="status-dot-space" />
+			<StatusDot />
 		</div>
 	{:else}
 		<p>No recent activity.</p>
@@ -51,6 +51,7 @@
 		flex-direction: row;
 		align-items: center;
 		gap: 0.5rem;
+		margin-right: 1rem;
 	}
 
 	.activity-info {
@@ -59,7 +60,12 @@
 	}
 
 	.activity-time {
-		margin-left: 0.5rem;
+		margin-right: 0rem;
+		font-size: 0.9rem;
+	}
+
+	.status-dot-space {
+		width: 1rem;
 	}
 
 	h4 {

@@ -28,6 +28,7 @@
 		"@types/chart.js": "^2.9.39",
 		"@types/chartjs-plugin-crosshair": "^1.1.4",
 		"@types/gridstack": "^0.5.0",
+		"@types/mapbox-gl": "^3.4.1",
 		"@types/node": "^20.7.0",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",
 		"@typescript-eslint/parser": "^6.0.0",

@@ -348,10 +348,10 @@
 	// Add these new constants for the ranges
 	const ANNOTATION_RANGES = {
 		moisture: [
-			{ lower: 10, upper: 15, color: 'rgba(255, 99, 71, 0.03)', lineColor: '#FF6347' },
-			{ lower: 15, upper: 25, color: 'rgba(245, 243, 154, 0.03)', lineColor: '#00ff95' },
-			{ lower: 25, upper: 40, color: 'rgba(0, 255, 149, 0.03)', lineColor: '#00ff95' },
-			{ lower: 40, upper: 45, color: 'rgba(173, 216, 230, 0.0)', lineColor: '#00ff95' }
+			{ lower: 10, upper: 15, color: 'rgba(255, 99, 71, 0.02)', lineColor: '#FF6347' },
+			{ lower: 15, upper: 25, color: 'rgba(245, 243, 154, 0.02)', lineColor: '#00ff95' },
+			{ lower: 25, upper: 40, color: 'rgba(0, 255, 149, 0.02)', lineColor: '#00ff95' },
+			{ lower: 40, upper: 45, color: 'rgba(173, 216, 230, 0.02)', lineColor: '#00ff95' }
 		]
 		// Add other reading types as needed
 	};

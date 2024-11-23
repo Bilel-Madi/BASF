@@ -59,6 +59,8 @@
 		timeFrame = frame;
 		dispatch('timeFrameChange', frame);
 	}
+
+	$: document.documentElement.style.setProperty('--time-frame-count', timeFrames.length.toString());
 </script>
 
 <div class="controls-container">
@@ -141,11 +143,17 @@
 	</div>
 
 	<div class="time-controls">
-		{#each timeFrames as frame}
-			<button class:selected={timeFrame === frame} on:click={() => handleTimeFrameChange(frame)}>
-				{frame}
-			</button>
-		{/each}
+		<div class="time-slider">
+			<div
+				class="slider-highlight"
+				style="transform: translateX({timeFrames.indexOf(timeFrame) * 100}%)"
+			/>
+			{#each timeFrames as frame}
+				<button class:selected={timeFrame === frame} on:click={() => handleTimeFrameChange(frame)}>
+					{frame}
+				</button>
+			{/each}
+		</div>
 	</div>
 </div>
 
@@ -298,22 +306,43 @@
 	}
 
 	.time-controls {
+		background: #f5f5f5;
+		padding: 0.25rem;
+		border-radius: 10px;
+	}
+
+	.time-slider {
+		position: relative;
 		display: flex;
-		gap: 0.25rem;
+		gap: 0;
+	}
+
+	.slider-highlight {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: calc(100% / var(--time-frame-count));
+		height: 100%;
+		background: #8088ff;
+		border-radius: 10px;
+		transition: transform 0.3s ease;
+		z-index: 0;
 	}
 
 	.time-controls button {
-		padding: 0.25rem 0.5rem;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		background: white;
+		flex: 1;
+		padding: 0.5rem 1rem;
+		border: none;
+		background: none;
 		cursor: pointer;
 		font-size: 0.8rem;
+		position: relative;
+		z-index: 1;
+		transition: color 0.3s ease;
 	}
 
 	.time-controls button.selected {
-		background: #1b0ab1;
 		color: white;
-		border-color: #1b0ab1;
+		background: none;
 	}
 </style>

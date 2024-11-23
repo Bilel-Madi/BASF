@@ -127,6 +127,6 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
-		max-height: 400px;
+        height: 100%; 
 	}
 </style>
