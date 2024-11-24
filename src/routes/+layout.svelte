@@ -11,8 +11,14 @@
 	let timeInterval;
 	let showColon = true;
 	let isProjectDropdownOpen = false;
+	let currentFrame = 1;
+	let logoInterval;
+	let isAnimating = false;
 
 	onMount(() => {
+		// Start with the last frame
+		currentFrame = 23;
+
 		// Start the time interval
 		timeInterval = setInterval(() => {
 			currentTime = new Date();
@@ -22,9 +28,17 @@
 		// Fetch devices
 		fetchConnectedDevices();
 
+		// Add logo animation interval
+		logoInterval = setInterval(() => {
+			if (!isAnimating) {
+				animateLogo();
+			}
+		}, 10000); // Trigger animation every 10 seconds
+
 		// Cleanup on component destroy
 		return () => {
 			if (timeInterval) clearInterval(timeInterval);
+			if (logoInterval) clearInterval(logoInterval);
 		};
 	});
 
@@ -78,6 +92,17 @@
 			isProjectDropdownOpen = false;
 		}
 	}
+
+	async function animateLogo() {
+		isAnimating = true;
+		// Start from frame 1
+		currentFrame = 1;
+		for (let frame = 1; frame <= 23; frame++) {
+			currentFrame = frame;
+			await new Promise((resolve) => setTimeout(resolve, 42)); // ~24fps
+		}
+		isAnimating = false;
+	}
 </script>
 
 <svelte:window on:keydown={handleKeydown} on:click={handleClickOutside} />
@@ -86,7 +111,7 @@
 	<header>
 		<div class="left-section">
 			<div class={logoClass}>
-				<img src="/logo1.png" alt="Logo" />
+				<img src="/Comp/Comp 1_{currentFrame.toString().padStart(5, '0')}.png" alt="Logo" />
 			</div>
 
 			<div class="project-selector">
