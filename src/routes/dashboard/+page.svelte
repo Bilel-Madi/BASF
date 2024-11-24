@@ -355,7 +355,7 @@
 
 	.top-row {
 		display: grid;
-		grid-template-columns: 1.5fr 3fr 6fr;
+		grid-template-columns: 1.7fr 3fr 5fr;
 		gap: 0.5rem;
 		height: 50px;
 		min-height: 50px;
@@ -608,12 +608,12 @@
 	}
 
 	/* Smaller screen optimizations */
-	@media (max-width: 480px) {
+	@media (max-width: 768px) {
 		.map-section,
 		.chart-container,
 		.metadata-section,
 		.latest-readings {
-			min-height: 250px;
+			min-height: 400px;
 		}
 	}
 

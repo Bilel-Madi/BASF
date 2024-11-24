@@ -100,7 +100,7 @@
 			},
 			ticks: {
 				color: '#030359',
-				padding: 4
+				padding: 14
 			},
 			border: {
 				display: true,
@@ -287,18 +287,18 @@
 					density: 0.5
 				},
 				ticks: {
-					color: '#000238', // Blue color for the text
+					color: '#000238',
 					align: 'center',
-					padding: 2,
+					padding: window.innerWidth < 768 ? 0 : 2,
 					font: {
-						size: 11
+						size: window.innerWidth < 768 ? 9 : 11
 					}
 				},
 				grid: {
 					color: '#e8e8e8',
 					drawTicks: true,
-					tickLength: 8,
-					tickWidth: 4
+					tickLength: window.innerWidth < 768 ? 4 : 8,
+					tickWidth: window.innerWidth < 768 ? 2 : 4
 				}
 			}
 		};
@@ -308,11 +308,27 @@
 				chart.options.scales[scaleConfig.id] = {
 					...scaleConfig,
 					display: true,
+					title: {
+						...scaleConfig.title,
+						font: {
+							size: window.innerWidth < 768 ? 11 : 14
+						},
+						padding: {
+							top: window.innerWidth < 768 ? 2 : 14
+						}
+					},
+					ticks: {
+						...scaleConfig.ticks,
+						padding: window.innerWidth < 768 ? 2 : 4,
+						font: {
+							size: window.innerWidth < 768 ? 9 : 11
+						}
+					},
 					grid: {
 						drawOnChartArea: false,
 						drawTicks: true,
 						display: true,
-						tickLength: 6,
+						tickLength: window.innerWidth < 768 ? 4 : 6,
 						tickWidth: 1,
 						color: 'rgba(60, 55, 205, 1)'
 					}
@@ -496,6 +512,18 @@
 				}
 			}
 		});
+
+		const handleResize = () => {
+			if (chart) {
+				updateChart();
+			}
+		};
+
+		window.addEventListener('resize', handleResize);
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
 	});
 
 	onDestroy(() => {
