@@ -10,6 +10,7 @@
 	let isLoading = true;
 	let timeInterval;
 	let showColon = true;
+	let isProjectDropdownOpen = false;
 
 	onMount(() => {
 		// Start the time interval
@@ -70,14 +71,53 @@
 
 	export let data;
 	const { userDetails } = data;
+
+	// Close project dropdown when clicking outside
+	function handleClickOutside(event) {
+		if (isProjectDropdownOpen && !event.target.closest('.project-selector')) {
+			isProjectDropdownOpen = false;
+		}
+	}
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window on:keydown={handleKeydown} on:click={handleClickOutside} />
 
 {#if shouldShowHeader}
 	<header>
-		<div class={logoClass}>
-			<img src="/favicon.png" alt="Logo" />
+		<div class="left-section">
+			<div class={logoClass}>
+				<img src="/logo1.png" alt="Logo" />
+			</div>
+
+			<div class="project-selector">
+				<button
+					class="project-button"
+					on:click={() => (isProjectDropdownOpen = !isProjectDropdownOpen)}
+				>
+					<span class="project-name">{userDetails?.projectName || 'Select Project'}</span>
+					<span class="material-symbols-outlined">expand_more</span>
+				</button>
+
+				{#if isProjectDropdownOpen}
+					<div class="project-dropdown" transition:fade={{ duration: 100 }}>
+						{#each userDetails?.projects || [] as project}
+							<a
+								href="/projects/{project.id}"
+								class="project-item"
+								class:active={project.id === userDetails?.projectId}
+							>
+								{project.name}
+							</a>
+						{/each}
+						<div class="dropdown-footer">
+							<a href="/projects" class="manage-projects">
+								<span class="material-symbols-outlined">settings</span>
+								Manage Projects
+							</a>
+						</div>
+					</div>
+				{/if}
+			</div>
 		</div>
 
 		<div class="right-section">
@@ -153,7 +193,7 @@
 					</div>
 
 					<div class="menu-footer">
-						<img src="/favicon.png" alt="Arddata Logo" class="footer-logo" />
+						<img src="/logo1.png" alt="Arddata Logo" class="footer-logo" />
 						<p class="copyright">Arddata™ - All Rights Reserved 2024</p>
 						<p class="support">
 							For support email us at: <a href="mailto:info@misbargeo.com">info@misbargeo.com</a>
@@ -363,11 +403,10 @@
 	.logout {
 		display: inline-block;
 		margin-top: 2rem;
-		padding: 0.5rem 1rem;
+		padding: 0.4rem 1rem;
 		background-color: #ff3e00;
-		border-radius: 4px;
+		border-radius: 15px;
 		color: white !important;
-		float: right;
 	}
 
 	.logout:hover {
@@ -623,5 +662,121 @@
 	.menu-grid a span {
 		display: inline-flex;
 		align-items: baseline;
+	}
+
+	.left-section {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.project-selector {
+		position: relative;
+		display: none; /* Hidden by default on mobile */
+	}
+
+	.project-button {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background-color: rgb(0, 71, 202);
+		border: none;
+		padding: 0.5rem 1rem;
+		border-radius: 1rem;
+		color: white;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+		font-size: 0.9rem;
+	}
+
+	.project-button:hover {
+		background-color: rgb(0, 81, 232);
+	}
+
+	.project-name {
+		color: white;
+	}
+
+	.project-dropdown {
+		position: absolute;
+		top: calc(100% + 0.5rem);
+		left: 0;
+		background-color: rgb(0, 71, 202);
+		border-radius: 1rem;
+		min-width: 200px;
+		z-index: 1000;
+		overflow: hidden;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	}
+
+	.project-item {
+		display: block;
+		padding: 0.75rem 1rem;
+		color: white;
+		text-decoration: none;
+		transition: background-color 0.3s ease;
+	}
+
+	.project-item:hover {
+		background-color: rgb(0, 81, 232);
+	}
+
+	.project-item.active {
+		background-color: rgba(0, 240, 195, 0.1);
+	}
+
+	.dropdown-footer {
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+		padding: 0.75rem 1rem;
+	}
+
+	.manage-projects {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: white;
+		text-decoration: none;
+		font-size: 0.9rem;
+		opacity: 0.8;
+		transition: opacity 0.3s ease;
+	}
+
+	.manage-projects:hover {
+		opacity: 1;
+	}
+
+	/* Show project selector on desktop */
+	@media (min-width: 768px) {
+		.project-selector {
+			display: block;
+		}
+	}
+
+	/* Mobile styles */
+	@media (max-width: 767px) {
+		.menu-bottom .project-selector {
+			display: block;
+			width: 100%;
+			margin-top: 1rem;
+		}
+
+		.menu-bottom .project-button {
+			width: 100%;
+			justify-content: space-between;
+		}
+
+		.menu-bottom .project-dropdown {
+			position: relative;
+			margin-top: 0.5rem;
+			width: 100%;
+		}
+	}
+
+	/* Responsive adjustments */
+	@media (max-width: 600px) {
+		.project-button {
+			padding: 0.4rem 0.6rem;
+			font-size: 0.8rem;
+		}
 	}
 </style>
