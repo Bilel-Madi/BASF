@@ -81,7 +81,8 @@
 			zoom
 		});
 
-		if (showControls) {
+		// Only add navigation controls if showControls is true and screen is not mobile
+		if (showControls && window.innerWidth > 768) {
 			map.addControl(new mapboxgl.NavigationControl());
 		}
 

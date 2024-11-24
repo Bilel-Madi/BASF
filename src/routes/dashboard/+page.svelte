@@ -387,7 +387,7 @@
 	.dashboard-grid {
 		flex-grow: 1;
 		display: grid;
-		grid-template-columns: 4fr 1fr; /* Adjust column ratios as needed */
+		grid-template-columns: 4fr 1fr;
 		grid-template-rows: 1fr 1fr;
 		gap: 0.5rem;
 		overflow: hidden;
@@ -587,21 +587,20 @@
 			padding: 0.25rem;
 			height: auto;
 			overflow: visible;
+			display: flex;
+			flex-direction: column;
 		}
 
 		.top-row {
-			grid-template-columns: 1fr; /* Change to single column */
-			height: auto; /* Allow height to adjust based on content */
-			min-height: auto; /* Remove min-height constraint */
+			order: 2; /* Move top-row after dashboard-grid */
+			grid-template-columns: 1fr;
+			height: auto;
+			min-height: auto;
 			gap: 0.5rem;
 		}
 
-		.info-card {
-			height: 50px; /* Set consistent height for each card */
-			min-height: 50px;
-		}
-
 		.dashboard-grid {
+			order: 1; /* Move dashboard-grid before top-row */
 			grid-template-columns: 1fr;
 			grid-template-rows: auto auto auto auto;
 			height: auto;
@@ -609,19 +608,39 @@
 			gap: 1rem;
 		}
 
+		.map-section {
+			grid-column: 1 / -1;
+			grid-row: 1;
+			background: white;
+			border-radius: 10px;
+			padding: 0.5rem;
+			margin: -1.1rem -1rem;
+			width: calc(100% + 2rem);
+			border: 0;
+			overflow: hidden;
+		}
+
+		.metadata-section {
+			grid-column: 1 / -1;
+			grid-row: 2;
+		}
+
+		.chart-container {
+			grid-column: 1 / -1;
+			grid-row: 3;
+		}
+
+		.latest-readings {
+			grid-column: 1 / -1;
+			grid-row: 4;
+		}
+
+		/* Ensure consistent heights for components */
 		.map-section,
 		.chart-container,
 		.metadata-section,
 		.latest-readings {
-			grid-column: 1 / -1;
-			grid-row: auto;
-			height: auto;
 			min-height: 300px;
-		}
-
-		.device-reading {
-			gap: 2rem;
-			padding-bottom: 1rem;
 		}
 	}
 
