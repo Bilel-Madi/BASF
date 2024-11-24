@@ -14,7 +14,7 @@ export const load = async ({ locals }: Parameters<LayoutServerLoad>[0]) => {
   }
 
   try {
-    const [userDetails, deviceCount, zoneCount, projectCount, project] = await Promise.all([
+    const [userDetails, deviceCount, zoneCount, projectCount, projects] = await Promise.all([
       prisma.user.findUnique({
         where: { id: user.id },
         include: {
@@ -34,7 +34,7 @@ export const load = async ({ locals }: Parameters<LayoutServerLoad>[0]) => {
       prisma.project.count({
         where: { organizationId: user.organizationId }
       }),
-      prisma.project.findFirst({
+      prisma.project.findMany({
         where: { organizationId: user.organizationId }
       })
     ]);
@@ -47,7 +47,9 @@ export const load = async ({ locals }: Parameters<LayoutServerLoad>[0]) => {
         deviceCount,
         zoneCount,
         projectCount,
-        projectName: project?.name || ''
+        projectName: projects[0]?.name || '',
+        projects: projects,
+        projectId: projects[0]?.id || ''
       }
     };
   } catch (error) {

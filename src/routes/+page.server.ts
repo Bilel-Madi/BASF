@@ -5,6 +5,16 @@ import prisma from '$lib/prisma';
 import bcrypt from 'bcrypt';
 import { generateSessionToken, createSession, setSessionCookie } from '$lib/server/session';
 
+export const load = async ({ locals }) => {
+  // If user is authenticated, redirect to dashboard
+  if (locals.user) {
+    throw redirect(303, '/dashboard');
+  }
+
+  // If not authenticated, the page will load normally (showing the sign-in form)
+  return {};
+};
+
 export const actions = {
   default: async (event) => {
     try {
