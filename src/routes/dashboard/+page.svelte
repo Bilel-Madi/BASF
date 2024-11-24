@@ -14,6 +14,7 @@
 	import StatusDot from '$lib/components/ui/StatusDot.svelte';
 	import { onMount } from 'svelte';
 	import Weather from '$lib/components/weather/+page.svelte';
+	import DeviceInfo from '$lib/components/cards/DeviceInfo.svelte';
 
 	// Add loading state
 	let isLoading = true;
@@ -190,64 +191,8 @@
 				/>
 			{/if}
 		</div>
-		<div class="metadata-section card">
-			<h2>Device Information</h2>
-			{#if isLoading}
-				<div class="skeleton-card">
-					<div class="device-image-section">
-						<div class="skeleton" style="height: 180px;" />
-					</div>
-					<div class="device-details-section">
-						<div class="skeleton skeleton-text" style="width: 100%;" />
-						<div class="skeleton skeleton-text" style="width: 100%;" />
-					</div>
-				</div>
-			{:else if selectedDeviceData}
-				<div class="device-info-container">
-					<div class="device-image-section">
-						<div class="status-bar">
-							<div class="status-left">
-								<StatusDot color={getStatusColor(selectedDeviceData.last_seen)} size="8px" />
-								<span class="status-time"
-									>{formatTimeSince(timeSinceLastMessage(selectedDeviceData.last_seen))}</span
-								>
-							</div>
-							<div class="status-right">
-								<SignalIcon strength={selectedDeviceData.rssi} label="RSSI" />
-								<SignalIcon strength={selectedDeviceData.snr} label="SNR" />
-								<BatteryIcon level={getBatteryLevel(selectedDeviceData.battery_status)} />
-							</div>
-						</div>
-						<div class="device-preview">
-							<img
-								src={selectedDeviceData.type === 'SOIL_MOISTURE'
-									? '/images/soil.png'
-									: selectedDeviceData.type === 'CO2_SENSOR'
-									? '/images/co2_sensor.png'
-									: '/images/unknown_device.png'}
-								alt="Device"
-							/>
-						</div>
-					</div>
-					<div class="device-details-section">
-						<div class="device-identifier">
-							<span class="label">Device ID</span>
-							<code class="eui">{selectedDeviceData.eui}</code>
-							{#if selectedDeviceData.type === 'SOIL_MOISTURE' && selectedDeviceData.installedDepth}
-								<span class="depth">Installed at {selectedDeviceData.installedDepth} cm depth</span>
-							{/if}
-						</div>
-						<div class="device-footer">
-							<a href="/devices/{selectedDeviceData.eui}" class="device-link">
-								View device details
-								<span class="arrow-icon">→</span>
-							</a>
-						</div>
-					</div>
-				</div>
-			{:else}
-				<p>Select a device on the map to view details</p>
-			{/if}
+		<div class="metadata-section">
+			<DeviceInfo {selectedDeviceData} {isLoading} />
 		</div>
 		<div class="chart-container">
 			{#if isLoading}
