@@ -13,6 +13,7 @@
 	import SignalIcon from '$lib/components/icons/SignalIcon.svelte';
 	import StatusDot from '$lib/components/ui/StatusDot.svelte';
 	import { onMount } from 'svelte';
+	import Weather from '$lib/components/weather/+page.svelte';
 
 	// Add loading state
 	let isLoading = true;
@@ -165,6 +166,10 @@
 			<h3>Weather</h3>
 			{#if isLoading}
 				<div class="skeleton skeleton-text" style="width: 90%;" />
+			{:else}
+				<div class="weather-wrapper">
+					<Weather />
+				</div>
 			{/if}
 		</div>
 	</div>
@@ -355,7 +360,7 @@
 
 	.top-row {
 		display: grid;
-		grid-template-columns: 1.7fr 3fr 5fr;
+		grid-template-columns: 2fr 3fr 5fr;
 		gap: 0.5rem;
 		height: 50px;
 		min-height: 50px;
@@ -372,10 +377,11 @@
 		flex-direction: row;
 		background: white;
 		border-radius: 8px;
-		padding: 0.5rem 0.5rem;
+		padding: 0.5rem 1rem;
 		border: 1px solid #d8d8d8;
-		justify-content: space-between;
+		justify-content: flex-start;
 		align-items: center;
+		gap: 1rem;
 	}
 
 	.dashboard-grid {
@@ -637,5 +643,22 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
+	}
+
+	.weather-wrapper {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		padding: 0.2rem 1rem;
+		padding-left: 1rem;
+		background: #ecf8e2;
+		border-radius: 10px;
+	}
+
+	h3 {
+		font-size: 1rem;
+		font-weight: 600;
+		margin: 0;
+		white-space: nowrap;
 	}
 </style>
