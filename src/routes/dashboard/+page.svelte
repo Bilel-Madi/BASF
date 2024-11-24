@@ -589,6 +589,18 @@
 			overflow: visible;
 		}
 
+		.top-row {
+			grid-template-columns: 1fr; /* Change to single column */
+			height: auto; /* Allow height to adjust based on content */
+			min-height: auto; /* Remove min-height constraint */
+			gap: 0.5rem;
+		}
+
+		.info-card {
+			height: 50px; /* Set consistent height for each card */
+			min-height: 50px;
+		}
+
 		.dashboard-grid {
 			grid-template-columns: 1fr;
 			grid-template-rows: auto auto auto auto;

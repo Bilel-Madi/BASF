@@ -64,18 +64,18 @@
 				<span class="temperature">{Math.round(weatherData.current.temp_c)}°C</span>
 				<span class="condition-text">{weatherData.current.condition.text}</span>
 			</div>
-			<div class="weather-item">
+			<div class="weather-item mobile-hide">
 				Wind: <span class="value"
 					>{weatherData.current.wind_kph} km/h {weatherData.current.wind_dir}</span
 				>
 			</div>
-			<div class="weather-item">
+			<div class="weather-item mobile-hide">
 				Humidity: <span class="value">{weatherData.current.humidity}%</span>
 			</div>
-			<div class="weather-item">
+			<div class="weather-item mobile-hide">
 				UV: <span class="value">{weatherData.current.uv}</span>
 			</div>
-			<div class="weather-item">
+			<div class="weather-item mobile-hide">
 				Precip: <span class="value">{weatherData.current.precip_mm}mm</span>
 			</div>
 		</div>
@@ -137,5 +137,20 @@
 	.value {
 		font-weight: 600;
 		color: #333;
+	}
+
+	@media (max-width: 768px) {
+		.mobile-hide {
+			display: none;
+		}
+
+		.condition-text {
+			display: none;
+		}
+
+		.weather-content {
+			justify-content: flex-start;
+			gap: 0.5rem;
+		}
 	}
 </style>
