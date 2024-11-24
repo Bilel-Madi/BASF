@@ -701,7 +701,7 @@
 		position: absolute;
 		top: calc(100% + 0.5rem);
 		left: 0;
-		background-color: rgb(0, 71, 202);
+		background-color: rgb(255, 255, 255);
 		border-radius: 1rem;
 		min-width: 200px;
 		z-index: 1000;
@@ -712,13 +712,14 @@
 	.project-item {
 		display: block;
 		padding: 0.75rem 1rem;
-		color: white;
+
 		text-decoration: none;
 		transition: background-color 0.3s ease;
 	}
 
 	.project-item:hover {
 		background-color: rgb(0, 81, 232);
+		color: white;
 	}
 
 	.project-item.active {
@@ -734,7 +735,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		color: white;
+
 		text-decoration: none;
 		font-size: 0.9rem;
 		opacity: 0.8;
@@ -778,5 +779,9 @@
 			padding: 0.4rem 0.6rem;
 			font-size: 0.8rem;
 		}
+	}
+
+	.project-button .material-symbols-outlined {
+		color: white;
 	}
 </style>
