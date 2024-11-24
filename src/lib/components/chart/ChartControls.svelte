@@ -64,88 +64,89 @@
 </script>
 
 <div class="controls-container">
-	<div class="selectors">
-		<div class="select-wrapper">
-			<button
-				class="dropdown-trigger"
-				on:click={() => (isDeviceDropdownOpen = !isDeviceDropdownOpen)}
-			>
-				Devices ({selectedDevices.length})
-			</button>
-
-			{#if isDeviceDropdownOpen}
-				<div
-					class="dropdown-menu"
-					use:clickOutside
-					on:outclick={() => (isDeviceDropdownOpen = false)}
+	<div class="left-controls">
+		<div class="selectors">
+			<div class="select-wrapper">
+				<button
+					class="dropdown-trigger"
+					on:click={() => (isDeviceDropdownOpen = !isDeviceDropdownOpen)}
 				>
-					<div class="search-container">
-						<input type="text" placeholder="Search devices..." bind:value={searchQuery} />
-					</div>
+					Devices ({selectedDevices.length})
+				</button>
 
-					<div class="device-list">
-						{#each filteredDevices as device}
-							<div
-								class="device-item"
-								class:selected={selectedDevices.find((d) => d.eui === device.eui)}
-								on:click={() => toggleDevice(device)}
-								on:keydown={(e) => e.key === 'Enter' && toggleDevice(device)}
-								role="button"
-								tabindex="0"
-							>
-								<div class="device-image">
-									<img
-										src={deviceImagePath[device.type] || deviceImagePath.UNKNOWN}
-										alt={device.type}
-									/>
+				{#if isDeviceDropdownOpen}
+					<div
+						class="dropdown-menu"
+						use:clickOutside
+						on:outclick={() => (isDeviceDropdownOpen = false)}
+					>
+						<div class="search-container">
+							<input type="text" placeholder="Search devices..." bind:value={searchQuery} />
+						</div>
+
+						<div class="device-list">
+							{#each filteredDevices as device}
+								<div
+									class="device-item"
+									class:selected={selectedDevices.find((d) => d.eui === device.eui)}
+									on:click={() => toggleDevice(device)}
+									on:keydown={(e) => e.key === 'Enter' && toggleDevice(device)}
+									role="button"
+									tabindex="0"
+								>
+									<div class="device-image">
+										<img
+											src={deviceImagePath[device.type] || deviceImagePath.UNKNOWN}
+											alt={device.type}
+										/>
+									</div>
+									<div class="device-info">
+										<span class="device-name">{device.name}</span>
+										<span class="device-eui">{device.eui}</span>
+									</div>
 								</div>
-								<div class="device-info">
-									<span class="device-name">{device.name}</span>
-									<span class="device-eui">{device.eui}</span>
-								</div>
-							</div>
-						{/each}
+							{/each}
+						</div>
 					</div>
-				</div>
-			{/if}
-		</div>
+				{/if}
+			</div>
 
-		<div class="select-wrapper">
-			<button
-				class="dropdown-trigger"
-				on:click={() => (isReadingDropdownOpen = !isReadingDropdownOpen)}
-				disabled={selectedDevices.length === 0}
-			>
-				Readings ({selectedReadings.length})
-			</button>
-
-			{#if isReadingDropdownOpen}
-				<div
-					class="dropdown-menu"
-					use:clickOutside
-					on:outclick={() => (isReadingDropdownOpen = false)}
+			<div class="select-wrapper">
+				<button
+					class="dropdown-trigger"
+					on:click={() => (isReadingDropdownOpen = !isReadingDropdownOpen)}
+					disabled={selectedDevices.length === 0}
 				>
-					<div class="reading-list">
-						{#each availableReadings as reading}
-							<div
-								class="device-item"
-								class:selected={selectedReadings.includes(reading.value)}
-								on:click={() => toggleReading(reading.value)}
-								on:keydown={(e) => e.key === 'Enter' && toggleReading(reading.value)}
-								role="button"
-								tabindex="0"
-							>
-								<div class="reading-info">
-									<span class="reading-name">{reading.label}</span>
+					Readings ({selectedReadings.length})
+				</button>
+
+				{#if isReadingDropdownOpen}
+					<div
+						class="dropdown-menu"
+						use:clickOutside
+						on:outclick={() => (isReadingDropdownOpen = false)}
+					>
+						<div class="reading-list">
+							{#each availableReadings as reading}
+								<div
+									class="device-item"
+									class:selected={selectedReadings.includes(reading.value)}
+									on:click={() => toggleReading(reading.value)}
+									on:keydown={(e) => e.key === 'Enter' && toggleReading(reading.value)}
+									role="button"
+									tabindex="0"
+								>
+									<div class="reading-info">
+										<span class="reading-name">{reading.label}</span>
+									</div>
 								</div>
-							</div>
-						{/each}
+							{/each}
+						</div>
 					</div>
-				</div>
-			{/if}
+				{/if}
+			</div>
 		</div>
 	</div>
-
 	<div class="time-controls">
 		<div class="time-slider">
 			<div
@@ -164,17 +165,22 @@
 <style>
 	.controls-container {
 		display: flex;
-		flex-direction: column;
+		justify-content: space-between;
+		align-items: center;
 		gap: 1rem;
 		margin-bottom: 1rem;
 		width: 100%;
+	}
+
+	.left-controls {
+		flex: 1;
+		max-width: 600px;
 	}
 
 	.selectors {
 		display: flex;
 		gap: 0.5rem;
 		width: 100%;
-		flex-wrap: wrap;
 	}
 
 	.select-wrapper {
@@ -293,6 +299,7 @@
 		background: #f5f5f5;
 		padding: 0.25rem;
 		border-radius: 10px;
+		min-width: 300px;
 	}
 
 	.time-slider {
@@ -331,6 +338,15 @@
 	}
 
 	@media (max-width: 480px) {
+		.controls-container {
+			flex-direction: column;
+		}
+
+		.left-controls {
+			width: 100%;
+			max-width: none;
+		}
+
 		.device-item {
 			grid-template-columns: 40px 1fr;
 			gap: 0.25rem;
