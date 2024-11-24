@@ -3,7 +3,6 @@
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
 
 	let isMenuOpen = false;
 	let connectedDevices = 0;
@@ -12,15 +11,6 @@
 	let timeInterval;
 	let showColon = true;
 	let isProjectDropdownOpen = false;
-	let windowWidth = 0;
-
-	// Update the shouldShowHeader logic to handle SSR
-	$: shouldShowHeader =
-		!['/auth/signup', '/', '/auth/onboarding'].includes($page.url.pathname) &&
-		!(browser && $page.url.pathname === '/dashboard' && windowWidth <= 768);
-
-	// Add new reactive statement for bottom nav
-	$: showBottomNav = browser && $page.url.pathname === '/dashboard' && windowWidth <= 768;
 
 	onMount(() => {
 		// Start the time interval
@@ -32,21 +22,17 @@
 		// Fetch devices
 		fetchConnectedDevices();
 
-		// Update width handling
-		const updateWidth = () => (windowWidth = window.innerWidth);
-		updateWidth(); // Initial width
-		window.addEventListener('resize', updateWidth);
-
 		// Cleanup on component destroy
 		return () => {
 			if (timeInterval) clearInterval(timeInterval);
-			window.removeEventListener('resize', updateWidth);
 		};
 	});
 
 	function closeMenu() {
 		isMenuOpen = false;
 	}
+
+	$: shouldShowHeader = !['/auth/signup', '/', '/auth/onboarding'].includes($page.url.pathname);
 
 	// Format time to HH:mm
 	$: formattedTime = (() => {
@@ -227,27 +213,6 @@
 			</nav>
 		</div>
 	{/if}
-{/if}
-
-{#if showBottomNav}
-	<nav class="bottom-nav">
-		<a href="/zones" class="nav-item">
-			<span class="material-symbols-outlined">location_on</span>
-			<span class="nav-label">Zones</span>
-		</a>
-		<a href="/devices" class="nav-item">
-			<span class="material-symbols-outlined">sensors</span>
-			<span class="nav-label">Devices</span>
-		</a>
-		<a href="/projects" class="nav-item">
-			<span class="material-symbols-outlined">folder</span>
-			<span class="nav-label">Projects</span>
-		</a>
-		<button class="nav-item menu-btn" on:click={() => (isMenuOpen = !isMenuOpen)}>
-			<span class="material-symbols-outlined">menu</span>
-			<span class="nav-label">Menu</span>
-		</button>
-	</nav>
 {/if}
 
 <div class="content" class:no-margin={!shouldShowHeader}>
@@ -818,53 +783,5 @@
 
 	.project-button .material-symbols-outlined {
 		color: white;
-	}
-
-	.bottom-nav {
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		height: 4rem;
-		background-color: #1b0ab1;
-		display: flex;
-		flex-direction: row;
-		justify-content: center;
-		align-items: center;
-		z-index: 99;
-		padding: 0 1rem;
-	}
-
-	.bottom-nav .nav-item {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		gap: 0.5rem;
-		color: white;
-		text-decoration: none;
-		padding: 0.5rem 1rem;
-		border: none;
-		background: none;
-		cursor: pointer;
-		font-size: 0.8rem;
-		flex: 1;
-		justify-content: center;
-	}
-
-	.bottom-nav .nav-item:hover {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
-
-	.bottom-nav .material-symbols-outlined {
-		font-size: 1.5rem;
-	}
-
-	.bottom-nav .nav-label {
-		font-size: 0.8rem;
-	}
-
-	/* Adjust content margin for bottom nav */
-	.content {
-		margin-bottom: 4rem;
 	}
 </style>
