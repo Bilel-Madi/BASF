@@ -12,7 +12,10 @@ export const GET: RequestHandler = async ({ locals }) => {
   }
 
   const zones = await prisma.zone.findMany({
-    where: { organizationId: user.organizationId },
+    where: { 
+      projectId: user.activeProjectId || '',
+      organizationId: user.organizationId 
+    },
   });
 
   return json(zones);

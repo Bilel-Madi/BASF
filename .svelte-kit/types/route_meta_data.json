@@ -47,6 +47,9 @@
 	"/api/projects/add": [
 		"src/routes/api/projects/add/+server.ts"
 	],
+	"/api/projects/select": [
+		"src/routes/api/projects/select/+server.ts"
+	],
 	"/api/zones": [
 		"src/routes/api/zones/+server.ts"
 	],

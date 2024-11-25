@@ -43,7 +43,7 @@
 		});
 
 		if (response.ok) {
-			goto('/projects');
+			goto('/zones');
 		} else {
 			const errorText = await response.text();
 			alert(`Error creating project: ${errorText}`);

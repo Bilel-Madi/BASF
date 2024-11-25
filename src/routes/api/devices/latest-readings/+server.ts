@@ -16,6 +16,7 @@ export const GET: RequestHandler = async ({ locals }) => {
     where: {
       zone: {
         organizationId: user.organizationId,
+        projectId: user.activeProjectId || undefined
       },
     },
     include: {

@@ -13,36 +13,28 @@ export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
     throw redirect(303, '/');
   }
 
-  if (!user.organizationId) {
-    console.error('User has no organizationId:', user.id);
-    throw redirect(303, '/');
+  if (!user.activeProjectId) {
+    throw redirect(303, '/projects');
   }
 
-  // Define the start date for 1 day's data
   const startDate = subDays(new Date(), 1);
 
-  // Fetch devices for the user's organization
   const devices = await prisma.device.findMany({
     where: {
       zone: {
         organizationId: user.organizationId,
+        projectId: user.activeProjectId
       },
     },
     include: {
       zone: true,
     },
-    // Sort devices by type and then by number
     orderBy: [
-      {
-        type: 'asc',
-      },
-      {
-        number: 'asc',
-      },
+      { type: 'asc' },
+      { number: 'asc' },
     ],
   });
 
-  // Fetch data for all devices
   const devicesWithData = await Promise.all(
     devices.map(async (device) => {
       if (device.type === 'CO2_SENSOR') {
@@ -84,7 +76,6 @@ export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
           latest_soil_temperature: data[data.length - 1]?.temperature,
         };
       } else {
-        // If device type is unknown, return device without data
         return {
           ...device,
           mainReadings: [],

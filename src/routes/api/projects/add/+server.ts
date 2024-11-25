@@ -28,6 +28,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       },
     });
 
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { 
+        activeProjectId: project.id,
+        projectId: project.id
+      }
+    });
+
     return json(project, { status: 201 });
   } catch (error) {
     console.error('Error creating project:', error);

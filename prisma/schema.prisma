@@ -10,16 +10,20 @@ datasource db {
 }
 
 model User {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
-  email          String       @unique
-  password       String?
-  googleId       String?      @unique
-  firstName      String?
-  lastName       String?
-  role           Role         @default(USER)
-  sessions       Session[]
-  organizationId String       @db.ObjectId
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  email           String       @unique
+  password        String?
+  googleId        String?      @unique
+  firstName       String?
+  lastName        String?
+  role            Role         @default(USER)
+  sessions        Session[]
+  organizationId  String       @db.ObjectId
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  activeProjectId String?      @db.ObjectId
+  activeProject   Project?     @relation("ActiveProject", fields: [activeProjectId], references: [id])
+  Project         Project?     @relation(fields: [projectId], references: [id])
+  projectId       String?      @db.ObjectId
 }
 
 model Session {
@@ -49,6 +53,8 @@ model Project {
   organizationId String       @db.ObjectId
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   zones          Zone[]
+  users          User[]
+  activeUsers    User[]       @relation("ActiveProject")
 }
 
 model Zone {

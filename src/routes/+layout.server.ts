@@ -13,30 +13,33 @@ export const load: LayoutServerLoad = async ({ locals }) => {
   }
 
   try {
-    const [userDetails, deviceCount, zoneCount, projectCount, projects] = await Promise.all([
+    const [userDetails, deviceCount, projects] = await Promise.all([
       prisma.user.findUnique({
         where: { id: user.id },
         include: {
-          organization: true
+          organization: true,
+          activeProject: true
         }
       }),
       prisma.device.count({
         where: {
           zone: {
-            organizationId: user.organizationId
+            organizationId: user.organizationId,
+            projectId: user.activeProjectId || undefined
           }
         }
       }),
-      prisma.zone.count({
-        where: { organizationId: user.organizationId }
-      }),
-      prisma.project.count({
-        where: { organizationId: user.organizationId }
-      }),
       prisma.project.findMany({
-        where: { organizationId: user.organizationId }
+        where: { organizationId: user.organizationId },
+        include: {
+          _count: {
+            select: { zones: true }
+          }
+        }
       })
     ]);
+
+    const activeProject = projects.find(p => p.id === user.activeProjectId) || projects[0];
 
     return {
       user,
@@ -44,11 +47,11 @@ export const load: LayoutServerLoad = async ({ locals }) => {
         firstName: userDetails?.firstName || '',
         organizationName: userDetails?.organization?.name || '',
         deviceCount,
-        zoneCount,
-        projectCount,
-        projectName: projects[0]?.name || '',
+        zoneCount: activeProject?._count.zones || 0,
+        projectCount: projects.length,
+        projectName: activeProject?.name || '',
         projects: projects,
-        projectId: projects[0]?.id || ''
+        projectId: activeProject?.id || ''
       }
     };
   } catch (error) {

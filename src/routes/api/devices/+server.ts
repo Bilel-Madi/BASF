@@ -13,6 +13,12 @@ export const GET: RequestHandler = async ({ locals }) => {
 
   try {
     const devices = await prisma.device.findMany({
+      where: {
+        zone: {
+          organizationId: user.organizationId,
+          projectId: user.activeProjectId || undefined
+        }
+      },
       select: {
         id: true,
         name: true,

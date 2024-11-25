@@ -11,18 +11,20 @@ export const load: PageServerLoad = async ({ locals }) => {
     throw redirect(303, '/');
   }
 
-  if (!user.organizationId) {
-    console.error('User has no organizationId:', user.id);
-    throw redirect(303, '/');
+  if (!user.activeProjectId) {
+    throw redirect(303, '/projects');
   }
 
-  // Fetch the user's project
-  const project = await prisma.project.findFirst({
-    where: { organizationId: user.organizationId },
+  // Fetch the active project
+  const project = await prisma.project.findUnique({
+    where: { 
+      id: user.activeProjectId,
+      organizationId: user.organizationId 
+    },
   });
 
   if (!project) {
-    throw redirect(303, '/projects/add');
+    throw redirect(303, '/projects');
   }
 
   return { project };

@@ -8,12 +8,14 @@ import type { ZoneColor } from '@prisma/client';
 export const POST: RequestHandler = async ({ request, locals }) => {
   const user = locals.user;
 
-  // Check if the user is authenticated
   if (!user) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  // Destructure and parse the incoming JSON data
+  if (!user.activeProjectId) {
+    return new Response('No active project selected', { status: 400 });
+  }
+
   const {
     name,
     cropType,
@@ -24,7 +26,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     geometry,
     area,
     color,
-    devices, // Array of device IDs to assign
+    devices,
   } = await request.json();
 
   // Basic validation for required fields
@@ -56,18 +58,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   }
 
   try {
-    // **Fetch the user's project**
-    // Assuming each organization has at least one project
-    const project = await prisma.project.findFirst({
-      where: { organizationId: user.organizationId },
-    });
-
-    // If no project is found, prompt the user to add one
-    if (!project) {
-      return new Response('No project found for the organization. Please add a project first.', { status: 400 });
-    }
-
-    // **Create the Zone with both organizationId and projectId**
     const zone = await prisma.zone.create({
       data: {
         name,
@@ -79,31 +69,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         geometry,
         area,
         color,
-        organizationId: user.organizationId, // Ensure this is correctly set
-        projectId: project.id, // Include the fetched projectId
+        organizationId: user.organizationId,
+        projectId: user.activeProjectId,
         devices: {
           connect: devices.map((deviceId: string) => ({ id: deviceId })),
         },
       },
     });
 
-    // **Optionally, update devices to associate them with the new zone**
-    // This depends on your schema and whether devices should be linked to zones
-    // Uncomment the following block if needed
-
-    /*
-    await prisma.device.updateMany({
-      where: {
-        id: { in: devices },
-        organizationId: user.organizationId, // Ensure devices belong to the organization
-      },
-      data: {
-        zoneId: zone.id,
-      },
-    });
-    */
-
-    // Return the created zone as a JSON response
     return json(zone, { status: 201 });
   } catch (error) {
     console.error('Error creating zone:', error);

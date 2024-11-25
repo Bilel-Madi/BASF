@@ -1,5 +1,5 @@
 <!-- src/routes/+layout.svelte -->
-<script>
+<script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -78,6 +78,30 @@
 			isProjectDropdownOpen = false;
 		}
 	}
+
+	async function handleProjectSelect(projectId) {
+		console.log('Selecting project:', projectId);
+
+		try {
+			const response = await fetch('/api/projects/select', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ projectId })
+			});
+
+			if (response.ok) {
+				const result = await response.json();
+				console.log('Project selection successful:', result);
+				// Reload the page to refresh data with new project context
+				window.location.reload();
+			} else {
+				const errorText = await response.text();
+				console.error('Project selection failed:', errorText);
+			}
+		} catch (error) {
+			console.error('Error selecting project:', error);
+		}
+	}
 </script>
 
 <svelte:window on:keydown={handleKeydown} on:click={handleClickOutside} />
@@ -101,13 +125,13 @@
 				{#if isProjectDropdownOpen}
 					<div class="project-dropdown" transition:fade={{ duration: 100 }}>
 						{#each userDetails?.projects || [] as project}
-							<a
-								href="/projects/{project.id}"
+							<button
 								class="project-item"
 								class:active={project.id === userDetails?.projectId}
+								on:click={() => handleProjectSelect(project.id)}
 							>
 								{project.name}
-							</a>
+							</button>
 						{/each}
 						<div class="dropdown-footer">
 							<a href="/projects" class="manage-projects">
@@ -711,8 +735,13 @@
 
 	.project-item {
 		display: block;
+		width: 100%;
 		padding: 0.75rem 1rem;
-
+		text-align: left;
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: inherit;
 		text-decoration: none;
 		transition: background-color 0.3s ease;
 	}

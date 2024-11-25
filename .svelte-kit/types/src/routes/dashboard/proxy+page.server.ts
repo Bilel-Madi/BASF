@@ -18,18 +18,31 @@ export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
   }
 
   try {
-    // Fetch the user's project
-    const project = await prisma.project.findFirst({
-      where: { organizationId: user.organizationId },
+    // First check for active project
+    if (!user.activeProjectId) {
+      console.log('No active project, redirecting to projects');
+      throw redirect(303, '/projects');
+    }
+
+    // Fetch the user's active project
+    const project = await prisma.project.findUnique({
+      where: { 
+        id: user.activeProjectId,
+        organizationId: user.organizationId 
+      },
     });
 
     if (!project) {
-      throw redirect(303, '/projects/add');
+      console.log('Active project not found, redirecting to projects');
+      throw redirect(303, '/projects');
     }
 
-    // Fetch zones associated with the project
+    // Fetch zones associated with the active project
     const zones = await prisma.zone.findMany({
-      where: { projectId: project.id },
+      where: { 
+        projectId: project.id,
+        organizationId: user.organizationId 
+      },
       include: {
         devices: true,
       },
@@ -58,9 +71,20 @@ export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
       )
     );
 
-    return { project, zones, devices: devicesWithReadings };
+    return { 
+      project, 
+      zones, 
+      devices: devicesWithReadings 
+    };
   } catch (error) {
-    console.error('Error fetching data:', error);
-    return { project: null, zones: [], devices: [] };
+    if (error instanceof Response) {
+      throw error; // Re-throw redirect responses
+    }
+    console.error('Error fetching dashboard data:', error);
+    return { 
+      project: null, 
+      zones: [], 
+      devices: [] 
+    };
   }
 };
