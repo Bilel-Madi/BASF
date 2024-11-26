@@ -13,17 +13,32 @@ export const GET: RequestHandler = async ({ locals }) => {
 
   try {
     const devices = await prisma.device.findMany({
-      where: {
-        zone: {
-          organizationId: user.organizationId,
-          projectId: user.activeProjectId || undefined
-        }
-      },
+      where: user.role === 'SUPER_ADMIN'
+        ? {
+            zone: {
+              projectId: user.activeProjectId || undefined
+            }
+          }
+        : {
+            zone: {
+              organizationId: user.organizationId,
+              projectId: user.activeProjectId || undefined
+            }
+          },
       select: {
         id: true,
         name: true,
         eui: true,
         type: true,
+        zone: {
+          select: {
+            organization: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
       }
     });
 

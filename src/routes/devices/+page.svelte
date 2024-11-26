@@ -29,9 +29,11 @@
 	<Breadcrumbs items={breadcrumbItems} />
 	<div class="header">
 		<h1 class="title">Devices</h1>
-		<a href="/devices/add" class="no-underline">
-			<Button text="Add Device" />
-		</a>
+		{#if data.userDetails?.role !== 'VIEWER'}
+			<a href="/devices/add" class="no-underline">
+				<Button text="Add Device" />
+			</a>
+		{/if}
 	</div>
 
 	<div class="grid-container">

@@ -3,7 +3,26 @@
 <script lang="ts">
 	import TextInput from '$lib/components/ui/TextInput.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { goto } from '$app/navigation';
+	import { enhance } from '$app/forms';
 	export let data: { error?: string };
+
+	type ActionResult = {
+		type: 'success' | 'failure';
+		data?: {
+			location: string;
+		};
+	};
+
+	const handleSubmit = ({ form }) => {
+		return async ({ result, update }: { result: ActionResult; update: () => Promise<void> }) => {
+			if (result.type === 'success') {
+				await goto(result.data.location);
+			} else {
+				await update();
+			}
+		};
+	};
 </script>
 
 <div class="container">
@@ -15,7 +34,7 @@
 		<div class="form-section">
 			<h1>Create Your Account</h1>
 
-			<form method="POST" action="/auth/signup">
+			<form method="POST" action="/auth/signup" use:enhance={handleSubmit}>
 				<Button
 					text="Sign up with Google"
 					variant="google"
@@ -31,6 +50,7 @@
 
 				<TextInput type="email" id="email" name="email" label="Email:" required />
 				<TextInput type="password" id="password" name="password" label="Password:" required />
+				<TextInput type="text" id="inviteCode" name="inviteCode" label="Invite Code: (optional)" />
 				<Button text="Sign Up" variant="primary" type="submit" />
 
 				{#if data?.error}

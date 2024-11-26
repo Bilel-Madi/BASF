@@ -11,12 +11,17 @@ export const GET: RequestHandler = async ({ locals }) => {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  // Get the latest 'last_seen' timestamp
+  // Get the latest 'last_seen' timestamp with SUPER_ADMIN consideration
   const lastActivity = await prisma.device.findFirst({
     where: {
-      zone: {
-        organizationId: user.organizationId,
-      },
+      zone: user.role === 'SUPER_ADMIN'
+        ? {
+            projectId: user.activeProjectId || undefined
+          }
+        : {
+            organizationId: user.organizationId,
+            projectId: user.activeProjectId || undefined
+          },
       last_seen: {
         not: null,
       },

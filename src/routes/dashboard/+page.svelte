@@ -15,6 +15,7 @@
 	import { onMount } from 'svelte';
 	import Weather from '$lib/components/weather/+page.svelte';
 	import DeviceInfo from '$lib/components/cards/DeviceInfo.svelte';
+	import { page } from '$app/stores';
 
 	// Add loading state
 	let isLoading = true;
@@ -22,6 +23,7 @@
 	// Update the data prop to handle loading state
 	export let data: {
 		project: Project;
+		organization?: { name: string } | null;
 		zones: Array<Zone & { devices: Device[] }>;
 		devices: Array<Device & { latestData: any }>;
 	};
@@ -43,52 +45,54 @@
 		'pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg';
 
 	// Prepare GeoJSON data for the map
-	$: mapFeatures = [
-		// Project boundary feature
-		{
-			type: 'Feature',
-			geometry: data.project.geometry,
-			properties: {
-				type: 'projectBoundary',
-				id: data.project.id,
-				name: data.project.name
-			}
-		},
-		// Zone features with dynamic colors
-		...data.zones.map((zone) => ({
-			type: 'Feature',
-			geometry: zone.geometry,
-			properties: {
-				type: 'zone',
-				id: zone.id,
-				name: zone.name,
-				color: colorMap[zone.color as ZoneColor] || '#088' // Default color if mapping fails
-			}
-		})),
-		// Device features
-		...data.devices
-			.filter((device) => device.location)
-			.map((device) => ({
-				type: 'Feature',
-				geometry: {
-					type: 'Point',
-					coordinates: [device.location.longitude, device.location.latitude]
-				},
-				properties: {
-					type: 'device',
-					id: device.eui,
-					name: device.name,
-					deviceType: device.type
-				}
-			}))
-	];
+	$: mapFeatures = data.project
+		? [
+				// Project boundary feature
+				...(data.project.geometry
+					? [
+							{
+								type: 'Feature',
+								geometry: data.project.geometry,
+								properties: {
+									type: 'projectBoundary',
+									id: data.project.id,
+									name: data.project.name
+								}
+							}
+					  ]
+					: []),
+				// Zone features
+				...(data.zones?.map((zone) => ({
+					type: 'Feature',
+					geometry: zone.geometry,
+					properties: {
+						type: 'zone',
+						id: zone.id,
+						name: zone.name,
+						color: colorMap[zone.color as ZoneColor] || '#088'
+					}
+				})) || []),
+				// Device features
+				...(data.devices
+					?.filter((device) => device.location)
+					.map((device) => ({
+						type: 'Feature',
+						geometry: {
+							type: 'Point',
+							coordinates: [device.location.longitude, device.location.latitude]
+						},
+						properties: {
+							type: 'device',
+							id: device.eui,
+							name: device.name,
+							deviceType: device.type
+						}
+					})) || [])
+		  ]
+		: [];
 
-	// Extract the project's center coordinates
-	let projectCenter: [number, number] = [0, 0];
-
-	$: if (data.project && data.project.center) {
-		projectCenter = data.project.center.coordinates as [number, number];
-	}
+	// Extract project center with null check
+	$: projectCenter = (data.project?.center?.coordinates as [number, number]) || [0, 0];
 
 	// Function to handle device selection from the map
 	function handleDeviceClick(event) {
@@ -148,32 +152,42 @@
 </script>
 
 <div class="dashboard">
-	<div class="top-row">
-		<div class="info-card last-seen">
-			<h3>Last Activity:</h3>
-			{#if isLoading}
-				<div class="skeleton skeleton-text" style="width: 60%;" />
-			{:else}
-				<LastActivity />
-			{/if}
-		</div>
-		<div class="info-card alerts">
-			<h3>Alerts</h3>
-			{#if isLoading}
-				<div class="skeleton skeleton-text" style="width: 90%;" />
-			{/if}
-		</div>
-		<div class="info-card weather">
-			<h3>Weather</h3>
-			{#if isLoading}
-				<div class="skeleton skeleton-text" style="width: 90%;" />
-			{:else}
-				<div class="weather-wrapper">
-					<Weather />
+	{#if data.project}
+		<div class="top-row">
+			{#if $page.data.user?.role === 'SUPER_ADMIN' && data.organization}
+				<div class="info-card organization">
+					<h3>Organization:</h3>
+					<span class="org-name">{data.organization.name}</span>
 				</div>
 			{/if}
+			<div class="info-card last-seen">
+				<h3>Last Activity:</h3>
+				{#if isLoading}
+					<div class="skeleton skeleton-text" style="width: 60%;" />
+				{:else}
+					<LastActivity />
+				{/if}
+			</div>
+			<div class="info-card alerts">
+				<h3>Alerts</h3>
+				{#if isLoading}
+					<div class="skeleton skeleton-text" style="width: 90%;" />
+				{/if}
+			</div>
+			<div class="info-card weather">
+				<h3>Weather</h3>
+				{#if isLoading}
+					<div class="skeleton skeleton-text" style="width: 90%;" />
+				{:else}
+					<div class="weather-wrapper">
+						<Weather />
+					</div>
+				{/if}
+			</div>
 		</div>
-	</div>
+	{:else}
+		<div class="loading">Loading dashboard data...</div>
+	{/if}
 
 	<div class="dashboard-grid">
 		<div class="map-section">
@@ -305,7 +319,7 @@
 
 	.top-row {
 		display: grid;
-		grid-template-columns: 2fr 3fr 5fr;
+		grid-template-columns: auto 2fr 3fr 5fr;
 		gap: 0.5rem;
 		height: 50px;
 		min-height: 50px;
@@ -636,5 +650,14 @@
 		font-weight: 600;
 		margin: 0;
 		white-space: nowrap;
+	}
+
+	.organization {
+		background: #f0f4ff;
+	}
+
+	.org-name {
+		font-weight: 500;
+		color: #1b0ab1;
 	}
 </style>

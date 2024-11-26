@@ -9,6 +9,11 @@ export const load: PageServerLoad = async ({ locals }) => {
     throw redirect(303, '/');
   }
 
+  // Prevent VIEWER role from accessing this page
+  if (user.role === 'VIEWER') {
+    throw redirect(303, '/dashboard');
+  }
+
   const organization = await prisma.organization.findUnique({
     where: { id: user.organizationId },
   });

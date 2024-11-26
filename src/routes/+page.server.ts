@@ -44,8 +44,11 @@ export const actions = {
       const session = await createSession(sessionToken, user.id);
       setSessionCookie(event, sessionToken, session.expiresAt);
 
-      // Redirect to /zones
-      throw redirect(303, '/zones');
+      // Redirect based on user role
+      if (user.role === 'SUPER_ADMIN') {
+        throw redirect(303, '/admin');
+      }
+      throw redirect(303, '/dashboard');
     } catch (error: any) {
       // Check if the error is a redirect by looking for 'status' and 'location'
       if (error && typeof error === 'object' && 'status' in error && 'location' in error) {

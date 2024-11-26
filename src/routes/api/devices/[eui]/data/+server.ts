@@ -53,7 +53,7 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
 
   const eui = params.eui;
 
-  // Validate device ownership
+  // Validate device ownership with SUPER_ADMIN consideration
   const device = await prisma.device.findUnique({
     where: { eui },
     include: {
@@ -61,7 +61,8 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
     },
   });
 
-  if (!device || device.zone?.organizationId !== user.organizationId) {
+  // For SUPER_ADMIN, only check if device exists and belongs to the active project
+  if (!device || (user.role !== 'SUPER_ADMIN' && device.zone?.organizationId !== user.organizationId)) {
     return new Response('Device not found or access denied', { status: 404 });
   }
 

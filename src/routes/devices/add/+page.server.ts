@@ -9,6 +9,10 @@ export const load: PageServerLoad = async ({ locals }) => {
     throw redirect(303, '/');
   }
 
+  if (user.role === 'VIEWER') {
+    throw redirect(303, '/devices');
+  }
+
   if (!user.activeProjectId) {
     throw redirect(303, '/projects');
   }

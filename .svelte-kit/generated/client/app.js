@@ -33,7 +33,7 @@ export const dictionary = {
 		"/devices/[eui]": [~9],
 		"/organization": [~10],
 		"/projects": [11],
-		"/projects/add": [12],
+		"/projects/add": [~12],
 		"/projects/[project_id]": [~13],
 		"/zones": [~14],
 		"/zones/add": [~15],

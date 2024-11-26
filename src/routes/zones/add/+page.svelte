@@ -153,10 +153,18 @@
 		]}
 	/>
 
-	<h1 class="title">Add New Zone</h1>
+	<div class="header">
+		<h1 class="title">Add New Zone</h1>
+	</div>
+
+	<p class="description">
+		Zones are specific areas within your project where you grow different crops. Draw the boundaries
+		of your zone on the map, specify the crop details, and optionally assign devices to monitor this
+		area.
+	</p>
 
 	<form on:submit|preventDefault={submitZone} class="zone-form">
-		<!-- Map where users can draw the zone -->
+		<!-- Map section -->
 		<div class="map-section">
 			<MapboxMap
 				bind:this={mapComponent}
@@ -175,32 +183,41 @@
 		<div class="details-section">
 			<div class="input-group">
 				<label for="name">Zone Name*</label>
-				<input type="text" id="name" bind:value={name} required />
+				<input type="text" id="name" bind:value={name} required placeholder="Enter zone name" />
 			</div>
 
 			<div class="input-group">
 				<label for="cropType">Crop Type*</label>
-				<input type="text" id="cropType" bind:value={cropType} required />
+				<input
+					type="text"
+					id="cropType"
+					bind:value={cropType}
+					required
+					placeholder="Enter crop type"
+				/>
 			</div>
 
-			<div class="input-group">
-				<label for="plantingDate">Planting Date*</label>
-				<input type="date" id="plantingDate" bind:value={plantingDate} required />
-			</div>
+			<div class="dates-container">
+				<div class="input-group">
+					<label for="plantingDate">Planting Date*</label>
+					<input type="date" id="plantingDate" bind:value={plantingDate} required />
+				</div>
 
-			<div class="input-group">
-				<label for="harvestDate">Harvest Date*</label>
-				<input type="date" id="harvestDate" bind:value={harvestDate} required />
+				<div class="input-group">
+					<label for="harvestDate">Harvest Date*</label>
+					<input type="date" id="harvestDate" bind:value={harvestDate} required />
+				</div>
 			</div>
 
 			<div class="input-group">
 				<label for="soilType">Soil Type*</label>
-				<input type="text" id="soilType" bind:value={soilType} required />
-			</div>
-
-			<div class="input-group">
-				<label for="notes">Notes</label>
-				<textarea id="notes" bind:value={notes} />
+				<input
+					type="text"
+					id="soilType"
+					bind:value={soilType}
+					required
+					placeholder="Enter soil type"
+				/>
 			</div>
 
 			<!-- Color Selection -->
@@ -227,6 +244,15 @@
 					{/each}
 				</select>
 			</div>
+
+			<div class="input-group">
+				<label for="notes">Notes</label>
+				<textarea
+					id="notes"
+					bind:value={notes}
+					placeholder="Add any additional notes about this zone"
+				/>
+			</div>
 		</div>
 
 		<!-- Submit Button -->
@@ -238,15 +264,31 @@
 
 <style>
 	.page-container {
-		max-width: 1200px;
+		max-width: 1400px;
 		margin: 0 auto;
 		padding: 2rem;
 	}
 
+	.header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin: 2.5rem 0 1.5rem;
+		padding-bottom: 1.5rem;
+		border-bottom: 1px solid var(--border-color, #eaeaea);
+	}
+
 	.title {
-		font-size: 2rem;
-		font-weight: 700;
-		margin-bottom: 1.5rem;
+		font-size: 1.75rem;
+		font-weight: 500;
+		letter-spacing: -0.02em;
+		color: var(--text-primary, #111);
+	}
+
+	.description {
+		margin-bottom: 2rem;
+		color: var(--text-secondary, #666);
+		line-height: 1.5;
 	}
 
 	.zone-form {
@@ -257,58 +299,98 @@
 
 	.map-section {
 		width: 100%;
+		border: 1px solid var(--border-color, #eaeaea);
+		border-radius: 8px;
+		overflow: hidden;
 	}
 
 	.details-section {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1.5rem;
+	}
+
+	.dates-container {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
 		gap: 1.5rem;
 	}
 
 	.input-group {
 		display: flex;
 		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.input-group:last-child {
+		grid-column: 1 / -1;
 	}
 
 	.input-group label {
-		margin-bottom: 0.5rem;
-		font-weight: 600;
+		font-weight: 500;
+		color: var(--text-primary, #111);
 	}
 
 	.input-group input,
 	.input-group textarea,
 	.input-group select {
-		padding: 0.5rem;
-		border: 1px solid #ccc;
-		border-radius: 4px;
+		padding: 0.75rem;
+		border: 1px solid var(--border-color, #eaeaea);
+		border-radius: 6px;
+		font-size: 1rem;
+		background-color: white;
+	}
+
+	.input-group textarea {
+		min-height: 100px;
+		resize: vertical;
 	}
 
 	.color-selection {
 		display: flex;
-		gap: 0.5rem;
+		gap: 0.75rem;
+		padding: 0.5rem 0;
 	}
 
 	.color-button {
-		width: 40px;
-		height: 40px;
+		width: 2.5rem;
+		height: 2.5rem;
 		border: 2px solid transparent;
 		border-radius: 50%;
 		cursor: pointer;
-		transition: border 0.2s;
+		transition: all 0.2s ease;
+	}
+
+	.color-button:hover {
+		transform: scale(1.1);
 	}
 
 	.color-button.selected {
-		border: 2px solid #000;
+		border: 2px solid var(--text-primary, #111);
+		box-shadow: 0 0 0 2px white inset;
 	}
 
 	.submit-section {
 		display: flex;
 		justify-content: flex-end;
+		margin-top: 1rem;
 	}
 
-	/* Responsive */
 	@media (max-width: 768px) {
+		.page-container {
+			padding: 1.5rem;
+		}
+
+		.header {
+			margin: 1.5rem 0 1rem;
+		}
+
 		.details-section {
+			grid-template-columns: 1fr;
+		}
+
+		.dates-container {
 			grid-template-columns: 1fr;
 		}
 	}

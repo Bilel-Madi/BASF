@@ -11,6 +11,12 @@
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],
+	"/api/admin/update-subscription": [
+		"src/routes/api/admin/update-subscription/+server.ts"
+	],
+	"/api/admin/update-user-role": [
+		"src/routes/api/admin/update-user-role/+server.ts"
+	],
 	"/api/data": [
 		"src/routes/api/data/+server.ts"
 	],
@@ -43,6 +49,9 @@
 	],
 	"/api/organizations/[id]": [
 		"src/routes/api/organizations/[id]/+server.ts"
+	],
+	"/api/organization/generate-invite": [
+		"src/routes/api/organization/generate-invite/+server.ts"
 	],
 	"/api/projects": [
 		"src/routes/api/projects/+server.ts"
@@ -102,6 +111,7 @@
 		"src/routes/+layout.server.ts"
 	],
 	"/projects/add": [
+		"src/routes/projects/add/+page.server.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],

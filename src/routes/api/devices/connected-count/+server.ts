@@ -14,16 +14,18 @@ export const GET: RequestHandler = async ({ locals }) => {
 
   const twoHoursAgo = subHours(new Date(), 2);
 
-  // Fetch counts
+  // Fetch counts with SUPER_ADMIN consideration
   const connectedDevices = await prisma.device.groupBy({
     by: ['type'],
     where: {
       last_seen: {
         gte: twoHoursAgo,
       },
-      zone: {
-        organizationId: user.organizationId,
-      },
+      zone: user.role === 'SUPER_ADMIN'
+        ? undefined  // No organization filter for SUPER_ADMIN
+        : {
+            organizationId: user.organizationId,
+          },
     },
     _count: {
       _all: true,

@@ -1,11 +1,60 @@
 <script lang="ts">
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import { formatDate } from '$lib/utils/date';
+	import { enhance } from '$app/forms';
 
 	export let data;
 	const { organization, stats } = data;
 
+	let inviteEmail = '';
+	let inviteCode = '';
+
 	const breadcrumbItems = [{ label: 'Home', href: '/' }, { label: 'Organization' }];
+
+	async function handleInvite() {
+		try {
+			const response = await fetch('/api/organization/invite', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ email: inviteEmail })
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to send invitation');
+			}
+
+			inviteEmail = ''; // Clear the input after successful invitation
+			alert('Invitation sent successfully!');
+		} catch (error) {
+			console.error('Error sending invitation:', error);
+			alert('Failed to send invitation. Please try again.');
+		}
+	}
+
+	async function generateInviteCode() {
+		try {
+			const response = await fetch('/api/organization/generate-invite', {
+				method: 'POST'
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to generate invite code');
+			}
+
+			const data = await response.json();
+			inviteCode = data.code;
+		} catch (error) {
+			console.error('Error generating invite code:', error);
+			alert('Failed to generate invite code. Please try again.');
+		}
+	}
+
+	async function copyInviteCode() {
+		await navigator.clipboard.writeText(inviteCode);
+		alert('Invite code copied to clipboard!');
+	}
 </script>
 
 <div class="page-container">
@@ -49,6 +98,21 @@
 			<p>Subscription ends: {formatDate(organization.subscriptionEndDate)}</p>
 		</div>
 	{/if}
+
+	<div class="invite-section">
+		<h2>Generate Invite Code</h2>
+		<div class="invite-code-container">
+			{#if inviteCode}
+				<div class="code-display">
+					<input type="text" readonly value={inviteCode} />
+					<button class="copy-button" on:click={copyInviteCode}>Copy</button>
+				</div>
+			{/if}
+			<button class="generate-button" on:click={generateInviteCode}>
+				Generate New Invite Code
+			</button>
+		</div>
+	</div>
 </div>
 
 <style>
@@ -116,9 +180,107 @@
 		border-radius: 0.5rem;
 	}
 
+	.invite-section {
+		margin-top: 3rem;
+		background: white;
+		padding: 2rem;
+		border-radius: 1rem;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	}
+
+	.invite-form {
+		margin-top: 1rem;
+		display: flex;
+		gap: 1rem;
+		align-items: flex-end;
+	}
+
+	.form-group {
+		flex: 1;
+	}
+
+	.form-group label {
+		display: block;
+		margin-bottom: 0.5rem;
+		font-size: 0.875rem;
+		color: #64748b;
+	}
+
+	.form-group input {
+		width: 100%;
+		padding: 0.5rem;
+		border: 1px solid #e2e8f0;
+		border-radius: 0.5rem;
+		font-size: 1rem;
+	}
+
+	.invite-button {
+		padding: 0.5rem 1rem;
+		background: #2563eb;
+		color: white;
+		border: none;
+		border-radius: 0.5rem;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: background-color 0.2s;
+	}
+
+	.invite-button:hover {
+		background: #1d4ed8;
+	}
+
 	@media (max-width: 768px) {
 		.stats-grid {
 			grid-template-columns: 1fr;
 		}
+	}
+
+	@media (max-width: 640px) {
+		.invite-form {
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.invite-button {
+			width: 100%;
+		}
+	}
+
+	.invite-code-container {
+		margin-top: 1rem;
+	}
+
+	.code-display {
+		display: flex;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.code-display input {
+		flex: 1;
+		padding: 0.5rem;
+		border: 1px solid #e2e8f0;
+		border-radius: 0.5rem;
+		font-size: 1rem;
+		background: #f8fafc;
+	}
+
+	.copy-button {
+		padding: 0.5rem 1rem;
+		background: #64748b;
+		color: white;
+		border: none;
+		border-radius: 0.5rem;
+		cursor: pointer;
+	}
+
+	.generate-button {
+		width: 100%;
+		padding: 0.5rem 1rem;
+		background: #2563eb;
+		color: white;
+		border: none;
+		border-radius: 0.5rem;
+		cursor: pointer;
 	}
 </style>

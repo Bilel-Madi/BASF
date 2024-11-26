@@ -12,13 +12,6 @@ export const load: PageServerLoad = async ({ locals }) => {
     throw redirect(303, '/');
   }
 
-  // Debug log user data
-  console.log('User data:', {
-    id: user.id,
-    activeProjectId: user.activeProjectId,
-    organizationId: user.organizationId
-  });
-
   if (!user.activeProjectId) {
     console.log('No active project ID found for user');
     throw redirect(303, '/projects');
@@ -27,14 +20,13 @@ export const load: PageServerLoad = async ({ locals }) => {
   try {
     // Get the active project for this user
     const project = await prisma.project.findUnique({
-      where: { 
-        id: user.activeProjectId,
-        organizationId: user.organizationId
-      }
+      where: user.role === 'SUPER_ADMIN' 
+        ? { id: user.activeProjectId }
+        : { 
+            id: user.activeProjectId,
+            organizationId: user.organizationId
+          }
     });
-
-    // Debug log project lookup result
-    console.log('Project lookup result:', project);
 
     if (!project) {
       console.log('No project found with ID:', user.activeProjectId);
@@ -43,17 +35,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 
     // Get zones for the active project
     const zones = await prisma.zone.findMany({
-      where: { 
-        projectId: project.id,
-        organizationId: user.organizationId 
-      },
+      where: user.role === 'SUPER_ADMIN'
+        ? { projectId: project.id }
+        : { 
+            projectId: project.id,
+            organizationId: user.organizationId 
+          },
       include: {
         devices: true,
       },
     });
-
-    // Debug log zones count
-    console.log('Found zones:', zones.length);
 
     return { 
       zones,

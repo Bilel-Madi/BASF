@@ -60,7 +60,15 @@
 		]}
 	/>
 
-	<h1 class="title">Add New Project</h1>
+	<div class="header">
+		<h1 class="title">Add New Project</h1>
+	</div>
+
+	<p class="description">
+		Projects help you organize and manage different growing areas. Draw the boundaries of your
+		project on the map and provide basic details. You can later add specific zones and devices
+		within this project area.
+	</p>
 
 	<form on:submit|preventDefault={submitProject} class="project-form">
 		<!-- Map where users can draw the project boundaries -->
@@ -95,5 +103,93 @@
 </div>
 
 <style>
-	/* Add your styles here */
+	.page-container {
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 2rem;
+	}
+
+	.header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin: 2.5rem 0 1.5rem;
+		padding-bottom: 1.5rem;
+		border-bottom: 1px solid var(--border-color, #eaeaea);
+	}
+
+	.title {
+		font-size: 1.75rem;
+		font-weight: 500;
+		letter-spacing: -0.02em;
+		color: var(--text-primary, #111);
+	}
+
+	.description {
+		margin-bottom: 2rem;
+		color: var(--text-secondary, #666);
+		line-height: 1.5;
+	}
+
+	.project-form {
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+	}
+
+	.map-section {
+		width: 100%;
+		border: 1px solid var(--border-color, #eaeaea);
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.details-section {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.input-group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.input-group label {
+		font-weight: 500;
+		color: var(--text-primary, #111);
+	}
+
+	.input-group input,
+	.input-group textarea {
+		padding: 0.75rem;
+		border: 1px solid var(--border-color, #eaeaea);
+		border-radius: 6px;
+		font-size: 1rem;
+	}
+
+	.input-group textarea {
+		min-height: 100px;
+		resize: vertical;
+	}
+
+	.submit-section {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	@media (max-width: 768px) {
+		.page-container {
+			padding: 1.5rem;
+		}
+
+		.header {
+			margin: 1.5rem 0 1rem;
+		}
+
+		.project-form {
+			gap: 1.5rem;
+		}
+	}
 </style>

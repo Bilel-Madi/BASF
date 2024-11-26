@@ -11,6 +11,7 @@
 	let timeInterval;
 	let showColon = true;
 	let isProjectDropdownOpen = false;
+	let searchQuery = '';
 
 	onMount(() => {
 		// Start the time interval
@@ -102,6 +103,11 @@
 			console.error('Error selecting project:', error);
 		}
 	}
+
+	$: filteredProjects =
+		userDetails?.projects?.filter((project) =>
+			project.name.toLowerCase().includes(searchQuery.toLowerCase())
+		) || [];
 </script>
 
 <svelte:window on:keydown={handleKeydown} on:click={handleClickOutside} />
@@ -124,7 +130,16 @@
 
 				{#if isProjectDropdownOpen}
 					<div class="project-dropdown" transition:fade={{ duration: 100 }}>
-						{#each userDetails?.projects || [] as project}
+						<div class="search-container">
+							<input
+								type="text"
+								placeholder="Search projects..."
+								bind:value={searchQuery}
+								class="project-search"
+							/>
+							<span class="material-symbols-outlined search-icon">search</span>
+						</div>
+						{#each filteredProjects as project}
 							<button
 								class="project-item"
 								class:active={project.id === userDetails?.projectId}
@@ -202,21 +217,37 @@
 					<a href="/about" on:click={closeMenu}>
 						<span>About</span>
 					</a>
-					<a href="/organization" class="nav-link">
-						<span class="material-symbols-outlined">business</span>
-						<span>Organization</span>
-					</a>
 				</div>
 
 				<div class="menu-bottom">
 					<div class="user-info">
 						<div class="user-avatar" />
 						<div class="user-header">
-							<h2>Hello <span class="username">{userDetails?.firstName || 'User'}</span>!</h2>
-							<p class="org-info">
-								{userDetails?.organizationName || 'Organization'} -
-								{userDetails?.projectName || 'Project'}
-							</p>
+							<h2>
+								Hello <span class="username">
+									{#if userDetails?.role === 'VIEWER'}
+										Viewer
+									{:else}
+										{userDetails?.firstName || 'User'}
+									{/if}
+								</span>!
+							</h2>
+							<div class="org-details">
+								<p class="org-info">
+									{userDetails?.organizationName || 'Organization'} -
+									{userDetails?.projectName || 'Project'}
+								</p>
+								{#if userDetails?.role === 'SUPER_ADMIN' || userDetails?.role === 'ADMIN'}
+									<a
+										href="/organization"
+										class="org-link"
+										class:active={$page.url.pathname === '/organization'}
+									>
+										<span class="material-symbols-outlined">business</span>
+										<span>Manage Organization</span>
+									</a>
+								{/if}
+							</div>
 						</div>
 					</div>
 
@@ -631,17 +662,17 @@
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		display: flex;
 		flex-direction: row;
-		align-items: center;
-		gap: 1rem;
+		align-items: flex-start;
+		gap: 1.5rem;
 		text-align: left;
 	}
 
 	.user-avatar {
-		width: 40px;
-		height: 40px;
+		width: 48px;
+		height: 48px;
 		border-radius: 50%;
 		background: linear-gradient(135deg, #00ff87 0%, #60efff 50%, #ff59f8 100%);
-		border: 3px solid rgba(255, 255, 255, 0.2);
+		border: 3px solid rgba(255, 255, 255, 0.3);
 		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 		animation: gradientShift 10s ease infinite;
 		background-size: 300% 300%;
@@ -660,36 +691,62 @@
 		}
 	}
 
-	.user-info h2 {
-		margin-top: 0.5rem;
-		color: white;
+	.user-header {
 		display: flex;
-		align-items: center;
-		gap: 0.5rem;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.user-header h2 {
+		font-size: 1.5rem;
 		margin: 0;
+		color: white;
+		font-weight: 500;
 	}
 
 	.username {
-		color: white;
+		color: #00ffbf;
 		font-weight: 600;
 	}
 
-	.user-header {
+	.org-details {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
 	}
 
 	.org-info {
-		color: rgba(255, 255, 255, 0.8);
-		font-size: 0.9rem;
+		color: rgba(255, 255, 255, 0.9);
+		font-size: 1rem;
 		margin: 0;
+		font-weight: 500;
 	}
 
-	/* Update menu grid items to handle the new badge positioning */
-	.menu-grid a span {
-		display: inline-flex;
-		align-items: baseline;
+	.org-link {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: rgba(255, 255, 255, 0.7);
+		text-decoration: none;
+		font-size: 0.9rem;
+		padding: 0.4rem 0.8rem;
+		border-radius: 0.5rem;
+		transition: all 0.3s ease;
+		width: fit-content;
+	}
+
+	.org-link:hover {
+		color: white;
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.org-link.active {
+		background-color: rgba(255, 255, 255, 0.15);
+		color: white;
+	}
+
+	.org-link .material-symbols-outlined {
+		font-size: 1.1rem;
 	}
 
 	.left-section {
@@ -735,6 +792,8 @@
 		z-index: 1000;
 		overflow: hidden;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		max-height: 400px;
+		overflow-y: auto;
 	}
 
 	.project-item {
@@ -816,5 +875,55 @@
 
 	.project-button .material-symbols-outlined {
 		color: white;
+	}
+
+	/* Add new styles for the organization link */
+	.org-link {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: rgba(255, 255, 255, 0.8);
+		text-decoration: none;
+		font-size: 0.9rem;
+		margin-top: 0.5rem;
+		transition: color 0.3s ease;
+	}
+
+	.org-link:hover {
+		color: white;
+	}
+
+	.org-link .material-symbols-outlined {
+		font-size: 1.2rem;
+	}
+
+	.search-container {
+		position: relative;
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	}
+
+	.project-search {
+		width: 100%;
+		padding: 0.5rem;
+		padding-right: 2rem;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-radius: 0.5rem;
+		font-size: 0.9rem;
+		outline: none;
+		transition: border-color 0.3s ease;
+	}
+
+	.project-search:focus {
+		border-color: rgb(0, 81, 232);
+	}
+
+	.search-icon {
+		position: absolute;
+		right: 1.5rem;
+		top: 50%;
+		transform: translateY(-50%);
+		color: rgba(0, 0, 0, 0.5);
+		pointer-events: none;
 	}
 </style>

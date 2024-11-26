@@ -12,7 +12,16 @@ export const GET: RequestHandler = async ({ locals }) => {
   }
 
   const projects = await prisma.project.findMany({
-    where: { organizationId: user.organizationId },
+    where: user.role === 'SUPER_ADMIN' 
+      ? {} 
+      : { organizationId: user.organizationId },
+    include: {
+      organization: {
+        select: {
+          name: true
+        }
+      }
+    }
   });
 
   return json(projects);

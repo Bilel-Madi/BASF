@@ -19,11 +19,18 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       include: { zone: true },
     }),
     prisma.project.findFirst({
-      where: { organizationId: user.organizationId }
+      where: user.role === 'SUPER_ADMIN'
+        ? { id: user.activeProjectId }
+        : { 
+            id: user.activeProjectId,
+            organizationId: user.organizationId 
+          }
     })
   ]);
 
-  if (!device || device.zone?.organizationId !== user.organizationId) {
+  if (!device || 
+      (user.role !== 'SUPER_ADMIN' && device.zone?.organizationId !== user.organizationId) ||
+      device.zone?.projectId !== user.activeProjectId) {
     throw error(404, 'Device not found');
   }
 

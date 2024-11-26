@@ -100,6 +100,7 @@
 		"maplibre-gl": "^3.3.1",
 		"mongodb": "^6.10.0",
 		"mongoose": "^8.3.2",
+		"nanoid": "^5.0.8",
 		"nodemailer": "^6.9.6",
 		"p5": "^1.7.0",
 		"particles.js": "^2.0.0",

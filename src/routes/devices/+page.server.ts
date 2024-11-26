@@ -19,12 +19,18 @@ export const load: PageServerLoad = async ({ locals }) => {
   const startDate = subDays(new Date(), 1);
 
   const devices = await prisma.device.findMany({
-    where: {
-      zone: {
-        organizationId: user.organizationId,
-        projectId: user.activeProjectId
-      },
-    },
+    where: user.role === 'SUPER_ADMIN'
+      ? {
+          zone: {
+            projectId: user.activeProjectId
+          }
+        }
+      : {
+          zone: {
+            organizationId: user.organizationId,
+            projectId: user.activeProjectId
+          }
+        },
     include: {
       zone: true,
     },
