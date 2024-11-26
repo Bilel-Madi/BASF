@@ -36,11 +36,16 @@ model Session {
 }
 
 model Organization {
-  id      String    @id @default(auto()) @map("_id") @db.ObjectId
-  name    String
-  users   User[]
-  zones   Zone[]
-  Project Project[]
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  name                String
+  users               User[]
+  zones               Zone[]
+  Project             Project[]
+  subscriptionStatus  SubscriptionStatus @default(FREE)
+  subscriptionEndDate DateTime?
+  maxProjects         Int                @default(2) // Limits based on subscription
+  maxZones            Int                @default(5)
+  maxDevices          Int                @default(10)
 }
 
 model Project {
@@ -154,4 +159,11 @@ enum ZoneColor {
   PASTEL_GREEN
   PASTEL_BLUE
   PASTEL_PURPLE
+}
+
+enum SubscriptionStatus {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
 }

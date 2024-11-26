@@ -18,6 +18,28 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   }
 
   try {
+    // Get organization details including project count
+    const organization = await prisma.organization.findUnique({
+      where: { id: user.organizationId },
+      include: {
+        _count: {
+          select: { Project: true }
+        }
+      }
+    });
+
+    if (!organization) {
+      return new Response('Organization not found', { status: 404 });
+    }
+
+    // Check if project limit is reached
+    if (organization._count.Project >= organization.maxProjects) {
+      return new Response(
+        'Project limit reached. Please upgrade your subscription to add more projects.',
+        { status: 403 }
+      );
+    }
+
     const project = await prisma.project.create({
       data: {
         name,

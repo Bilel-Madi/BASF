@@ -38,6 +38,9 @@
 	"/api/organizations": [
 		"src/routes/api/organizations/+server.ts"
 	],
+	"/api/organizations/current": [
+		"src/routes/api/organizations/current/+server.ts"
+	],
 	"/api/organizations/[id]": [
 		"src/routes/api/organizations/[id]/+server.ts"
 	],
@@ -86,6 +89,11 @@
 	],
 	"/devices/[eui]": [
 		"src/routes/devices/[eui]/+page.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/organization": [
+		"src/routes/organization/+page.server.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],

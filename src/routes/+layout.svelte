@@ -202,6 +202,10 @@
 					<a href="/about" on:click={closeMenu}>
 						<span>About</span>
 					</a>
+					<a href="/organization" class="nav-link">
+						<span class="material-symbols-outlined">business</span>
+						<span>Organization</span>
+					</a>
 				</div>
 
 				<div class="menu-bottom">

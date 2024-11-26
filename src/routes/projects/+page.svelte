@@ -2,26 +2,41 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 
 	let projects = [];
+	let organization: any;
 
 	onMount(async () => {
-		const res = await fetch('/api/projects');
-		if (res.ok) {
-			projects = await res.json();
+		const [projectsRes, orgRes] = await Promise.all([
+			fetch('/api/projects'),
+			fetch('/api/organizations/current')
+		]);
+
+		if (projectsRes.ok) {
+			projects = await projectsRes.json();
+		}
+		if (orgRes.ok) {
+			organization = await orgRes.json();
 		}
 	});
+
+	async function handleAddClick() {
+		if (organization && projects.length >= organization.maxProjects) {
+			alert('Project limit reached. Please upgrade your subscription to add more projects.');
+			return;
+		}
+		goto('/projects/add');
+	}
 </script>
 
 <div class="page-container">
 	<Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Projects' }]} />
 	<div class="header">
 		<h1 class="title">Projects</h1>
-		<a href="/projects/add" class="add-button">
-			<Button text="Add" />
-		</a>
+		<Button text="Add" on:click={handleAddClick} />
 	</div>
 
 	<div class="projects-list">
