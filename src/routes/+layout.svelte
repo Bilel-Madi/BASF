@@ -14,18 +14,18 @@
 	let searchQuery = '';
 
 	onMount(() => {
-		// Start the time interval
-		timeInterval = setInterval(() => {
-			currentTime = new Date();
-			showColon = !showColon;
-		}, 1000);
+		// Comment out time interval
+		// timeInterval = setInterval(() => {
+		//     currentTime = new Date();
+		//     showColon = !showColon;
+		// }, 1000);
 
 		// Fetch devices
 		fetchConnectedDevices();
 
-		// Cleanup on component destroy
+		// Update cleanup
 		return () => {
-			if (timeInterval) clearInterval(timeInterval);
+			// if (timeInterval) clearInterval(timeInterval);
 		};
 	});
 
@@ -35,17 +35,16 @@
 
 	$: shouldShowHeader = !['/auth/signup', '/', '/auth/onboarding'].includes($page.url.pathname);
 
-	// Format time to HH:mm
-	$: formattedTime = (() => {
-		const timeStr = currentTime.toLocaleTimeString('en-US', {
-			hour: '2-digit',
-			minute: '2-digit',
-			hour12: false
-		});
-		// Split the time and join with a conditional colon
-		const [hours, minutes] = timeStr.split(':');
-		return `${hours}${showColon ? ':' : ' '}${minutes}`;
-	})();
+	// Comment out or remove the time formatting reactive statement
+	// $: formattedTime = (() => {
+	//     const timeStr = currentTime.toLocaleTimeString('en-US', {
+	//         hour: '2-digit',
+	//         minute: '2-digit',
+	//         hour12: false
+	//     });
+	//     const [hours, minutes] = timeStr.split(':');
+	//     return `${hours}${showColon ? ':' : ' '}${minutes}`;
+	// })();
 
 	// Add this reactive statement to handle logo visibility
 	$: logoClass = isMenuOpen ? 'logo hidden' : 'logo';
@@ -174,8 +173,9 @@
 				<div class="divider" style="margin: 0 0.5rem;" />
 				<img src="/gateway.png" alt="Gateway" class="status-icon" />
 				<span class="count">1</span>
-				<div class="divider" />
-				<span class="clock">{formattedTime}</span>
+				<!-- Remove the divider and clock -->
+				<!-- <div class="divider" />
+				<span class="clock">{formattedTime}</span> -->
 			</div>
 
 			<button
@@ -757,7 +757,6 @@
 
 	.project-selector {
 		position: relative;
-		display: none; /* Hidden by default on mobile */
 	}
 
 	.project-button {
@@ -848,9 +847,9 @@
 	/* Mobile styles */
 	@media (max-width: 767px) {
 		.menu-bottom .project-selector {
-			display: block;
-			width: 100%;
-			margin-top: 1rem;
+			position: relative;
+			flex-grow: 1;
+			margin-left: 1rem;
 		}
 
 		.menu-bottom .project-button {
@@ -859,9 +858,8 @@
 		}
 
 		.menu-bottom .project-dropdown {
-			position: relative;
-			margin-top: 0.5rem;
 			width: 100%;
+			max-height: 300px;
 		}
 	}
 
