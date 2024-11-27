@@ -7,7 +7,7 @@ import * as brevo from '@getbrevo/brevo';
 
 // Environment Variables
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const APP_URL = process.env.APP_URL || 'http://localhost:5173';
+const APP_URL = process.env.APP_URL || 'http://basf.arddata.com';
 
 // POST Handler to Send Invitation Email
 export async function POST({ request, locals }) {
