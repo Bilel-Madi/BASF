@@ -7,7 +7,6 @@
 	const { organization, stats } = data;
 
 	let inviteEmail = '';
-	let inviteCode = '';
 
 	const breadcrumbItems = [{ label: 'Home', href: '/' }, { label: 'Organization' }];
 
@@ -31,29 +30,6 @@
 			console.error('Error sending invitation:', error);
 			alert('Failed to send invitation. Please try again.');
 		}
-	}
-
-	async function generateInviteCode() {
-		try {
-			const response = await fetch('/api/organization/generate-invite', {
-				method: 'POST'
-			});
-
-			if (!response.ok) {
-				throw new Error('Failed to generate invite code');
-			}
-
-			const data = await response.json();
-			inviteCode = data.code;
-		} catch (error) {
-			console.error('Error generating invite code:', error);
-			alert('Failed to generate invite code. Please try again.');
-		}
-	}
-
-	async function copyInviteCode() {
-		await navigator.clipboard.writeText(inviteCode);
-		alert('Invite code copied to clipboard!');
 	}
 </script>
 
@@ -100,17 +76,18 @@
 	{/if}
 
 	<div class="invite-section">
-		<h2>Generate Invite Code</h2>
-		<div class="invite-code-container">
-			{#if inviteCode}
-				<div class="code-display">
-					<input type="text" readonly value={inviteCode} />
-					<button class="copy-button" on:click={copyInviteCode}>Copy</button>
-				</div>
-			{/if}
-			<button class="generate-button" on:click={generateInviteCode}>
-				Generate New Invite Code
-			</button>
+		<h2>Invite Team Member</h2>
+		<div class="invite-form">
+			<div class="form-group">
+				<label for="inviteEmail">Email Address</label>
+				<input
+					type="email"
+					id="inviteEmail"
+					bind:value={inviteEmail}
+					placeholder="Enter email address"
+				/>
+			</div>
+			<button class="invite-button" on:click={handleInvite}> Send Invitation </button>
 		</div>
 	</div>
 </div>

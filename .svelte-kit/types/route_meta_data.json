@@ -50,8 +50,8 @@
 	"/api/organizations/[id]": [
 		"src/routes/api/organizations/[id]/+server.ts"
 	],
-	"/api/organization/generate-invite": [
-		"src/routes/api/organization/generate-invite/+server.ts"
+	"/api/organization/invite": [
+		"src/routes/api/organization/invite/+server.ts"
 	],
 	"/api/projects": [
 		"src/routes/api/projects/+server.ts"
