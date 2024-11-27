@@ -202,6 +202,8 @@
 					zoom={17}
 					height="100%"
 					borderRadius="15px"
+					maxZoom={19}
+					minZoom={1}
 				/>
 			{/if}
 		</div>

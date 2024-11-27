@@ -25,11 +25,16 @@
 	export let allowPolygonDrawing: boolean = false;
 	export let fillColor: string = '#088'; // Default color
 	export let borderRadius: string = '0px'; // Add this new prop
+	export let enableGlobeSpinning: boolean = false;
+	export let secondsPerRevolution: number = 240;
+	export let maxSpinZoom: number = 5;
+	export let slowSpinZoom: number = 3;
 
 	let mapContainer: HTMLElement;
 	let map: mapboxgl.Map;
 	let marker: mapboxgl.Marker | null = null;
 	let draw: any; // MapboxDraw instance
+	let userInteracting = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -50,7 +55,11 @@
 		mapFeatures,
 		allowPolygonDrawing,
 		fillColor,
-		borderRadius
+		borderRadius,
+		enableGlobeSpinning,
+		secondsPerRevolution,
+		maxSpinZoom,
+		slowSpinZoom
 	});
 
 	// Calculate centroid for centering the map
@@ -74,15 +83,78 @@
 
 		mapboxgl.accessToken = accessToken;
 
-		map = new mapboxgl.Map({
-			container: mapContainer,
-			style,
-			center: calculatedCenter,
-			zoom
-		});
+		// Calculate initial bounds and zoom before creating the map
+		let initialBounds: mapboxgl.LngLatBounds | null = null;
+		if (mapFeatures.length > 0) {
+			const projectBoundary = mapFeatures.find(
+				(feature) => feature.properties?.type === 'projectBoundary'
+			);
 
-		// Only add navigation controls if showControls is true and screen is not mobile
-		if (showControls && window.innerWidth > 768) {
+			if (projectBoundary && projectBoundary.geometry) {
+				initialBounds = new mapboxgl.LngLatBounds();
+
+				if (projectBoundary.geometry.type === 'Polygon') {
+					projectBoundary.geometry.coordinates[0].forEach((coord) => {
+						initialBounds.extend(coord as [number, number]);
+					});
+				} else if (projectBoundary.geometry.type === 'MultiPolygon') {
+					projectBoundary.geometry.coordinates.forEach((polygon) => {
+						polygon[0].forEach((coord) => {
+							initialBounds.extend(coord as [number, number]);
+						});
+					});
+				}
+			}
+		}
+
+		// Create map with calculated bounds
+		const mapOptions: mapboxgl.MapboxOptions = {
+			container: mapContainer,
+			style: style,
+			projection: enableGlobeSpinning ? 'globe' : 'mercator',
+			maxZoom: enableGlobeSpinning ? 8 : maxZoom, // Lower max zoom for globe view
+			minZoom: enableGlobeSpinning ? 0 : minZoom // Allow full zoom out for globe
+		};
+
+		// Handle initialization differently for globe vs regular view
+		if (enableGlobeSpinning) {
+			mapOptions.zoom = 1.5; // Start more zoomed out
+			mapOptions.center = [0, 20];
+		} else if (initialBounds && !initialBounds.isEmpty()) {
+			const sw = initialBounds.getSouthWest();
+			const ne = initialBounds.getNorthEast();
+
+			// Check if bounds are valid
+			if (sw && ne && !isNaN(sw.lng) && !isNaN(sw.lat) && !isNaN(ne.lng) && !isNaN(ne.lat)) {
+				mapOptions.bounds = initialBounds;
+				mapOptions.fitBoundsOptions = {
+					padding: 50,
+					maxZoom,
+					minZoom
+				};
+			}
+		} else {
+			mapOptions.zoom = zoom;
+			mapOptions.center = center;
+		}
+
+		map = new mapboxgl.Map(mapOptions);
+
+		// Only add fog effect if globe spinning is enabled
+		if (enableGlobeSpinning) {
+			map.on('style.load', () => {
+				map.setFog({
+					color: 'rgb(186, 210, 235)', // sky color
+					'high-color': 'rgb(36, 92, 223)', // upper atmosphere
+					'horizon-blend': 0.22, // horizon blend size
+					'space-color': 'rgb(49, 49, 99)', // space color
+					'star-intensity': 0.1 // background star brightness
+				});
+			});
+		}
+
+		// Always add navigation controls for globe view
+		if (enableGlobeSpinning || showControls) {
 			map.addControl(new mapboxgl.NavigationControl());
 		}
 
@@ -118,6 +190,37 @@
 						features: mapFeatures
 					}
 				});
+
+				// Find project boundary feature
+				const projectBoundary = mapFeatures.find(
+					(feature) => feature.properties?.type === 'projectBoundary'
+				);
+
+				// If project boundary exists, fit the map to it
+				if (projectBoundary && projectBoundary.geometry) {
+					const bounds = new mapboxgl.LngLatBounds();
+
+					// Handle different geometry types
+					if (projectBoundary.geometry.type === 'Polygon') {
+						projectBoundary.geometry.coordinates[0].forEach((coord) => {
+							bounds.extend(coord);
+						});
+					} else if (projectBoundary.geometry.type === 'MultiPolygon') {
+						projectBoundary.geometry.coordinates.forEach((polygon) => {
+							polygon[0].forEach((coord) => {
+								bounds.extend(coord);
+							});
+						});
+					}
+
+					// Fit the map to the bounds with padding
+					map.fitBounds(bounds, {
+						padding: 50, // Adds 50px padding around the boundary
+						maxZoom: maxZoom,
+						minZoom: minZoom,
+						duration: 0 // Disable animation for initial load
+					});
+				}
 
 				// Add zones layers with dynamic fill colors
 				map.addLayer({
@@ -250,6 +353,54 @@
 		// If marker placement is allowed, set up the click handler
 		if (allowMarkerPlacement) {
 			map.on('click', onMapClick);
+		}
+
+		// Add globe spinning functionality
+		if (enableGlobeSpinning) {
+			function spinGlobe() {
+				const zoom = map.getZoom();
+				if (!userInteracting && zoom < maxSpinZoom) {
+					let distancePerSecond = 360 / secondsPerRevolution;
+					if (zoom > slowSpinZoom) {
+						const zoomDif = (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
+						distancePerSecond *= zoomDif;
+					}
+					const center = map.getCenter();
+					center.lng -= distancePerSecond;
+					map.easeTo({ center, duration: 1000, easing: (n) => n });
+				}
+			}
+
+			// Update interaction handlers
+			map.on('mousedown', () => {
+				userInteracting = true;
+			});
+			map.on('dragstart', () => {
+				userInteracting = true;
+			});
+
+			// Add global document handlers to catch interaction end
+			document.addEventListener('mouseup', () => {
+				userInteracting = false;
+				spinGlobe();
+			});
+			document.addEventListener('touchend', () => {
+				userInteracting = false;
+				spinGlobe();
+			});
+
+			// When animation is complete, start spinning if there is no ongoing interaction
+			map.on('moveend', () => {
+				// Add a small delay before checking interaction state
+				setTimeout(() => {
+					if (!userInteracting) {
+						spinGlobe();
+					}
+				}, 200);
+			});
+
+			// Start the initial spinning
+			spinGlobe();
 		}
 	});
 

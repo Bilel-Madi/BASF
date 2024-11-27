@@ -34,7 +34,7 @@ export const load = async ({ url }: Parameters<PageServerLoad>[0]) => {
 };
 
 export const actions = {
-  default: async (event: import('./$types').RequestEvent) => {
+  signup: async (event: import('./$types').RequestEvent) => {
     const formData = await event.request.formData();
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;

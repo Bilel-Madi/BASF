@@ -79,6 +79,11 @@
 				on:geometryChanged={handleGeometryChanged}
 				height="400px"
 				width="100%"
+				enableGlobeSpinning={true}
+				secondsPerRevolution={240}
+				maxSpinZoom={5}
+				slowSpinZoom={3}
+				center={[0, 20]}
 			/>
 		</div>
 
