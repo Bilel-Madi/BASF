@@ -72,6 +72,10 @@
 	export let data;
 	const { userDetails } = data;
 
+	// Add these console.logs
+	console.log('Layout Data:', data);
+	console.log('User Details:', userDetails);
+
 	// Close project dropdown when clicking outside
 	function handleClickOutside(event) {
 		if (isProjectDropdownOpen && !event.target.closest('.project-selector')) {
@@ -669,26 +673,27 @@
 	}
 
 	.user-avatar {
-		width: 48px;
-		height: 48px;
+		width: 45px;
+		height: 45px;
 		border-radius: 50%;
 		background: linear-gradient(135deg, #00ff87 0%, #60efff 50%, #ff59f8 100%);
-		border: 3px solid rgba(255, 255, 255, 0.3);
-		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.3);
 		animation: gradientShift 10s ease infinite;
-		background-size: 300% 300%;
+		background-size: 200% 200%;
 		flex-shrink: 0;
+		overflow: hidden;
+		position: relative;
 	}
 
 	@keyframes gradientShift {
 		0% {
-			background-position: 0% 50%;
+			background-position: 0% 0%;
 		}
 		50% {
-			background-position: 100% 50%;
+			background-position: 100% 100%;
 		}
 		100% {
-			background-position: 0% 50%;
+			background-position: 0% 0%;
 		}
 	}
 
