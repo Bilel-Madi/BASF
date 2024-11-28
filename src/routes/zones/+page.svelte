@@ -69,9 +69,15 @@
 
 	.grid-container {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+		grid-template-columns: repeat(3, minmax(380px, 1fr));
 		gap: 2rem;
 		padding-top: 1rem;
+	}
+
+	@media (max-width: 1200px) {
+		.grid-container {
+			grid-template-columns: repeat(2, minmax(380px, 1fr));
+		}
 	}
 
 	@media (max-width: 768px) {

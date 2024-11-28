@@ -9,6 +9,7 @@
 <div class="container">
 	<div class="logo">
 		<img src="/favicon.png" alt="Logo" />
+		<span class="brand-name">Arddata<sup>™</sup></span>
 	</div>
 
 	<div class="content">
@@ -51,11 +52,23 @@
 		position: absolute;
 		top: 2rem;
 		left: 2rem;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 	}
 
 	.logo img {
 		height: 50px;
 		width: auto;
+	}
+
+	.brand-name {
+		font-size: 1.5rem;
+		font-weight: 600;
+	}
+
+	.brand-name sup {
+		font-size: 0.5em;
 	}
 
 	.content {
