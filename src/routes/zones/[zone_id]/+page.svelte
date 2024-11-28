@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import DeviceCard from '$lib/components/cards/DeviceCard.svelte'; // Import the DeviceCard component
 	import type { Device, Zone, Project } from '@prisma/client';
+	import { goto } from '$app/navigation';
 
 	export let data: {
 		zone: Zone & {
@@ -87,6 +88,23 @@
 			}
 		}
 	];
+
+	async function handleDelete() {
+		if (!confirm('Are you sure you want to delete this zone?')) {
+			return;
+		}
+
+		const response = await fetch(`/api/zones/${zone.id}/delete`, {
+			method: 'DELETE'
+		});
+
+		if (response.ok) {
+			goto('/zones');
+		} else {
+			const error = await response.text();
+			alert(`Error deleting zone: ${error}`);
+		}
+	}
 </script>
 
 <div class="page-container">
@@ -98,9 +116,7 @@
 			<a href={`/zones/${zone.id}/edit`}>
 				<Button text="Edit" variant="outline" />
 			</a>
-			<a href={`/zones/${zone.id}/delete`}>
-				<Button text="Delete" variant="danger-outline" />
-			</a>
+			<Button text="Delete" variant="danger-outline" on:click={handleDelete} />
 		</div>
 	</div>
 

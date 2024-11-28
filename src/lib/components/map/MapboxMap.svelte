@@ -19,8 +19,8 @@
 	export let showControls: boolean = true;
 	export let height: string = '400px';
 	export let width: string = '100%';
-	export let maxZoom: number = 16; // Maximum zoom when fitting bounds
-	export let minZoom: number = 5; // Minimum zoom when fitting bounds
+	export let maxZoom: number = 22; // Changed from 16 to 22 for maximum satellite zoom
+	export let minZoom: number = 5;
 	export let mapFeatures: any[] = []; // Existing zones and project boundaries
 	export let allowPolygonDrawing: boolean = false;
 	export let fillColor: string = '#088'; // Default color
@@ -112,8 +112,8 @@
 			container: mapContainer,
 			style: style,
 			projection: enableGlobeSpinning ? 'globe' : 'mercator',
-			maxZoom: enableGlobeSpinning ? 8 : maxZoom, // Lower max zoom for globe view
-			minZoom: enableGlobeSpinning ? 0 : minZoom // Allow full zoom out for globe
+			maxZoom: maxZoom,
+			minZoom: enableGlobeSpinning ? 0 : minZoom
 		};
 
 		// Handle initialization differently for globe vs regular view

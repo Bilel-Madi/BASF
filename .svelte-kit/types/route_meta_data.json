@@ -68,6 +68,12 @@
 	"/api/zones/add": [
 		"src/routes/api/zones/add/+server.ts"
 	],
+	"/api/zones/[zone_id]/delete": [
+		"src/routes/api/zones/[zone_id]/delete/+server.ts"
+	],
+	"/api/zones/[zone_id]/edit": [
+		"src/routes/api/zones/[zone_id]/edit/+server.ts"
+	],
 	"/auth/logout": [
 		"src/routes/auth/logout/+server.ts"
 	],
@@ -132,6 +138,11 @@
 	],
 	"/zones/[zone_id]": [
 		"src/routes/zones/[zone_id]/+page.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/zones/[zone_id]/edit": [
+		"src/routes/zones/[zone_id]/edit/+page.server.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	]

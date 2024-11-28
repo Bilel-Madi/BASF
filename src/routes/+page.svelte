@@ -8,7 +8,7 @@
 
 <div class="container">
 	<div class="logo">
-		<img src="/f	avicon.png" alt="Logo" />
+		<img src="/favicon.png" alt="Logo" />
 	</div>
 
 	<div class="content">

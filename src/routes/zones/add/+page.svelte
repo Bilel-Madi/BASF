@@ -20,7 +20,6 @@
 	let color: ZoneColor | '' = '';
 	let geometry: GeoJSON.Geometry | null = null;
 	let area: number = 0;
-	let selectedDevices: string[] = [];
 
 	// Pastel colors
 	const colors: ZoneColor[] = [
@@ -32,9 +31,6 @@
 		'PASTEL_PURPLE'
 	];
 
-	// Device data
-	let devices: Array<{ id: string; name: string }> = [];
-
 	// Add project center initialization
 	let projectCenter: [number, number] = [0, 0];
 
@@ -42,8 +38,15 @@
 		projectCenter = $page.data.project.center.coordinates;
 	}
 
-	// Add mapFeatures array for the project boundary
+	// Add zones to the exported data type
+	export let data: {
+		project: Project;
+		zones: Zone[];
+	};
+
+	// Update mapFeatures to include existing zones
 	$: mapFeatures = [
+		// Project boundary
 		{
 			type: 'Feature',
 			geometry: $page.data.project.geometry,
@@ -52,19 +55,19 @@
 				id: $page.data.project.id,
 				name: $page.data.project.name
 			}
-		}
+		},
+		// Existing zones
+		...data.zones.map((zone) => ({
+			type: 'Feature',
+			geometry: zone.geometry,
+			properties: {
+				type: 'zone',
+				id: zone.id,
+				name: zone.name,
+				color: getPastelColor(zone.color)
+			}
+		}))
 	];
-
-	// Fetch available devices on mount
-	onMount(async () => {
-		const res = await fetch('/api/devices'); // Ensure this endpoint exists
-		if (res.ok) {
-			devices = await res.json();
-		} else {
-			// Handle error
-			console.error('Failed to fetch devices');
-		}
-	});
 
 	// Handle geometry changes from MapboxMap component
 	function handleGeometryChanged(event: CustomEvent<{ geometry: GeoJSON.Geometry; area: number }>) {
@@ -99,8 +102,7 @@
 			soilType,
 			geometry,
 			area,
-			color,
-			devices: selectedDevices
+			color
 		};
 
 		// Send a POST request to create the zone
@@ -233,16 +235,6 @@
 						/>
 					{/each}
 				</div>
-			</div>
-
-			<!-- Assign Devices -->
-			<div class="input-group">
-				<label for="devices">Assign Devices</label>
-				<select id="devices" bind:value={selectedDevices} multiple>
-					{#each devices as device}
-						<option value={device.id}>{device.name}</option>
-					{/each}
-				</select>
 			</div>
 
 			<div class="input-group">

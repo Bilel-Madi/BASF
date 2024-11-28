@@ -17,7 +17,8 @@ export const nodes = [
 	() => import('./nodes/13'),
 	() => import('./nodes/14'),
 	() => import('./nodes/15'),
-	() => import('./nodes/16')
+	() => import('./nodes/16'),
+	() => import('./nodes/17')
 ];
 
 export const server_loads = [0];
@@ -37,7 +38,8 @@ export const dictionary = {
 		"/projects/[project_id]": [~13],
 		"/zones": [~14],
 		"/zones/add": [~15],
-		"/zones/[zone_id]": [~16]
+		"/zones/[zone_id]": [~16],
+		"/zones/[zone_id]/edit": [~17]
 	};
 
 export const hooks = {

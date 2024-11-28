@@ -1,0 +1,1 @@
+export { default as component } from "../../../../src/routes/zones/[zone_id]/edit/+page.svelte";

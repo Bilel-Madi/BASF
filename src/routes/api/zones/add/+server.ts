@@ -26,7 +26,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     geometry,
     area,
     color,
-    devices,
   } = await request.json();
 
   // Basic validation for required fields
@@ -71,9 +70,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         color,
         organizationId: user.organizationId,
         projectId: user.activeProjectId,
-        devices: {
-          connect: devices.map((deviceId: string) => ({ id: deviceId })),
-        },
       },
     });
 
@@ -83,8 +79,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     return new Response('Server error', { status: 500 });
   }
 };
-
-// **Existing GET handler (if any)**
 
 export const GET: RequestHandler = async ({ locals }) => {
   const user = locals.user;

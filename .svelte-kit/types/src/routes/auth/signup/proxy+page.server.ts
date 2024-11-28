@@ -38,11 +38,36 @@ export const actions = {
     const formData = await event.request.formData();
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
     const inviteToken = formData.get('inviteToken') as string;
 
-    // Basic validation
-    if (!email || !password) {
-      return fail(400, { error: 'Email and password are required' });
+    // Email validation
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!email || !emailRegex.test(email)) {
+      return fail(400, { error: 'Please enter a valid email address' });
+    }
+
+    // Password validation
+    if (!password || password.length < 8) {
+      return fail(400, { error: 'Password must be at least 8 characters long' });
+    }
+
+    const passwordRequirements = {
+      hasUpperCase: /[A-Z]/.test(password),
+      hasLowerCase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+
+    if (!Object.values(passwordRequirements).every(Boolean)) {
+      return fail(400, { 
+        error: 'Password must contain uppercase, lowercase, number, and special characters' 
+      });
+    }
+
+    // Confirm password validation
+    if (password !== confirmPassword) {
+      return fail(400, { error: 'Passwords do not match' });
     }
 
     // Check if user already exists

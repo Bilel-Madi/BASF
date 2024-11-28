@@ -208,15 +208,15 @@
 					<a href="/devices" on:click={closeMenu}>
 						<span>Devices<sup class="count-badge">{userDetails?.deviceCount || 0}</sup></span>
 					</a>
-					<a href="/analytics" on:click={closeMenu}>
+					<!-- <a href="/analytics" on:click={closeMenu}>
 						<span>Analytics</span>
 					</a>
 					<a href="/settings" on:click={closeMenu}>
 						<span>Settings</span>
-					</a>
-					<a href="/about" on:click={closeMenu}>
+					</a> -->
+					<!-- <a href="/about" on:click={closeMenu}>
 						<span>About</span>
-					</a>
+					</a> -->
 				</div>
 
 				<div class="menu-bottom">
@@ -643,7 +643,7 @@
 		border-radius: 25%;
 		margin-left: 0.5rem;
 		position: relative;
-		top: -1.5em;
+		top: -0em;
 		font-weight: 700;
 		min-width: 1.2rem;
 		height: 1.2rem;

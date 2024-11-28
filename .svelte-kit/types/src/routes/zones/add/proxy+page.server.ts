@@ -16,17 +16,27 @@ export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
     throw redirect(303, '/projects');
   }
 
-  // Fetch the active project
-  const project = await prisma.project.findUnique({
-    where: { 
-      id: user.activeProjectId,
-      organizationId: user.organizationId 
-    },
-  });
+  const [zones, project] = await Promise.all([
+    prisma.zone.findMany({
+      where: { 
+        organizationId: user.organizationId,
+        projectId: user.activeProjectId
+      }
+    }),
+    prisma.project.findUnique({
+      where: { 
+        id: user.activeProjectId,
+        organizationId: user.organizationId 
+      }
+    })
+  ]);
 
   if (!project) {
     throw redirect(303, '/projects');
   }
 
-  return { project };
+  return {
+    zones,
+    project
+  };
 };
