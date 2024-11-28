@@ -194,17 +194,16 @@ export async function POST({ request, locals }) {
                 Hi ${firstName},
               </p>
               <p>
-                You've been invited to join <strong>${organization.name}</strong> on Arddata™ by 
-                <strong>${organization.users[0].firstName} ${organization.users[0].lastName}</strong>.
+                You've been invited by <strong>${organization.users[0].firstName} ${organization.users[0].lastName}</strong> to join <strong>${organization.name}</strong> on Arddata™.
               </p>
               <p>
-                Arddata™ is a leading platform empowering organizations with data-driven insights. By joining, you'll gain access to advanced tools and analytics designed to transform agriculture.
+                Arddata™ is a precision agriculture platform empowering organizations with data-driven insights. By joining, you'll gain access to advanced tools and analytics designed to transform agriculture.
               </p>
               <p>
                 Get started by creating your account and joining your team:
               </p>
               <div class="button-container">
-                <a href="${inviteLink}" class="button">Accept Invitation →</a>
+                <a href="${inviteLink}" class="button">Accept Invitation</a>
               </div>
               <p style="text-align: center; font-size: 14px; color: #64748b;">
                 This invitation will expire in 7 days.<br>
