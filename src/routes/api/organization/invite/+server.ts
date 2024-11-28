@@ -7,7 +7,7 @@ import * as brevo from '@getbrevo/brevo';
 
 // Environment Variables
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const APP_URL = process.env.APP_URL || 'http://localhost:5173';
+const APP_URL = process.env.APP_URL || 'http://basf.arddata.com';
 
 // POST Handler to Send Invitation Email
 export async function POST({ request, locals }) {
@@ -35,10 +35,16 @@ export async function POST({ request, locals }) {
         // Generate Unique Invite Token
         const inviteToken = nanoid(32);
 
-        // Retrieve Organization Name
+        // Retrieve Organization Name and Sender's Name
         const organization = await prisma.organization.findUnique({
             where: { id: user.organizationId },
-            select: { name: true }
+            select: { 
+                name: true,
+                users: {
+                    where: { id: user.id },
+                    select: { firstName: true, lastName: true }
+                }
+            }
         });
 
         if (!organization) {
@@ -62,99 +68,148 @@ export async function POST({ request, locals }) {
         // Construct Invitation Link
         const inviteLink = `${APP_URL}/auth/signup?invite=${inviteToken}`;
 
-        // Create Responsive HTML Email Content
+        // Create Enhanced Responsive HTML Email Content
         const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Welcome to Arddata</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    /* General Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f5f7; /* Light Blue Background */
+      font-family: 'Inter', sans-serif;
+    }
+    table {
+      border-collapse: collapse;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 24px; /* Increased Border Radius for More Rounded Corners */
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle Shadow for Depth */
+    }
+    .header {
+      background-color: #1b0ab1;
+      padding: 20px;
+      text-align: center;
+    }
+    .header img {
+      width: 80px;
+      height: auto;
+    }
+    .content {
+      padding: 40px 30px;
+    }
+    h1 {
+      font-size: 24px;
+      color: #1e293b;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 16px;
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .button-container {
+      text-align: center;
+      margin: 30px 0;
+    }
+    .button {
+      background-color: #00ffbf;
+      color: #1b0ab1;
+      padding: 15px 30px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      display: inline-block;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 255, 191, 0.2);
+    }
+    .button:hover {
+      background-color: #00e6a0;
+      transform: translateY(-2px);
+    }
+    .footer {
+      background-color: #1b0ab1;
+      padding: 15px;
+      text-align: center;
+    }
+    .footer p {
+      color: #ffffff;
+      font-size: 13px;
+      margin: 0;
+    }
     /* Responsive Styles */
     @media only screen and (max-width: 600px) {
-      .container { width: 100% !important; padding: 10px !important; }
-      .header img { width: 60px !important; }
-      .content { padding: 16px !important; }
-      .button a { padding: 12px 24px !important; font-size: 16px !important; }
-      h1 { font-size: 20px !important; }
-      p { font-size: 14px !important; }
+      .content {
+        padding: 20px 15px;
+      }
+      h1 {
+        font-size: 20px;
+      }
+      p {
+        font-size: 14px;
+      }
+      .button {
+        padding: 12px 20px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
-<body style="margin:0; padding:0; background-color:#f0f4f8; font-family: 'Inter', sans-serif;">
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding: 40px 0;">
+<body>
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
     <tr>
       <td align="center">
-        <!-- Main Container -->
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" class="container" style="background-color:#ffffff; border-radius:16px; overflow:hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          
-          <!-- Header Section -->
+        <table class="container" cellpadding="0" cellspacing="0" role="presentation">
+          <!-- Header -->
           <tr>
-            <td align="center" style="background-color:#1b0ab1; padding:32px;">
-              <img src="https://basf.arddata.com/logo1.png" alt="Arddata Logo" style="width:100px; height:auto; display:block;">
+            <td class="header">
+              <img src="https://basf.arddata.com/logo1.png" alt="Arddata Logo">
             </td>
           </tr>
-          
-          <!-- Content Section -->
+          <!-- Content -->
           <tr>
-            <td align="left" style="padding:40px 48px; background-color:#ffffff;">
-              <h1 style="color:#1e293b; font-size:28px; margin:0 0 24px 0; font-weight:700; letter-spacing:-0.5px;">
-                Welcome to ${organization.name}
-              </h1>
-              <p style="color:#475569; font-size:16px; line-height:1.7; margin-bottom:20px;">
-                You've been invited to join <strong style="color:#1b0ab1;">${organization.name}</strong> on Arddata, your comprehensive platform for data management and collaboration.
+            <td class="content">
+              <h1>Welcome to Arddata™</h1>
+              <p>
+                You've been invited to join <strong>${organization.name}</strong> on Arddata™ by 
+                <strong>${organization.users[0].firstName} ${organization.users[0].lastName}</strong>.
               </p>
-              <p style="color:#475569; font-size:16px; line-height:1.7; margin-bottom:32px;">
+              <p>
+                Arddata™ is a leading platform empowering organizations with data-driven insights. By joining, you'll gain access to advanced tools and analytics designed to transform agriculture.
+              </p>
+              <p>
                 Get started by creating your account and joining your team:
               </p>
-              
-              <!-- Button Section -->
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:32px 0;">
-                <tr>
-                  <td align="center">
-                    <a href="${inviteLink}" 
-                       style="background-color:#00ffbf; 
-                              color:#1b0ab1; 
-                              padding:16px 40px; 
-                              text-decoration:none; 
-                              border-radius:12px; 
-                              display:inline-block; 
-                              font-weight:600; 
-                              font-size:16px; 
-                              transition: all 0.3s ease; 
-                              box-shadow:0 4px 6px rgba(0,255,191,0.2);">
-                      Accept Invitation →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- Divider -->
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:32px 0;">
-                <tr>
-                  <td style="border-top:1px solid #e5e7eb;"></td>
-                </tr>
-              </table>
-              
-              <!-- Additional Information -->
-              <p style="color:#64748b; font-size:14px; text-align:center; line-height:1.6;">
+              <div class="button-container">
+                <a href="${inviteLink}" class="button">Accept Invitation →</a>
+              </div>
+              <p style="text-align: center; font-size: 14px; color: #64748b;">
                 This invitation will expire in 7 days.<br>
-                Need help? Contact us at <a href="mailto:support@arddata.com" style="color:#1b0ab1; text-decoration:none; font-weight:500;">support@arddata.com</a>
+                Need help? Contact us at <a href="mailto:support@arddata.com" style="color: #1b0ab1; text-decoration: none;">support@arddata.com</a>
+              </p>
+              <p style="text-align: center; font-size: 14px; color: #475569; margin-top: 15px;">
+                Learn more about Arddata™ at 
+                <a href="https://www.arddata.com" style="color: #1b0ab1; text-decoration: none;">www.arddata.com</a>.
               </p>
             </td>
           </tr>
-          
-          <!-- Footer Section -->
+          <!-- Footer -->
           <tr>
-            <td style="background-color:#1b0ab1; padding:24px; text-align:center;">
-              <p style="margin:0; color:#ffffff; font-size:13px; opacity:0.9;">
-                © ${new Date().getFullYear()} Arddata. All rights reserved.
-              </p>
+            <td class="footer">
+              <p>© ${new Date().getFullYear()} Arddata™. All rights reserved.</p>
             </td>
           </tr>
-          
         </table>
       </td>
     </tr>

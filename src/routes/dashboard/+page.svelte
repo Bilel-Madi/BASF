@@ -154,12 +154,12 @@
 <div class="dashboard">
 	{#if data.project}
 		<div class="top-row">
-			{#if $page.data.user?.role === 'SUPER_ADMIN' && data.organization}
+			<!-- {#if $page.data.user?.role === 'SUPER_ADMIN' && data.organization}
 				<div class="info-card organization">
 					<h3>Organization:</h3>
 					<span class="org-name">{data.organization.name}</span>
 				</div>
-			{/if}
+			{/if} -->
 			<div class="info-card last-seen">
 				<h3>Last Activity:</h3>
 				{#if isLoading}
@@ -172,6 +172,8 @@
 				<h3>Alerts</h3>
 				{#if isLoading}
 					<div class="skeleton skeleton-text" style="width: 90%;" />
+				{:else}
+					<span class="no-alerts">No alerts</span>
 				{/if}
 			</div>
 			<div class="info-card weather">
@@ -321,7 +323,7 @@
 
 	.top-row {
 		display: grid;
-		grid-template-columns: auto 2fr 3fr 5fr;
+		grid-template-columns: 2fr 3fr 5fr;
 		gap: 0.5rem;
 		height: 50px;
 		min-height: 50px;
@@ -654,12 +656,11 @@
 		white-space: nowrap;
 	}
 
-	.organization {
-		background: #f0f4ff;
-	}
-
-	.org-name {
-		font-weight: 500;
-		color: #1b0ab1;
+	.no-alerts {
+		flex: 1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		color: #666;
 	}
 </style>

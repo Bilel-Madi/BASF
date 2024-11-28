@@ -51,8 +51,8 @@
 	const tabs = [
 		{ id: 'readings', label: 'Latest Readings' },
 		{ id: 'metadata', label: 'Metadata' },
-		{ id: 'location', label: 'Location' },
-		{ id: 'historical', label: 'Historical Data' }
+		{ id: 'location', label: 'Location' }
+		// { id: 'historical', label: 'Historical Data' }  // Commented out historical tab
 	];
 
 	// Define Thresholds
@@ -509,6 +509,7 @@
 			</div>
 		{/if}
 
+		<!-- Comment out historical tab content
 		{#if activeTab === 'historical'}
 			<div class="card chart-card">
 				<h2>Sensor Readings</h2>
@@ -524,6 +525,7 @@
 				/>
 			</div>
 		{/if}
+		-->
 	</div>
 </div>
 

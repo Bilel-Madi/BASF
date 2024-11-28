@@ -242,6 +242,7 @@
 										href="/organization"
 										class="org-link"
 										class:active={$page.url.pathname === '/organization'}
+										on:click={closeMenu}
 									>
 										<span class="material-symbols-outlined">business</span>
 										<span>Manage Organization</span>
@@ -637,8 +638,8 @@
 
 	.count-badge {
 		font-size: 0.7rem;
-		background-color: #00ffbf;
-		color: black;
+		background-color: #c8e5f859;
+		color: rgb(241, 241, 241);
 		padding: 0.25rem;
 		border-radius: 25%;
 		margin-left: 0.5rem;
@@ -705,8 +706,8 @@
 	}
 
 	.username {
-		color: #00ffbf;
 		font-weight: 600;
+		color: white;
 	}
 
 	.org-details {

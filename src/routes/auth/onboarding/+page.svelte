@@ -8,7 +8,7 @@
 
 <div class="container">
 	<div class="logo">
-		<img src="/Logo_black.png" alt="Logo" />
+		<img src="/favicon.png" alt="Logo" />
 	</div>
 
 	<div class="content">
@@ -49,12 +49,12 @@
 
 	.logo {
 		position: absolute;
-		top: 0rem;
+		top: 2rem;
 		left: 2rem;
 	}
 
 	.logo img {
-		height: 100px;
+		height: 50px;
 		width: auto;
 	}
 
