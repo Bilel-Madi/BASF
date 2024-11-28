@@ -1,18 +1,18 @@
 export const SUBSCRIPTION_TIERS = {
   FREE: {
-    maxProjects: 2,
+    maxProjects: 1,
     maxZones: 5,
-    maxDevices: 10
+    maxDevices: 2
   },
   BASIC: {
-    maxProjects: 5,
+    maxProjects: 2,
     maxZones: 15,
-    maxDevices: 30
+    maxDevices: 10
   },
   PRO: {
-    maxProjects: 10,
-    maxZones: 50,
-    maxDevices: 100
+    maxProjects: 3,
+    maxZones: 15,
+    maxDevices:15
   },
   ENTERPRISE: {
     maxProjects: 999999, // Unlimited
