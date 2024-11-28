@@ -16,18 +16,18 @@
 			<h1>Sign in to Your Account</h1>
 
 			<form method="POST">
-				<Button
+				<!-- <Button
 					text="Sign in with Google"
 					variant="google"
 					icon="/google-icon.svg"
 					on:click={() => (window.location.href = '/auth/google')}
-				/>
+				/> -->
 
-				<div class="divider">
+				<!-- <div class="divider">
 					<hr />
 					<span>or</span>
 					<hr />
-				</div>
+				</div> -->
 
 				<TextInput type="email" id="email" name="email" label="Email:" required />
 				<TextInput type="password" id="password" name="password" label="Password:" required />

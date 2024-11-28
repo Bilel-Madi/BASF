@@ -466,12 +466,10 @@
 	}
 
 	.password-feedback {
-		background: #f8f9fa;
 		border-radius: 0.5rem;
 		padding: 1rem;
 		margin-top: 0.5rem;
 		font-size: 0.875rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 	}
 
 	.strength-indicator {
@@ -561,7 +559,7 @@
 	.password-toggle {
 		position: absolute;
 		right: 0.75rem;
-		top: calc(50% + 0.5rem);
+		top: 65%;
 		transform: translateY(-50%);
 		background: none;
 		border: none;
@@ -573,6 +571,7 @@
 		justify-content: center;
 		transition: color 0.2s ease;
 		z-index: 2;
+		opacity: 0.4;
 	}
 
 	.password-toggle:hover {
