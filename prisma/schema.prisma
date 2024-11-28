@@ -148,6 +148,9 @@ model InviteCode {
   createdAt      DateTime     @default(now())
   expiresAt      DateTime
   isUsed         Boolean      @default(false)
+  firstName      String
+  lastName       String
+  email          String
 }
 
 enum DeviceType {

@@ -7,6 +7,8 @@
 	const { organization, stats } = data;
 
 	let inviteEmail = '';
+	let inviteFirstName = '';
+	let inviteLastName = '';
 
 	const breadcrumbItems = [{ label: 'Home', href: '/' }, { label: 'Organization' }];
 
@@ -17,14 +19,20 @@
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ email: inviteEmail })
+				body: JSON.stringify({
+					email: inviteEmail,
+					firstName: inviteFirstName,
+					lastName: inviteLastName
+				})
 			});
 
 			if (!response.ok) {
 				throw new Error('Failed to send invitation');
 			}
 
-			inviteEmail = ''; // Clear the input after successful invitation
+			inviteEmail = '';
+			inviteFirstName = '';
+			inviteLastName = '';
 			alert('Invitation sent successfully!');
 		} catch (error) {
 			console.error('Error sending invitation:', error);
@@ -78,6 +86,24 @@
 	<div class="invite-section">
 		<h2>Invite Team Member</h2>
 		<div class="invite-form">
+			<div class="form-group">
+				<label for="inviteFirstName">First Name</label>
+				<input
+					type="text"
+					id="inviteFirstName"
+					bind:value={inviteFirstName}
+					placeholder="Enter first name"
+				/>
+			</div>
+			<div class="form-group">
+				<label for="inviteLastName">Last Name</label>
+				<input
+					type="text"
+					id="inviteLastName"
+					bind:value={inviteLastName}
+					placeholder="Enter last name"
+				/>
+			</div>
 			<div class="form-group">
 				<label for="inviteEmail">Email Address</label>
 				<input

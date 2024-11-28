@@ -25,11 +25,17 @@ export async function POST({ request, locals }) {
         }
 
         // Parse Request Body
-        const { email } = await request.json();
+        const { email, firstName, lastName } = await request.json();
 
-        // Validate Email
+        // Validate inputs
         if (!email || typeof email !== 'string') {
             return new Response('Invalid email address', { status: 400 });
+        }
+        if (!firstName || typeof firstName !== 'string') {
+            return new Response('Invalid first name', { status: 400 });
+        }
+        if (!lastName || typeof lastName !== 'string') {
+            return new Response('Invalid last name', { status: 400 });
         }
 
         // Generate Unique Invite Token
@@ -56,6 +62,9 @@ export async function POST({ request, locals }) {
             data: {
                 code: inviteToken,
                 organizationId: user.organizationId,
+                firstName,
+                lastName,
+                email,
                 expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
             }
         });
@@ -182,6 +191,9 @@ export async function POST({ request, locals }) {
             <td class="content">
               <h1>Welcome to Arddata™</h1>
               <p>
+                Hi ${firstName},
+              </p>
+              <p>
                 You've been invited to join <strong>${organization.name}</strong> on Arddata™ by 
                 <strong>${organization.users[0].firstName} ${organization.users[0].lastName}</strong>.
               </p>
@@ -227,7 +239,7 @@ export async function POST({ request, locals }) {
             email: "support@arddata.com" 
         };
         sendSmtpEmail.to = [
-            { email, name: email.split('@')[0] }
+            { email, name: `${firstName} ${lastName}` }
         ];
         sendSmtpEmail.params = {
             organizationName: organization.name,
