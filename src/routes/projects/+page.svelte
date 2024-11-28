@@ -124,10 +124,10 @@
 					/>
 				</div>
 				<p>{project.purpose}</p>
-				<div class="project-stats">
+				<!-- <div class="project-stats">
 					<span>{project.zones?.length || 0} zones</span>
 					<span>{project.devices?.length || 0} devices</span>
-				</div>
+				</div> -->
 			</div>
 		{/each}
 	</div>
@@ -137,7 +137,7 @@
 	.page-container {
 		max-width: 1400px;
 		margin: 0 auto;
-		padding: 3rem 2rem;
+		padding: 2rem;
 	}
 
 	.header {

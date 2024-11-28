@@ -113,57 +113,66 @@
 	<div class="header">
 		<h1 class="title">{zone.name}</h1>
 		<div class="actions">
-			<a href={`/zones/${zone.id}/edit`}>
-				<Button text="Edit" variant="outline" />
-			</a>
+			<!-- <Button text="Edit Zone" href={`/zones/${zone.id}/edit`} /> -->
 			<Button text="Delete" variant="danger-outline" on:click={handleDelete} />
 		</div>
 	</div>
 
-	<div class="content">
+	<p class="description">
+		View and manage your zone details, including its geographical boundaries, crop information, and
+		connected devices. This zone is part of the {data.project.name} project.
+	</p>
+
+	<div class="zone-content">
+		<!-- Map Section -->
 		<div class="map-section">
 			<MapboxMap
 				accessToken={MAPBOX_ACCESS_TOKEN}
-				{polygonData}
 				{mapFeatures}
-				height="500px"
+				height="400px"
+				width="100%"
 				maxZoom={16}
 				minZoom={10}
 				fillColor={getPastelColor(zone.color)}
+				secondsPerRevolution={240}
+				maxSpinZoom={5}
+				slowSpinZoom={3}
 			/>
 		</div>
 
-		<div class="info-grid">
-			<div class="zone-details card">
-				<h2>Details</h2>
+		<!-- Zone Details -->
+		<div class="details-section">
+			<div class="detail-group">
+				<h2>Crop Information</h2>
 				<div class="details-grid">
 					<div class="detail-item">
-						<span class="label">Crop Type</span>
-						<span class="value">{zone.cropType}</span>
+						<span class="detail-label">Crop Type</span>
+						<span class="detail-value">{zone.cropType}</span>
 					</div>
 					<div class="detail-item">
-						<span class="label">Planting Date</span>
-						<span class="value">{plantingDate}</span>
+						<span class="detail-label">Soil Type</span>
+						<span class="detail-value">{zone.soilType}</span>
 					</div>
 					<div class="detail-item">
-						<span class="label">Harvest Date</span>
-						<span class="value">{harvestDate}</span>
+						<span class="detail-label">Planting Date</span>
+						<span class="detail-value">{plantingDate}</span>
 					</div>
 					<div class="detail-item">
-						<span class="label">Soil Type</span>
-						<span class="value">{zone.soilType}</span>
+						<span class="detail-label">Harvest Date</span>
+						<span class="detail-value">{harvestDate}</span>
 					</div>
 				</div>
-				{#if zone.notes}
-					<div class="notes">
-						<span class="label">Notes</span>
-						<p class="value">{zone.notes}</p>
-					</div>
-				{/if}
 			</div>
 
-			<div class="devices card">
-				<h2>Devices</h2>
+			{#if zone.notes}
+				<div class="detail-group">
+					<h2>Notes</h2>
+					<p class="notes-content">{zone.notes}</p>
+				</div>
+			{/if}
+
+			<div class="detail-group">
+				<h2>Connected Devices</h2>
 				{#if zone.devices.length > 0}
 					<div class="devices-grid">
 						{#each zone.devices as device}
@@ -171,7 +180,7 @@
 						{/each}
 					</div>
 				{:else}
-					<p class="no-devices">No devices assigned</p>
+					<p class="empty-state">No devices have been connected to this zone yet.</p>
 				{/if}
 			</div>
 		</div>
@@ -189,87 +198,88 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin: 2rem 0 3rem;
+		margin: 2.5rem 0 1.5rem;
+		padding-bottom: 1.5rem;
+		border-bottom: 1px solid var(--border-color, #eaeaea);
 	}
 
 	.title {
-		font-size: 2.5rem;
+		font-size: 1.75rem;
 		font-weight: 500;
-		color: #2c3e50;
-		margin: 0;
+		letter-spacing: -0.02em;
+		color: var(--text-primary, #111);
+	}
+
+	.description {
+		margin-bottom: 2rem;
+		color: var(--text-secondary, #666);
+		line-height: 1.5;
 	}
 
 	.actions {
 		display: flex;
-		gap: 1rem;
+		gap: 0.75rem;
 	}
 
-	.content {
+	.zone-content {
 		display: flex;
 		flex-direction: column;
-		gap: 3rem;
+		gap: 2rem;
 	}
 
 	.map-section {
 		width: 100%;
-		border-radius: 12px;
+		border: 1px solid var(--border-color, #eaeaea);
+		border-radius: 8px;
 		overflow: hidden;
-		box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 	}
 
-	.info-grid {
-		display: grid;
-		grid-template-columns: 1fr;
+	.details-section {
+		display: flex;
+		flex-direction: column;
 		gap: 2rem;
 	}
 
-	.card {
-		background: white;
-		border-radius: 12px;
-		padding: 2rem;
-		box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+	.detail-group {
+		padding: 1.5rem;
+		background: var(--background-secondary, #f9f9f9);
+		border-radius: 8px;
+		border: 1px solid var(--border-color, #eaeaea);
 	}
 
-	h2 {
-		font-size: 1.5rem;
+	.detail-group h2 {
+		font-size: 1.25rem;
 		font-weight: 500;
-		color: #2c3e50;
-		margin: 0 0 1.5rem;
+		margin-bottom: 1rem;
+		color: var(--text-primary, #111);
 	}
 
 	.details-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 2rem;
+		gap: 1.5rem;
 	}
 
 	.detail-item {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.25rem;
 	}
 
-	.label {
+	.detail-label {
 		font-size: 0.875rem;
-		color: #64748b;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		color: var(--text-secondary, #666);
 	}
 
-	.value {
+	.detail-value {
 		font-size: 1rem;
-		color: #334155;
+		font-weight: 500;
+		color: var(--text-primary, #111);
 	}
 
-	.notes {
-		margin-top: 2rem;
-		padding-top: 2rem;
-		border-top: 1px solid #e2e8f0;
-	}
-
-	.notes .value {
-		margin-top: 0.5rem;
-		line-height: 1.6;
+	.notes-content {
+		color: var(--text-secondary, #666);
+		line-height: 1.5;
 	}
 
 	.devices-grid {
@@ -278,39 +288,36 @@
 		gap: 1.5rem;
 	}
 
-	.no-devices {
-		color: #64748b;
-		font-size: 0.875rem;
+	.empty-state {
+		color: var(--text-secondary, #666);
 		text-align: center;
 		padding: 2rem;
-		background: #f8fafc;
-		border-radius: 8px;
-	}
-
-	@media (min-width: 1024px) {
-		.info-grid {
-			grid-template-columns: 400px 1fr;
-		}
+		background: var(--background-tertiary, #f3f4f6);
+		border-radius: 6px;
 	}
 
 	@media (max-width: 768px) {
 		.page-container {
-			padding: 1rem;
+			padding: 1.5rem;
 		}
 
 		.header {
+			margin: 1.5rem 0 1rem;
 			flex-direction: column;
-			align-items: flex-start;
 			gap: 1rem;
+			align-items: flex-start;
 		}
 
-		.title {
-			font-size: 2rem;
+		.actions {
+			width: 100%;
+		}
+
+		.zone-content {
+			gap: 1.5rem;
 		}
 
 		.details-grid {
 			grid-template-columns: 1fr;
-			gap: 1.5rem;
 		}
 	}
 </style>

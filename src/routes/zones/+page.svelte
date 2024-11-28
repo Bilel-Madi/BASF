@@ -19,9 +19,11 @@
 	<Breadcrumbs items={breadcrumbItems} />
 	<div class="header">
 		<h1 class="title">Zones</h1>
-		<a href="/zones/add" class="add-button">
-			<Button text="Add" />
-		</a>
+		{#if $page.data.user?.role !== 'VIEWER'}
+			<a href="/zones/add" class="add-button">
+				<Button text="Add" />
+			</a>
+		{/if}
 	</div>
 
 	<div class="grid-container">
@@ -35,7 +37,7 @@
 	.page-container {
 		max-width: 1400px;
 		margin: 0 auto;
-		padding: 3rem 2rem;
+		padding: 2rem;
 	}
 
 	.header {
