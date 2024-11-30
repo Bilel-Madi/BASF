@@ -108,9 +108,13 @@ model Device {
   latest_moisture         Float?
   latest_soil_temperature Float?
 
+  latest_liquid_level       Float?
+  latest_liquid_temperature Float?
+
   // Relations
-  airData  Air[]
-  soilData Soil[]
+  airData    Air[]
+  soilData   Soil[]
+  liquidData Liquid[]
 }
 
 model Air {
@@ -140,6 +144,18 @@ model Soil {
   Device      Device   @relation(fields: [deviceId], references: [eui])
 }
 
+model Liquid {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  receivedAt   DateTime @map("received_at")
+  deviceId     String   @map("device_id")
+  liquid_level Float
+  temperature  Float
+  battery      Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  Device       Device   @relation(fields: [deviceId], references: [eui])
+}
+
 model InviteCode {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
   code           String       @unique
@@ -156,6 +172,7 @@ model InviteCode {
 enum DeviceType {
   SOIL_MOISTURE
   CO2_SENSOR
+  LIQUID_LEVEL
   UNKNOWN
 }
 

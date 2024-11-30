@@ -38,11 +38,13 @@ export const POST: RequestHandler = async ({ request }) => {
     const battery = decodedPayload.battery !== undefined ? decodedPayload.battery : null;
 
     // Determine sensor type based on the device EUI prefix
-    let deviceType: 'CO2_SENSOR' | 'SOIL_MOISTURE' | 'UNKNOWN' = 'UNKNOWN';
+    let deviceType: 'CO2_SENSOR' | 'SOIL_MOISTURE' | 'LIQUID_LEVEL' | 'UNKNOWN' = 'UNKNOWN';
     if (devEui.startsWith('24E124126E')) {
       deviceType = 'CO2_SENSOR';
     } else if (devEui.startsWith('24E124126C')) {
       deviceType = 'SOIL_MOISTURE';
+    } else if (devEui.startsWith('DEMOQWA')) {
+      deviceType = 'LIQUID_LEVEL';
     } else {
       console.log('Unknown device EUI prefix:', devEui);
       // Continue with UNKNOWN type
@@ -133,6 +135,31 @@ export const POST: RequestHandler = async ({ request }) => {
       deviceUpdateData.latest_ec = ec;
       deviceUpdateData.latest_moisture = moisture;
       deviceUpdateData.latest_soil_temperature = temperature;
+    } else if (deviceType === 'LIQUID_LEVEL') {
+      // Extract liquid level sensor data
+      const { liquid_level, temperature } = decodedPayload;
+
+      // Validate required fields
+      if (liquid_level === undefined || temperature === undefined) {
+        console.log('Missing liquid level sensor data:', { liquid_level, temperature });
+        return new Response('Missing liquid level sensor data', { status: 400 });
+      }
+
+      // Save the data to the 'Liquid' collection
+      await prisma.liquid.create({
+        data: {
+          receivedAt,
+          deviceId: devEui,
+          liquid_level,
+          temperature,
+          battery,
+        },
+      });
+      console.log(`Liquid level sensor data saved for device ${devEui}.`);
+
+      // Update the device with the latest readings
+      deviceUpdateData.latest_liquid_level = liquid_level;
+      deviceUpdateData.latest_liquid_temperature = temperature;
     } else {
       console.log(`Device type UNKNOWN for EUI ${devEui}. Data not saved.`);
       return new Response('Unknown device type. Data not saved.', { status: 400 });
