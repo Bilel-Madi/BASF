@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ request }) => {
       deviceType = 'CO2_SENSOR';
     } else if (devEui.startsWith('24E124126C')) {
       deviceType = 'SOIL_MOISTURE';
-    } else if (devEui.startsWith('DEMOQWA')) {
+    } else if (devEui.startsWith('DEMO000')) {
       deviceType = 'LIQUID_LEVEL';
     } else {
       console.log('Unknown device EUI prefix:', devEui);
