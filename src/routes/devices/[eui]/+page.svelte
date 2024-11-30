@@ -13,6 +13,7 @@
 	import ThresholdBar from '$lib/components/ui/ThresholdBar.svelte'; // Import ThresholdBar
 	import type { PageLoad } from './$types';
 	import { colorMap } from '$lib/colorMap';
+	import LiquidLevelIndicator from '$lib/components/visualizations/LiquidLevelIndicator.svelte';
 
 	export let data;
 
@@ -25,6 +26,7 @@
 	const deviceImagePath = {
 		SOIL_MOISTURE: '/images/soil.png',
 		CO2_SENSOR: '/images/co2_sensor.png',
+		LIQUID_LEVEL: '/images/liquid.png',
 		UNKNOWN: '/images/unknown_device.png'
 	};
 
@@ -100,6 +102,14 @@
 		{ start: 1500, end: 2000, color: '#3399ff', label: 'Very High' }
 	];
 
+	const liquidLevelThresholds = [
+		{ start: 0, end: 1, color: '#ff4d4d', label: 'Critical Low' },
+		{ start: 1, end: 2, color: '#ffa500', label: 'Low' },
+		{ start: 2, end: 3, color: '#00cc44', label: 'Normal' },
+		{ start: 3, end: 4, color: '#ffa500', label: 'High' },
+		{ start: 4, end: 5, color: '#ff4d4d', label: 'Critical High' }
+	];
+
 	// Fetch data for the chart
 	async function fetchData(range) {
 		let queryParams = '';
@@ -163,6 +173,19 @@
 					label: 'EC (µS/cm)',
 					data: rawData.map((d) => ({ x: d.receivedAt, y: d.ec })),
 					color: '#edb61f'
+				}
+			];
+		} else if (data.device.type === 'LIQUID_LEVEL') {
+			datasets = [
+				{
+					label: 'Level (m)',
+					data: rawData.map((d) => ({ x: d.receivedAt, y: d.liquid_level })),
+					color: '#1f52ed'
+				},
+				{
+					label: 'Temperature (°C)',
+					data: rawData.map((d) => ({ x: d.receivedAt, y: d.liquid_temperature })),
+					color: '#ed1f5c'
 				}
 			];
 		}
@@ -456,6 +479,65 @@
 							</div>
 							<ThresholdBar
 								value={data.device.latest_soil_temperature}
+								min={-10}
+								max={50}
+								thresholds={temperatureThresholds}
+							/>
+						</div>
+					{:else if data.device.type === 'LIQUID_LEVEL'}
+						<div class="reading-item">
+							<div class="reading-header">
+								<div class="reading-title">
+									<span class="label">Level:</span>
+									<span class="current-value">{data.device.latest_liquid_level} m</span>
+								</div>
+								<div
+									class="status-tag"
+									style="background-color: {liquidLevelThresholds.find(
+										(t) =>
+											data.device.latest_liquid_level >= t.start &&
+											data.device.latest_liquid_level <= t.end
+									)?.color || '#f0f0f0'}"
+								>
+									{liquidLevelThresholds.find(
+										(t) =>
+											data.device.latest_liquid_level >= t.start &&
+											data.device.latest_liquid_level <= t.end
+									)?.label || ''}
+								</div>
+							</div>
+							<LiquidLevelIndicator
+								level={data.device.latest_liquid_level}
+								maxLevel={10}
+								height="300px"
+								showLabels={true}
+								showAnimation={true}
+							/>
+						</div>
+
+						<div class="reading-item">
+							<div class="reading-header">
+								<div class="reading-title">
+									<span class="label">Temperature:</span>
+									<span class="current-value">{data.device.latest_liquid_temperature} °C</span>
+								</div>
+								<div
+									class="status-tag"
+									style="background-color: {temperatureThresholds.find(
+										(t) =>
+											data.device.latest_liquid_temperature >= t.start &&
+											data.device.latest_liquid_temperature <= t.end
+									)?.color || '#f0f0f0'}"
+								>
+									{temperatureThresholds.find(
+										(t) =>
+											data.device.latest_liquid_temperature >= t.start &&
+											data.device.latest_liquid_temperature <= t.end
+									)?.label || ''}
+								</div>
+							</div>
+							<ThresholdBar
+								value={data.device.latest_liquid_temperature}
 								min={-10}
 								max={50}
 								thresholds={temperatureThresholds}

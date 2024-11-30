@@ -16,6 +16,7 @@
 	import Weather from '$lib/components/weather/+page.svelte';
 	import DeviceInfo from '$lib/components/cards/DeviceInfo.svelte';
 	import { page } from '$app/stores';
+	import LiquidLevelIndicator from '$lib/components/visualizations/LiquidLevelIndicator.svelte';
 
 	// Add loading state
 	let isLoading = true;
@@ -27,6 +28,8 @@
 		zones: Array<Zone & { devices: Device[] }>;
 		devices: Array<Device & { latestData: any }>;
 	};
+	// Log the latest data
+	console.log(data.devices.map((device) => device.latestData));
 
 	// Initialize the selectedDevice with the first soil moisture sensor if available
 	const selectedDevice = writable<Device | null>(null);
@@ -117,6 +120,7 @@
 
 	const CO2_SENSOR_READINGS = ['co2', 'humidity', 'pressure', 'temperature'];
 	const SOIL_MOISTURE_READINGS = ['moisture', 'ec', 'temperature'];
+	const LIQUID_LEVEL_READINGS = ['level', 'temperature'];
 
 	// Helper function to calculate time since last message in minutes
 	function timeSinceLastMessage(receivedAt: string): number {
@@ -255,6 +259,25 @@
 									max={$sensorRanges[sensorType].max}
 								/>
 							{/each}
+						{:else if selectedDeviceData.type === 'LIQUID_LEVEL'}
+							<div class="liquid-level-container">
+								<LiquidLevelIndicator
+									level={selectedDeviceData?.latestData?.liquid_level}
+									maxLevel={10}
+									width="100%"
+									height="100%"
+									showLabels={true}
+									showAnimation={true}
+								/>
+								<SensorReading
+									label="Water Temperature"
+									value={selectedDeviceData.latestData.temperature}
+									unit={sensorUnits.temperature}
+									thresholds={$sensorThresholds.temperature}
+									min={$sensorRanges.temperature.min}
+									max={$sensorRanges.temperature.max}
+								/>
+							</div>
 						{/if}
 					</div>
 				</div>
@@ -662,5 +685,24 @@
 		justify-content: center;
 		align-items: center;
 		color: #666;
+	}
+
+	.liquid-level-container {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		justify-content: center;
+		align-items: center;
+		padding: 0.5rem;
+		background: #fafafa;
+		border-radius: 8px;
+	}
+
+	/* Add this new style to make the sensor reading take full width */
+	.liquid-level-container :global(.sensor-reading) {
+		width: 100%;
+		max-width: none; /* Override any max-width constraints */
 	}
 </style>

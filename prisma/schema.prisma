@@ -69,16 +69,27 @@ model Zone {
   area           Float
   geometry       Json
   color          String
-  cropType       String
-  plantingDate   DateTime
-  harvestDate    DateTime
+  zoneType       ZoneType     @default(CROP)
+  cropType       String?
+  plantingDate   DateTime?
+  harvestDate    DateTime?
   notes          String?
-  soilType       String
+  soilType       String?
   organizationId String       @db.ObjectId
   devices        Device[]
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   projectId      String       @db.ObjectId
   project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  waterWell      WaterWell?
+}
+
+model WaterWell {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  depth            Float
+  wellDiameter     Float
+  constructionDate DateTime
+  zoneId           String   @unique @db.ObjectId
+  zone             Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 }
 
 model Device {
@@ -197,4 +208,9 @@ enum SubscriptionStatus {
   BASIC
   PRO
   ENTERPRISE
+}
+
+enum ZoneType {
+  CROP
+  WATER_WELL
 }

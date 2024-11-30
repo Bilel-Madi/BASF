@@ -17,6 +17,8 @@
 		latest_ec?: number;
 		latest_moisture?: number;
 		latest_soil_temperature?: number;
+		latest_liquid_level?: number;
+		latest_liquid_temperature?: number;
 		mainReadings: number[];
 	}
 
@@ -59,6 +61,8 @@
 				return '#ede61f'; // Yellow-ish color for CO₂
 			case 'SOIL_MOISTURE':
 				return '#1f52ed'; // Blue-ish color for moisture
+			case 'LIQUID_LEVEL':
+				return '#00bcd4'; // Cyan-ish color for liquid level
 			default:
 				return '#15fdb7'; // Default color
 		}
@@ -79,6 +83,8 @@
 						<p><strong>CO₂:</strong> {device.latest_co2} ppm</p>
 					{:else if device.type === 'SOIL_MOISTURE'}
 						<p><strong>Moisture:</strong> {device.latest_moisture}%</p>
+					{:else if device.type === 'LIQUID_LEVEL'}
+						<p><strong>Level:</strong> {device.latest_liquid_level} m</p>
 					{/if}
 				</div>
 				<MiniLineChart
@@ -113,6 +119,11 @@
 				<div class="reading">
 					<p class="reading-title">Temp</p>
 					<p class="reading-value">{device.latest_soil_temperature}°C</p>
+				</div>
+			{:else if device.type === 'LIQUID_LEVEL'}
+				<div class="reading">
+					<p class="reading-title">Temperature</p>
+					<p class="reading-value">{device.latest_liquid_temperature}°C</p>
 				</div>
 			{/if}
 		</div>

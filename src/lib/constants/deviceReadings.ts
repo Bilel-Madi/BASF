@@ -9,5 +9,9 @@ export const DEVICE_READINGS = {
     { value: 'humidity', label: 'Air Humidity' },
     { value: 'temperature', label: 'Air Temperature' },
     { value: 'pressure', label: 'Air Pressure' }
+  ],
+  LIQUID_LEVEL: [
+    { value: 'liquid_level', label: 'Liquid Level' },
+    { value: 'liquid_temperature', label: 'Temperature' }
   ]
 } as const; 

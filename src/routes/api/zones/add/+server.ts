@@ -3,7 +3,7 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 import type { RequestHandler } from '@sveltejs/kit';
-import type { ZoneColor } from '@prisma/client';
+import type { ZoneColor, ZoneType } from '@prisma/client';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
   const user = locals.user;
@@ -16,29 +16,25 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     return new Response('No active project selected', { status: 400 });
   }
 
+  const data = await request.json();
   const {
     name,
+    geometry,
+    area,
+    color,
+    zoneType,
+    // Crop specific fields
     cropType,
     plantingDate,
     harvestDate,
     notes,
     soilType,
-    geometry,
-    area,
-    color,
-  } = await request.json();
+    // Water well specific fields
+    waterWell
+  } = data;
 
-  // Basic validation for required fields
-  if (
-    !name ||
-    !cropType ||
-    !plantingDate ||
-    !harvestDate ||
-    !soilType ||
-    !geometry ||
-    !area ||
-    !color
-  ) {
+  // Basic validation for common required fields
+  if (!name || !geometry || !area || !color || !zoneType) {
     return new Response('Missing required fields', { status: 400 });
   }
 
@@ -57,20 +53,48 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   }
 
   try {
+    // Validate zone-type specific fields
+    if (zoneType === 'CROP') {
+      if (!cropType || !plantingDate || !harvestDate || !soilType) {
+        return new Response('Missing required crop fields', { status: 400 });
+      }
+    } else if (zoneType === 'WATER_WELL') {
+      if (!waterWell || !waterWell.depth || !waterWell.wellDiameter || !waterWell.constructionDate) {
+        return new Response('Missing required water well fields', { status: 400 });
+      }
+    }
+
+    // Create the zone with the appropriate data
     const zone = await prisma.zone.create({
       data: {
         name,
-        cropType,
-        plantingDate: new Date(plantingDate),
-        harvestDate: new Date(harvestDate),
-        notes,
-        soilType,
         geometry,
         area,
         color,
+        zoneType,
         organizationId: user.organizationId,
         projectId: user.activeProjectId,
+        // Conditional fields based on zone type
+        ...(zoneType === 'CROP' && {
+          cropType,
+          plantingDate: new Date(plantingDate),
+          harvestDate: new Date(harvestDate),
+          notes,
+          soilType,
+        }),
+        ...(zoneType === 'WATER_WELL' && {
+          waterWell: {
+            create: {
+              depth: waterWell.depth,
+              wellDiameter: waterWell.wellDiameter,
+              constructionDate: new Date(waterWell.constructionDate)
+            }
+          }
+        })
       },
+      include: {
+        waterWell: true // Include water well data in the response
+      }
     });
 
     return json(zone, { status: 201 });
@@ -91,8 +115,9 @@ export const GET: RequestHandler = async ({ locals }) => {
     const zones = await prisma.zone.findMany({
       where: { organizationId: user.organizationId },
       include: {
-        devices: true, // Include related devices
-        project: true,  // Optionally include project details
+        devices: true,
+        project: true,
+        waterWell: true // Include water well data
       },
     });
 

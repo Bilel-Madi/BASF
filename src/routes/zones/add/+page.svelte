@@ -7,7 +7,7 @@
 	import MapboxMap from '$lib/components/map/MapboxMap.svelte';
 	import Breadcrumbs from '$lib/components/ui/Breadcrumbs.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { ZoneColor } from '@prisma/client';
+	import type { ZoneColor, ZoneType } from '@prisma/client';
 	import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 	// Zone details
@@ -20,6 +20,10 @@
 	let color: ZoneColor | '' = '';
 	let geometry: GeoJSON.Geometry | null = null;
 	let area: number = 0;
+	let zoneType: ZoneType = 'CROP';
+	let depth: number | null = null;
+	let wellDiameter: number | null = null;
+	let constructionDate: string = '';
 
 	// Pastel colors
 	const colors: ZoneColor[] = [
@@ -77,32 +81,44 @@
 
 	// Handle form submission
 	async function submitZone() {
-		// Validate required fields
-		if (
-			!name ||
-			!cropType ||
-			!plantingDate ||
-			!harvestDate ||
-			!soilType ||
-			!geometry ||
-			!area ||
-			!color
-		) {
+		if (!name || !geometry || !area || !color) {
 			alert('Please fill in all required fields and draw a zone on the map.');
 			return;
 		}
 
-		// Prepare the data
+		// Validate zone-type specific fields
+		if (zoneType === 'CROP' && (!cropType || !plantingDate || !harvestDate || !soilType)) {
+			alert('Please fill in all required crop fields.');
+			return;
+		}
+
+		if (zoneType === 'WATER_WELL' && (!depth || !wellDiameter || !constructionDate)) {
+			alert('Please fill in all required water well fields.');
+			return;
+		}
+
+		// Prepare the data based on zone type
 		const zoneData = {
 			name,
-			cropType,
-			plantingDate,
-			harvestDate,
-			notes,
-			soilType,
 			geometry,
 			area,
-			color
+			color,
+			zoneType,
+			...(zoneType === 'CROP'
+				? {
+						cropType,
+						plantingDate,
+						harvestDate,
+						soilType,
+						notes
+				  }
+				: {
+						waterWell: {
+							depth,
+							wellDiameter,
+							constructionDate
+						}
+				  })
 		};
 
 		// Send a POST request to create the zone
@@ -143,6 +159,9 @@
 			mapComponent.updateFillColor(getPastelColor(selectedColor));
 		}
 	}
+
+	// Add drawMode computed property
+	$: drawMode = zoneType === 'WATER_WELL' ? 'circle' : 'polygon';
 </script>
 
 <!-- Zone creation form -->
@@ -166,12 +185,27 @@
 	</p>
 
 	<form on:submit|preventDefault={submitZone} class="zone-form">
+		<div class="zone-type-selection">
+			<h2>Select Zone Type</h2>
+			<div class="zone-type-options">
+				<label class="zone-type-option">
+					<input type="radio" bind:group={zoneType} value="CROP" />
+					<span class="zone-type-label">Crop Zone</span>
+				</label>
+				<label class="zone-type-option">
+					<input type="radio" bind:group={zoneType} value="WATER_WELL" />
+					<span class="zone-type-label">Water Well</span>
+				</label>
+			</div>
+		</div>
+
 		<!-- Map section -->
 		<div class="map-section">
 			<MapboxMap
 				bind:this={mapComponent}
 				accessToken="pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg"
 				allowPolygonDrawing={true}
+				{drawMode}
 				on:geometryChanged={handleGeometryChanged}
 				height="400px"
 				width="100%"
@@ -188,39 +222,63 @@
 				<input type="text" id="name" bind:value={name} required placeholder="Enter zone name" />
 			</div>
 
-			<div class="input-group">
-				<label for="cropType">Crop Type*</label>
-				<input
-					type="text"
-					id="cropType"
-					bind:value={cropType}
-					required
-					placeholder="Enter crop type"
-				/>
-			</div>
-
-			<div class="dates-container">
+			{#if zoneType === 'CROP'}
 				<div class="input-group">
-					<label for="plantingDate">Planting Date*</label>
-					<input type="date" id="plantingDate" bind:value={plantingDate} required />
+					<label for="cropType">Crop Type*</label>
+					<input
+						type="text"
+						id="cropType"
+						bind:value={cropType}
+						required
+						placeholder="Enter crop type"
+					/>
+				</div>
+
+				<div class="dates-container">
+					<div class="input-group">
+						<label for="plantingDate">Planting Date*</label>
+						<input type="date" id="plantingDate" bind:value={plantingDate} required />
+					</div>
+
+					<div class="input-group">
+						<label for="harvestDate">Harvest Date*</label>
+						<input type="date" id="harvestDate" bind:value={harvestDate} required />
+					</div>
 				</div>
 
 				<div class="input-group">
-					<label for="harvestDate">Harvest Date*</label>
-					<input type="date" id="harvestDate" bind:value={harvestDate} required />
+					<label for="soilType">Soil Type*</label>
+					<input
+						type="text"
+						id="soilType"
+						bind:value={soilType}
+						required
+						placeholder="Enter soil type"
+					/>
 				</div>
-			</div>
+			{:else if zoneType === 'WATER_WELL'}
+				<div class="input-group">
+					<label for="depth">Well Depth (m)*</label>
+					<input type="number" id="depth" bind:value={depth} required step="0.1" min="0" />
+				</div>
 
-			<div class="input-group">
-				<label for="soilType">Soil Type*</label>
-				<input
-					type="text"
-					id="soilType"
-					bind:value={soilType}
-					required
-					placeholder="Enter soil type"
-				/>
-			</div>
+				<div class="input-group">
+					<label for="wellDiameter">Well Diameter (m)*</label>
+					<input
+						type="number"
+						id="wellDiameter"
+						bind:value={wellDiameter}
+						required
+						step="0.01"
+						min="0"
+					/>
+				</div>
+
+				<div class="input-group">
+					<label for="constructionDate">Construction Date*</label>
+					<input type="date" id="constructionDate" bind:value={constructionDate} required />
+				</div>
+			{/if}
 
 			<!-- Color Selection -->
 			<div class="input-group">
@@ -385,5 +443,34 @@
 		.dates-container {
 			grid-template-columns: 1fr;
 		}
+	}
+
+	.zone-type-selection {
+		margin-bottom: 2rem;
+	}
+
+	.zone-type-options {
+		display: flex;
+		gap: 2rem;
+		margin-top: 1rem;
+	}
+
+	.zone-type-option {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		cursor: pointer;
+	}
+
+	.zone-type-label {
+		font-size: 1.1rem;
+		font-weight: 500;
+	}
+
+	input[type='number'] {
+		padding: 0.75rem;
+		border: 1px solid var(--border-color, #eaeaea);
+		border-radius: 6px;
+		font-size: 1rem;
 	}
 </style>

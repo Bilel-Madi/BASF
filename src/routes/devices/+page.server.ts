@@ -80,6 +80,22 @@ export const load: PageServerLoad = async ({ locals }) => {
           latest_ec: data[data.length - 1]?.ec,
           latest_soil_temperature: data[data.length - 1]?.temperature,
         };
+      } else if (device.type === 'LIQUID_LEVEL') {
+        const data = await prisma.liquid.findMany({
+          where: {
+            deviceId: device.eui,
+            receivedAt: { gte: startDate },
+          },
+          orderBy: { receivedAt: 'asc' },
+        });
+
+        return {
+          ...device,
+          mainReadings: data.map(dp => dp.liquid_level),
+          temperatureReadings: data.map(dp => dp.temperature),
+          latest_liquid_level: data[data.length - 1]?.liquid_level,
+          latest_liquid_temperature: data[data.length - 1]?.temperature,
+        };
       } else {
         return {
           ...device,

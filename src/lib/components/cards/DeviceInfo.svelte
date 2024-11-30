@@ -73,6 +73,8 @@
 							? '/images/soil.png'
 							: selectedDeviceData.type === 'CO2_SENSOR'
 							? '/images/co2_sensor.png'
+							: selectedDeviceData.type === 'LIQUID_LEVEL'
+							? '/images/liquid.png'
 							: '/images/unknown_device.png'}
 						alt="Device"
 					/>

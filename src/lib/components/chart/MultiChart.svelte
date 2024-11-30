@@ -54,6 +54,14 @@
 		pressure: {
 			base: '#FF9800', // Main orange
 			shades: ['#FF9800', '#FFA726', '#FFB74D', '#E65100', '#EF6C00']
+		},
+		liquid_level: {
+			base: '#00bcd4', // Cyan for liquid level
+			shades: ['#00bcd4', '#26c6da', '#4dd0e1', '#006064', '#00838f']
+		},
+		liquid_temperature: {
+			base: '#4CAF50', // Reusing temperature green
+			shades: ['#4CAF50', '#66BB6A', '#81C784', '#2E7D32', '#388E3C']
 		}
 	};
 
@@ -200,6 +208,34 @@
 				display: true,
 				text: 'hPa'
 			}
+		},
+		liquid_level: {
+			id: 'liquid_level',
+			position: 'left',
+			min: 0,
+			max: 10,
+			title: {
+				display: true,
+				text: 'Liquid Level (m)',
+				position: 'top',
+				align: 'start',
+				color: '#050575',
+				font: {
+					size: 14
+				},
+				padding: {
+					top: 14
+				}
+			},
+			ticks: {
+				color: '#030359',
+				padding: 14
+			},
+			border: {
+				display: true,
+				color: 'rgba(3, 3, 89, 0.3)',
+				width: 1
+			}
 		}
 	};
 
@@ -229,7 +265,7 @@
 		if (!chart) return;
 
 		const datasets = [];
-		const usedScales = new Set(['x']); // Always include x-axis
+		const usedScales = new Set(['x']);
 
 		data.forEach((deviceData, deviceIndex) => {
 			if (!deviceData?.data) return;
@@ -239,30 +275,28 @@
 
 			selectedReadings.forEach((readingType) => {
 				if (deviceReadings.some((r) => r.value === readingType)) {
-					const scaleId = SCALE_CONFIGS[readingType]?.id || 'default';
-					usedScales.add(scaleId);
+					const scaleId =
+						readingType === 'liquid_temperature'
+							? 'temperature'
+							: SCALE_CONFIGS[readingType]?.id || 'default';
 
+					const dataKey = readingType === 'liquid_temperature' ? 'temperature' : readingType;
+
+					const filteredData = deviceData.data.filter((reading) => reading[dataKey] != null);
+
+					usedScales.add(scaleId);
 					const color = getReadingColor(readingType, deviceIndex);
 					const dataset = {
 						label: `${deviceData.device.name} - ${
 							deviceReadings.find((r) => r.value === readingType)?.label || readingType
 						}`,
-						data: deviceData.data
-							.filter((reading) => reading[readingType] !== undefined)
-							.map((reading) => ({
-								x: new Date(reading.receivedAt).getTime(), // Convert to milliseconds
-								y: reading[readingType]
-							})),
+						data: filteredData.map((reading) => ({
+							x: new Date(reading.receivedAt).getTime(),
+							y: reading[dataKey]
+						})),
 						borderColor: color,
-						backgroundColor:
-							readingType === 'moisture'
-								? function (context) {
-										const chart = context.chart;
-										const { ctx } = chart;
-										return getGradient(ctx, color);
-								  }
-								: color,
-						fill: readingType === 'moisture',
+						backgroundColor: readingType === 'liquid_level' ? getGradient(chart.ctx, color) : color,
+						fill: readingType === 'liquid_level' ? true : false,
 						yAxisID: scaleId,
 						tension: 0.1,
 						borderWidth: 2.5,
@@ -482,6 +516,8 @@
 									label += value.toFixed(0) + ' PPM';
 								} else if (readingType.includes('pressure')) {
 									label += value.toFixed(1) + ' hPa';
+								} else if (readingType.includes('liquid_level')) {
+									label += value.toFixed(2) + ' m';
 								} else {
 									label += value.toFixed(1);
 								}
@@ -532,8 +568,9 @@
 
 	function getGradient(ctx: CanvasRenderingContext2D, color: string): CanvasGradient {
 		const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-		gradient.addColorStop(0, `${color}33`); // 20% opacity version of the color
-		gradient.addColorStop(0.5, `${color}00`); // 0% opacity version of the color
+		gradient.addColorStop(0, `${color}66`);
+		gradient.addColorStop(0.7, `${color}33`);
+		gradient.addColorStop(1, `${color}00`);
 		return gradient;
 	}
 </script>

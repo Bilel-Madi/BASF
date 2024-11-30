@@ -111,6 +111,22 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
       },
       orderBy: { receivedAt: 'asc' },
     });
+  } else if (device.type === 'LIQUID_LEVEL') {
+    data = await prisma.liquid.findMany({
+      where: {
+        deviceId: eui,
+        receivedAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: { receivedAt: 'asc' },
+      select: {
+        receivedAt: true,
+        liquid_level: true,
+        temperature: true
+      }
+    });
   } else {
     return new Response('Unknown device type', { status: 400 });
   }

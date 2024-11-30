@@ -72,10 +72,6 @@
 	export let data;
 	const { userDetails } = data;
 
-	// Add these console.logs
-	console.log('Layout Data:', data);
-	console.log('User Details:', userDetails);
-
 	// Close project dropdown when clicking outside
 	function handleClickOutside(event) {
 		if (isProjectDropdownOpen && !event.target.closest('.project-selector')) {
@@ -84,8 +80,6 @@
 	}
 
 	async function handleProjectSelect(projectId) {
-		console.log('Selecting project:', projectId);
-
 		try {
 			const response = await fetch('/api/projects/select', {
 				method: 'POST',

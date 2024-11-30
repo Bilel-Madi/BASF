@@ -92,6 +92,24 @@ export const load: PageServerLoad = async ({ locals }) => {
               ...data[0] || {},
               history: data
             };
+          } else if (device.type === 'LIQUID_LEVEL') {
+            const data = await prisma.liquid.findMany({
+              where: { 
+                deviceId: device.eui,
+                Device: {
+                  zoneId: zone.id,
+                  zone: {
+                    projectId: project.id
+                  }
+                }
+              },
+              orderBy: { receivedAt: 'desc' },
+              take: 100
+            });
+            latestData = {
+              ...data[0] || {},
+              history: data
+            };
           }
           
           return { 

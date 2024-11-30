@@ -35,6 +35,8 @@
 			selectedReadings.set(['co2', 'temperature']);
 		} else if (selectedDevice.type === 'SOIL_MOISTURE') {
 			selectedReadings.set(['moisture', 'temperature', 'ec']);
+		} else if (selectedDevice.type === 'LIQUID_LEVEL') {
+			selectedReadings.set(['liquid_level', 'liquid_temperature']);
 		}
 
 		// Fetch data for the selected device

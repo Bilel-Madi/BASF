@@ -19,6 +19,8 @@
 		latest_ec?: number;
 		latest_moisture?: number;
 		latest_soil_temperature?: number;
+		latest_liquid_level?: number;
+		latest_liquid_temperature?: number;
 		mainReadings: number[];
 	}
 
