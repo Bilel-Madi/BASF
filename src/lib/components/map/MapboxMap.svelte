@@ -30,7 +30,6 @@
 	export let secondsPerRevolution: number = 240;
 	export let maxSpinZoom: number = 5;
 	export let slowSpinZoom: number = 3;
-	export let drawMode: 'polygon' | 'circle' = 'polygon';
 
 	let mapContainer: HTMLElement;
 	let map: mapboxgl.Map;
@@ -145,15 +144,10 @@
 			draw = new MapboxDraw({
 				displayControlsDefault: false,
 				controls: {
-					polygon: drawMode === 'polygon',
-					circle: drawMode === 'circle',
+					polygon: true,
 					trash: true
 				},
-				defaultMode: drawMode === 'circle' ? 'draw_circle' : 'draw_polygon',
-				modes: {
-					...MapboxDraw.modes,
-					draw_circle: CircleMode
-				}
+				defaultMode: 'draw_polygon'
 			});
 			map.addControl(draw);
 
@@ -472,80 +466,6 @@
 			}
 		}
 	}
-
-	// Add CircleMode implementation
-	const CircleMode = {
-		...MapboxDraw.modes.draw_polygon,
-		onSetup: function (opts) {
-			const polygon = this.newFeature({
-				type: 'Feature',
-				properties: {},
-				geometry: {
-					type: 'Polygon',
-					coordinates: [[]]
-				}
-			});
-
-			this.addFeature(polygon);
-			this.clearSelectedFeatures();
-			this.updateUIClasses({ mouse: 'add' });
-			this.setActionableState({
-				trash: true
-			});
-			return { polygon };
-		},
-
-		onClick: function (state, e) {
-			// First click starts the circle
-			if (!state.center) {
-				state.center = e.lngLat;
-				return;
-			}
-
-			// Second click completes the circle
-			if (state.center) {
-				const radius = this.calculateRadius(state.center, e.lngLat);
-				const circle = this.createCircle(state.center, radius);
-				state.polygon.setCoordinates([circle]);
-				this.updateUIClasses({ mouse: 'pointer' });
-				this.changeMode('simple_select', { featuresId: state.polygon.id });
-			}
-		},
-
-		onMouseMove: function (state, e) {
-			if (state.center) {
-				const radius = this.calculateRadius(state.center, e.lngLat);
-				const circle = this.createCircle(state.center, radius);
-				state.polygon.setCoordinates([circle]);
-			}
-		},
-
-		calculateRadius: function (center, point) {
-			const line = turf.lineString([
-				[center.lng, center.lat],
-				[point.lng, point.lat]
-			]);
-			return turf.length(line, { units: 'kilometers' });
-		},
-
-		createCircle: function (center, radius) {
-			const points = 64;
-			const coords = [];
-			const distanceX = radius * 0.8; // Adjust for Mercator projection
-			const distanceY = radius;
-
-			for (let i = 0; i < points; i++) {
-				const angle = (i * 2 * Math.PI) / points;
-				const x = center.lng + distanceX * Math.cos(angle);
-				const y = center.lat + distanceY * Math.sin(angle);
-				coords.push([x, y]);
-			}
-
-			// Close the circle
-			coords.push(coords[0]);
-			return coords;
-		}
-	};
 </script>
 
 <div class="map-container" style="border-radius: {borderRadius};">
