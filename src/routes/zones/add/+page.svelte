@@ -205,7 +205,6 @@
 				bind:this={mapComponent}
 				accessToken="pk.eyJ1IjoiYmlsZWxtYWRpIiwiYSI6ImNsbmJnM2ZrNTA1cXQybG56N2c0cjJ2bTcifQ.j-O_Igwc-2p3Na-mkusaDg"
 				allowPolygonDrawing={true}
-				{drawMode}
 				on:geometryChanged={handleGeometryChanged}
 				height="400px"
 				width="100%"
