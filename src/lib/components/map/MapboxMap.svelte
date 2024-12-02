@@ -254,10 +254,10 @@
 							'SOIL_MOISTURE',
 							'#0000ff',
 							'LIQUID_LEVEL',
-							'#87CEEB', // Light blue color for LIQUID_LEVEL
+							'#00ffb3', // Light blue color for LIQUID_LEVEL
 							/* other */ '#888888'
 						],
-						'circle-radius': 6
+						'circle-radius': 7
 					}
 				});
 
