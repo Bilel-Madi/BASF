@@ -7,7 +7,7 @@
 	$: ({ project } = data);
 
 	$: isPublic = project.isPublic ?? false;
-	$: publicUrl = project.publicSlug ? `/public/${project.publicSlug}` : null;
+	$: publicUrl = project.publicSlug ? `/demo/${project.publicSlug}` : null;
 
 	async function togglePublicAccess() {
 		const response = await fetch(`/api/projects/${project.id}/public-access`, {

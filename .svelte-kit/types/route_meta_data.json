@@ -95,6 +95,11 @@
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],
+	"/demo/[slug]": [
+		"src/routes/demo/[slug]/+page.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
 	"/devices": [
 		"src/routes/devices/+page.server.ts",
 		"src/routes/+layout.ts",
@@ -131,11 +136,6 @@
 	],
 	"/projects/[project_id]/settings": [
 		"src/routes/projects/[project_id]/settings/+page.server.ts",
-		"src/routes/+layout.ts",
-		"src/routes/+layout.server.ts"
-	],
-	"/public/[slug]": [
-		"src/routes/public/[slug]/+page.server.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],

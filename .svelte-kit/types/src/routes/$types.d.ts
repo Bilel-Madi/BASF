@@ -11,8 +11,8 @@ type OptionalUnion<U extends Record<string, any>, A extends keyof U = U extends 
 export type Snapshot<T = any> = Kit.Snapshot<T>;
 type PageServerParentData = EnsureDefined<LayoutServerData>;
 type PageParentData = EnsureDefined<LayoutData>;
-type LayoutRouteId = RouteId | "/" | "/admin" | "/auth/onboarding" | "/auth/signup" | "/dashboard" | "/devices" | "/devices/add" | "/devices/[eui]" | "/organization" | "/projects" | "/projects/add" | "/projects/[project_id]" | "/projects/[project_id]/settings" | "/public/[slug]" | "/zones" | "/zones/add" | "/zones/[zone_id]" | "/zones/[zone_id]/edit" | null
-type LayoutParams = RouteParams & { eui?: string,project_id?: string,slug?: string,zone_id?: string }
+type LayoutRouteId = RouteId | "/" | "/admin" | "/auth/onboarding" | "/auth/signup" | "/dashboard" | "/demo/[slug]" | "/devices" | "/devices/add" | "/devices/[eui]" | "/organization" | "/projects" | "/projects/add" | "/projects/[project_id]" | "/projects/[project_id]/settings" | "/zones" | "/zones/add" | "/zones/[zone_id]" | "/zones/[zone_id]/edit" | null
+type LayoutParams = RouteParams & { slug?: string,eui?: string,project_id?: string,zone_id?: string }
 type LayoutServerParentData = EnsureDefined<{}>;
 type LayoutParentData = EnsureDefined<{}>;
 
