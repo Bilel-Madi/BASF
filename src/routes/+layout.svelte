@@ -35,6 +35,9 @@
 
 	$: shouldShowHeader = !['/auth/signup', '/', '/auth/onboarding'].includes($page.url.pathname);
 
+	// Add after the existing shouldShowHeader reactive statement
+	$: isDemoRoute = $page.url.pathname.startsWith('/demo/');
+
 	// Comment out or remove the time formatting reactive statement
 	// $: formattedTime = (() => {
 	//     const timeStr = currentTime.toLocaleTimeString('en-US', {
@@ -192,83 +195,99 @@
 
 	{#if isMenuOpen}
 		<div class="menu-overlay" transition:fade={{ duration: 50 }}>
-			<nav>
-				<div class="menu-grid">
-					<a href="/dashboard" on:click={closeMenu}>
-						<span>Dashboard</span>
-					</a>
-					<a href="/projects" on:click={closeMenu}>
-						<span>Projects<sup class="count-badge">{userDetails?.projectCount || 0}</sup></span>
-					</a>
-					<a href="/zones" on:click={closeMenu}>
-						<span>Zones<sup class="count-badge">{userDetails?.zoneCount || 0}</sup></span>
-					</a>
-					<a href="/devices" on:click={closeMenu}>
-						<span>Devices<sup class="count-badge">{userDetails?.deviceCount || 0}</sup></span>
-					</a>
-					<!-- <a href="/analytics" on:click={closeMenu}>
-						<span>Analytics</span>
-					</a>
-					<a href="/settings" on:click={closeMenu}>
-						<span>Settings</span>
-					</a> -->
-					<!-- <a href="/about" on:click={closeMenu}>
-						<span>About</span>
-					</a> -->
-				</div>
+			{#if isDemoRoute}
+				<nav class="demo-nav">
+					<div class="demo-message">
+						<h2>Demo Dashboard</h2>
+						<p>
+							You are viewing a public demo dashboard. To access full features and functionality,
+							please contact us to create an account.
+						</p>
+						<div class="demo-actions">
+							<a href="https://www.arddata.com" class="demo-button" target="_blank">Learn More</a>
+							<a href="mailto:info@misbargeo.com" class="demo-button">Contact Us</a>
+						</div>
+					</div>
+				</nav>
+			{:else}
+				<nav>
+					<div class="menu-grid">
+						<a href="/dashboard" on:click={closeMenu}>
+							<span>Dashboard</span>
+						</a>
+						<a href="/projects" on:click={closeMenu}>
+							<span>Projects<sup class="count-badge">{userDetails?.projectCount || 0}</sup></span>
+						</a>
+						<a href="/zones" on:click={closeMenu}>
+							<span>Zones<sup class="count-badge">{userDetails?.zoneCount || 0}</sup></span>
+						</a>
+						<a href="/devices" on:click={closeMenu}>
+							<span>Devices<sup class="count-badge">{userDetails?.deviceCount || 0}</sup></span>
+						</a>
+						<!-- <a href="/analytics" on:click={closeMenu}>
+							<span>Analytics</span>
+						</a>
+						<a href="/settings" on:click={closeMenu}>
+							<span>Settings</span>
+						</a> -->
+						<!-- <a href="/about" on:click={closeMenu}>
+							<span>About</span>
+						</a> -->
+					</div>
 
-				<div class="menu-bottom">
-					<div class="user-info">
-						<div class="user-avatar" />
-						<div class="user-header">
-							<h2>
-								Hello <span class="username">
-									{#if userDetails?.role === 'VIEWER'}
-										Viewer
-									{:else}
-										{userDetails?.firstName || 'User'}
+					<div class="menu-bottom">
+						<div class="user-info">
+							<div class="user-avatar" />
+							<div class="user-header">
+								<h2>
+									Hello <span class="username">
+										{#if userDetails?.role === 'VIEWER'}
+											Viewer
+										{:else}
+											{userDetails?.firstName || 'User'}
+										{/if}
+									</span>!
+								</h2>
+								<div class="org-details">
+									<p class="org-info">
+										{userDetails?.organizationName || 'Organization'} -
+										{userDetails?.projectName || 'Project'}
+									</p>
+									{#if userDetails?.role === 'SUPER_ADMIN' || userDetails?.role === 'ADMIN'}
+										<a
+											href="/organization"
+											class="org-link"
+											class:active={$page.url.pathname === '/organization'}
+											on:click={closeMenu}
+										>
+											<span class="material-symbols-outlined">business</span>
+											<span>Manage Organization</span>
+										</a>
 									{/if}
-								</span>!
-							</h2>
-							<div class="org-details">
-								<p class="org-info">
-									{userDetails?.organizationName || 'Organization'} -
-									{userDetails?.projectName || 'Project'}
-								</p>
-								{#if userDetails?.role === 'SUPER_ADMIN' || userDetails?.role === 'ADMIN'}
-									<a
-										href="/organization"
-										class="org-link"
-										class:active={$page.url.pathname === '/organization'}
-										on:click={closeMenu}
-									>
-										<span class="material-symbols-outlined">business</span>
-										<span>Manage Organization</span>
-									</a>
-								{/if}
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<div class="menu-footer">
-						<img src="/logo1.png" alt="Arddata Logo" class="footer-logo" />
-						<p class="copyright">Arddata™ - All Rights Reserved 2024</p>
-						<p class="support">
-							For support email us at: <a href="mailto:info@misbargeo.com">info@misbargeo.com</a>
-						</p>
-						<p class="website">
-							<a href="https://www.arddata.com" target="_blank">www.arddata.com</a>
-						</p>
-						<div class="footer-actions">
-							<div class="status-widget">
-								<span class="status-dot" />
-								<span class="system-status">All Systems Operational&nbsp;&nbsp;</span>
+						<div class="menu-footer">
+							<img src="/logo1.png" alt="Arddata Logo" class="footer-logo" />
+							<p class="copyright">Arddata™ - All Rights Reserved 2024</p>
+							<p class="support">
+								For support email us at: <a href="mailto:info@misbargeo.com">info@misbargeo.com</a>
+							</p>
+							<p class="website">
+								<a href="https://www.arddata.com" target="_blank">www.arddata.com</a>
+							</p>
+							<div class="footer-actions">
+								<div class="status-widget">
+									<span class="status-dot" />
+									<span class="system-status">All Systems Operational&nbsp;&nbsp;</span>
+								</div>
+								<a href="/auth/logout" class="logout" on:click={closeMenu}>Logout</a>
 							</div>
-							<a href="/auth/logout" class="logout" on:click={closeMenu}>Logout</a>
 						</div>
 					</div>
-				</div>
-			</nav>
+				</nav>
+			{/if}
 		</div>
 	{/if}
 {/if}
@@ -923,5 +942,50 @@
 		transform: translateY(-50%);
 		color: rgba(0, 0, 0, 0.5);
 		pointer-events: none;
+	}
+
+	.demo-nav {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+		padding: 2rem;
+		text-align: center;
+	}
+
+	.demo-message {
+		max-width: 500px;
+		color: white;
+	}
+
+	.demo-message h2 {
+		font-size: 2rem;
+		margin-bottom: 1rem;
+	}
+
+	.demo-message p {
+		font-size: 1.1rem;
+		line-height: 1.6;
+		margin-bottom: 2rem;
+		opacity: 0.9;
+	}
+
+	.demo-actions {
+		display: flex;
+		gap: 1rem;
+		justify-content: center;
+	}
+
+	.demo-button {
+		background-color: rgba(255, 255, 255, 0.1);
+		color: white;
+		text-decoration: none;
+		padding: 0.75rem 1.5rem;
+		border-radius: 0.5rem;
+		transition: background-color 0.3s ease;
+	}
+
+	.demo-button:hover {
+		background-color: rgba(255, 255, 255, 0.2);
 	}
 </style>
