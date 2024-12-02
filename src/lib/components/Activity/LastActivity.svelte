@@ -1,6 +1,7 @@
 <!-- src/lib/components/LastActivity.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	import StatusDot from '$lib/components/ui/StatusDot.svelte';
 
 	let lastActivity: Date | null = null;
@@ -9,7 +10,11 @@
 
 	onMount(async () => {
 		try {
-			const response = await fetch('/api/devices/last-activity');
+			// Get the project slug from the URL if we're on a public page
+			const projectSlug = $page.params.slug;
+			const queryParam = projectSlug ? `?projectSlug=${projectSlug}` : '';
+
+			const response = await fetch(`/api/devices/last-activity${queryParam}`);
 			if (response.ok) {
 				const data = await response.json();
 				if (data.last_seen) {
