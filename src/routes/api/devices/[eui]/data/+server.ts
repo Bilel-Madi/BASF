@@ -47,23 +47,30 @@ function getDateRange(range: string): { startDate: Date; endDate: Date } {
 export const GET: RequestHandler = async ({ params, url, locals }) => {
   const user = locals.user;
 
-  if (!user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const eui = params.eui;
 
-  // Validate device ownership with SUPER_ADMIN consideration
+  // First check if the device belongs to a public project
   const device = await prisma.device.findUnique({
     where: { eui },
     include: {
-      zone: true,
+      zone: {
+        include: {
+          project: true
+        }
+      }
     },
   });
 
-  // For SUPER_ADMIN, only check if device exists and belongs to the active project
-  if (!device || (user.role !== 'SUPER_ADMIN' && device.zone?.organizationId !== user.organizationId)) {
-    return new Response('Device not found or access denied', { status: 404 });
+  if (!device) {
+    return new Response('Device not found', { status: 404 });
+  }
+
+  // Allow access if project is public or user is authenticated with proper permissions
+  const isPublicAccess = device.zone?.project?.isPublic;
+  const hasUserAccess = user && (user.role === 'SUPER_ADMIN' || device.zone?.organizationId === user.organizationId);
+
+  if (!isPublicAccess && !hasUserAccess) {
+    return new Response('Unauthorized', { status: 401 });
   }
 
   // Get query parameters
