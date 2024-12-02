@@ -50,17 +50,21 @@ model Organization {
 }
 
 model Project {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
-  name           String
-  purpose        String
-  geometry       Json
-  center         Json
-  createdAt      DateTime     @default(now())
-  organizationId String       @db.ObjectId
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  zones          Zone[]
-  users          User[]
-  activeUsers    User[]       @relation("ActiveProject")
+  id                String       @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  purpose           String
+  geometry          Json
+  center            Json
+  createdAt         DateTime     @default(now())
+  organizationId    String       @db.ObjectId
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  zones             Zone[]
+  users             User[]
+  activeUsers       User[]       @relation("ActiveProject")
+  isPublic          Boolean      @default(false)
+  publicSlug        String?      @unique // For public URL access
+  publicTitle       String? // Optional public display title
+  publicDescription String? // Optional public description
 }
 
 model Zone {

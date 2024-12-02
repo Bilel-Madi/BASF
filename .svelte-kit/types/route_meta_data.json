@@ -62,6 +62,9 @@
 	"/api/projects/select": [
 		"src/routes/api/projects/select/+server.ts"
 	],
+	"/api/projects/[project_id]/public-access": [
+		"src/routes/api/projects/[project_id]/public-access/+server.ts"
+	],
 	"/api/zones": [
 		"src/routes/api/zones/+server.ts"
 	],
@@ -123,6 +126,16 @@
 	],
 	"/projects/[project_id]": [
 		"src/routes/projects/[project_id]/+page.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/projects/[project_id]/settings": [
+		"src/routes/projects/[project_id]/settings/+page.server.ts",
+		"src/routes/+layout.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/public/[slug]": [
+		"src/routes/public/[slug]/+page.server.ts",
 		"src/routes/+layout.ts",
 		"src/routes/+layout.server.ts"
 	],
