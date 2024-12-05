@@ -38,6 +38,44 @@
 		{ label: 'Projects', href: '/projects' },
 		{ label: project.name }
 	];
+
+	let weatherLocation = project.weatherLocation || '';
+	let isEditingWeather = false;
+
+	async function saveWeatherLocation() {
+		try {
+			const response = await fetch(`/api/projects/${project.id}/weather`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ weatherLocation })
+			});
+
+			if (!response.ok) throw new Error('Failed to update weather location');
+
+			isEditingWeather = false;
+		} catch (error) {
+			console.error('Error updating weather location:', error);
+			alert('Failed to update weather location');
+		}
+	}
+
+	function useCurrentLocation() {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					weatherLocation = `${position.coords.latitude},${position.coords.longitude}`;
+				},
+				(error) => {
+					console.error('Error getting location:', error);
+					alert('Unable to get current location');
+				}
+			);
+		} else {
+			alert('Geolocation is not supported by this browser.');
+		}
+	}
 </script>
 
 <div class="page-container">
@@ -76,6 +114,36 @@
 			<div class="detail-group">
 				<h2>Purpose</h2>
 				<p>{project.purpose}</p>
+			</div>
+			<div class="detail-group">
+				<h2>Weather Settings</h2>
+				{#if isEditingWeather}
+					<div class="weather-edit">
+						<input
+							type="text"
+							bind:value={weatherLocation}
+							placeholder="Enter city name or coordinates (e.g., 'London' or '51.5074,-0.1278')"
+						/>
+						<div class="weather-actions">
+							<button class="btn secondary" on:click={useCurrentLocation}>
+								Use Current Location
+							</button>
+							<button class="btn primary" on:click={saveWeatherLocation}> Save </button>
+							<button class="btn secondary" on:click={() => (isEditingWeather = false)}>
+								Cancel
+							</button>
+						</div>
+					</div>
+				{:else}
+					<div class="weather-display">
+						<p>
+							Current weather location: {weatherLocation || 'Not set'}
+						</p>
+						<button class="btn secondary" on:click={() => (isEditingWeather = true)}>
+							Edit Location
+						</button>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
@@ -183,5 +251,53 @@
 		.project-content {
 			gap: 1.5rem;
 		}
+	}
+
+	.btn {
+		padding: 0.5rem 1rem;
+		border-radius: 4px;
+		border: none;
+		cursor: pointer;
+		font-size: 0.9rem;
+		transition: background-color 0.2s;
+	}
+
+	.btn.primary {
+		background-color: var(--primary-color, #0066cc);
+		color: white;
+	}
+
+	.btn.secondary {
+		background-color: var(--secondary-color, #f0f0f0);
+		color: var(--text-color, #333);
+	}
+
+	.btn:hover {
+		opacity: 0.9;
+	}
+
+	.weather-edit {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.weather-edit input {
+		padding: 0.5rem;
+		border: 1px solid var(--border-color, #eaeaea);
+		border-radius: 4px;
+		font-size: 0.9rem;
+		width: 100%;
+	}
+
+	.weather-actions {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.weather-display {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 	}
 </style>

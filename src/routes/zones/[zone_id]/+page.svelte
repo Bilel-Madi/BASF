@@ -113,7 +113,9 @@
 	<div class="header">
 		<h1 class="title">{zone.name}</h1>
 		<div class="actions">
-			<!-- <Button text="Edit Zone" href={`/zones/${zone.id}/edit`} /> -->
+			<a href={`/zones/${zone.id}/edit`}>
+				<Button text="Edit Zone" />
+			</a>
 			<Button text="Delete" variant="danger-outline" on:click={handleDelete} />
 		</div>
 	</div>

@@ -65,6 +65,9 @@
 	"/api/projects/[project_id]/public-access": [
 		"src/routes/api/projects/[project_id]/public-access/+server.ts"
 	],
+	"/api/projects/[project_id]/weather": [
+		"src/routes/api/projects/[project_id]/weather/+server.ts"
+	],
 	"/api/zones": [
 		"src/routes/api/zones/+server.ts"
 	],

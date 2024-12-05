@@ -4,6 +4,7 @@ import { fail, redirect, type Actions, type PageServerLoad } from '@sveltejs/kit
 import prisma from '$lib/prisma';
 import bcrypt from 'bcrypt';
 import { generateSessionToken, createSession } from '$lib/server/session';
+import { EmailService } from '$lib/server/email/service';
 
 export const load: PageServerLoad = async ({ url }) => {
   const inviteToken = url.searchParams.get('invite');
@@ -113,6 +114,9 @@ export const actions: Actions = {
         },
       });
 
+      // Send welcome email
+      await EmailService.sendWelcomeEmail(email);
+
       // Mark invite as used
       await prisma.inviteCode.update({
         where: { id: invite.id },
@@ -149,6 +153,9 @@ export const actions: Actions = {
           }
         },
       });
+
+      // Send welcome email
+      await EmailService.sendWelcomeEmail(email);
 
       // Generate and store session token
       const sessionToken = generateSessionToken();

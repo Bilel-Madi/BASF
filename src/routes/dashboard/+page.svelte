@@ -186,7 +186,7 @@
 					<div class="skeleton skeleton-text" style="width: 90%;" />
 				{:else}
 					<div class="weather-wrapper">
-						<Weather />
+						<Weather location={data.project.weatherLocation || 'Yarqa'} />
 					</div>
 				{/if}
 			</div>

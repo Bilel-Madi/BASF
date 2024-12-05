@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 
 	const API_KEY = 'fc1bc2b57bca4cd6ac761857230210';
-	const CITY = 'Yarqa';
+
+	export let location = 'Yarqa';
 
 	type WeatherData = {
 		location: {
@@ -30,7 +31,7 @@
 	async function fetchWeather() {
 		try {
 			const response = await fetch(
-				`https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${CITY}`
+				`https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${location}`
 			);
 			if (!response.ok) throw new Error('Weather data fetch failed');
 			weatherData = await response.json();
@@ -42,9 +43,9 @@
 		}
 	}
 
-	onMount(() => {
+	$: if (location) {
 		fetchWeather();
-	});
+	}
 </script>
 
 <div class="weather-container">
@@ -54,7 +55,9 @@
 		<div class="error">Unable to load weather data</div>
 	{:else if weatherData}
 		<div class="weather-content">
-			<div class="weather-item location">Al Balawinah</div>
+			<div class="weather-item location">
+				{weatherData.location.name === 'Yarqa' ? 'Al Balawinah' : weatherData.location.name}
+			</div>
 			<div class="weather-item condition-group">
 				<img
 					src={weatherData.current.condition.icon}
